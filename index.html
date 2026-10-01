@@ -1,0 +1,3054 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SM - Sys Manager</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #1d4ed8;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --dark-card: #0f172a;
+      --light-bg: #f8fafc;
+    }
+
+    body {
+      background-color: #f1f5f9;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: #334155;
+    }
+
+    .navbar-custom {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+    }
+
+    .brand-logo {
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+    .brand-logo span {
+      color: #38bdf8;
+    }
+
+    .nav-tabs .nav-link {
+      color: #64748b;
+      font-weight: 600;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.15s ease;
+    }
+    .nav-tabs .nav-link.active {
+      color: var(--primary-color);
+      background-color: #fff;
+      border-bottom: 3px solid var(--primary-color);
+    }
+    .nav-tabs .nav-link:hover:not(.active) {
+      color: #0f172a;
+      background-color: #e2e8f0;
+    }
+
+    .card-custom {
+      border: none;
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      background: #ffffff;
+    }
+
+    .hero-task {
+      border-left: 6px solid var(--primary-color);
+      background: linear-gradient(to right, #ffffff, #f8faff);
+    }
+    .hero-task.atrasada {
+      border-left: 6px solid var(--danger-color);
+      background: linear-gradient(to right, #ffffff, #fff5f5);
+    }
+
+    .badge-urgente { background-color: #ef4444; color: white; }
+    .badge-alta { background-color: #f97316; color: white; }
+    .badge-media { background-color: #3b82f6; color: white; }
+    .badge-baixa { background-color: #10b981; color: white; }
+
+    .badge-status-dia {
+      background-color: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+    .badge-status-atrasada {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+
+    .esteira-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: #ffffff;
+      transition: border-color 0.15s;
+    }
+    .esteira-item:hover {
+      border-color: #94a3b8;
+    }
+
+    .metric-box {
+      border-radius: 14px;
+      padding: 18px 20px;
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      min-height: 95px;
+    }
+    .metric-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .btn-nova-atividade {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      cursor: pointer;
+    }
+    .btn-nova-atividade:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+    }
+
+    /* Notificação flutuante de resposta instantânea (0ms de atraso percebido) */
+    #toastFeedback {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 99999;
+      background: #1e293b;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #areaRelatorioImpressao {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+    }
+
+    /* Formatação Especial para Exportação de PDF Impecável (A4 Landscape) */
+    #areaRelatorioImpressao.modo-impressao-pdf {
+      width: 1040px !important;
+      max-width: 1040px !important;
+      padding: 20px 25px !important;
+      margin: 0 auto !important;
+      box-shadow: none !important;
+      border: 1px solid #e2e8f0 !important;
+      background: #ffffff !important;
+    }
+
+    #areaRelatorioImpressao.modo-impressao-pdf .table-responsive {
+      overflow: visible !important;
+    }
+
+    #areaRelatorioImpressao.modo-impressao-pdf table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+
+    #areaRelatorioImpressao.modo-impressao-pdf th,
+    #areaRelatorioImpressao.modo-impressao-pdf td {
+      white-space: normal !important;
+      word-break: break-word !important;
+    }
+
+    /* Banner de Fundo Profissional do SysManager para Tela de Login */
+    #bannerFundoLogin {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1040;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 35px 45px;
+      background: radial-gradient(circle at 10% 15%, rgba(37, 99, 235, 0.35) 0%, transparent 45%),
+                  radial-gradient(circle at 90% 85%, rgba(6, 182, 212, 0.25) 0%, transparent 50%),
+                  radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.6) 0%, transparent 60%),
+                  linear-gradient(135deg, #020617 0%, #0b1329 45%, #0f172a 100%);
+      background-size: cover;
+      color: #fff;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .banner-grid-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    .banner-watermark {
+      position: absolute;
+      right: -2%;
+      top: 15%;
+      font-size: 26vw;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.02);
+      line-height: 1;
+      user-select: none;
+      pointer-events: none;
+      font-family: system-ui, sans-serif;
+    }
+
+    .banner-tag-pill {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 50px;
+      padding: 9px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+
+    #modalLoginEquipe {
+      z-index: 1055 !important;
+    }
+    .modal-backdrop.login-backdrop {
+      opacity: 0.25 !important;
+      background-color: #020617 !important;
+    }
+    #modalLoginEquipe .modal-content {
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65), 0 0 40px rgba(37, 99, 235, 0.2);
+      background: #ffffff;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOAST FLUTUANTE DE FEEDBACK INSTANTÂNEO -->
+  <div id="toastFeedback">
+    <i class="fa-solid fa-circle-check text-success fs-5"></i>
+    <span id="toastFeedbackTexto">Ação realizada!</span>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-2 px-3 sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center gap-2 brand-logo" href="#" title="SM - Sys Manager">
+        <span class="badge bg-primary text-white fw-bold px-2 py-1 fs-5 shadow-sm">SM</span>
+        <span class="text-white-50 fw-normal fs-6 ms-1">• Sys Manager</span>
+      </a>
+
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <!-- Perfil Autenticado Direto (Sem alternância manual de perfil) -->
+        <div class="d-flex align-items-center bg-dark bg-opacity-50 border border-secondary border-opacity-25 rounded-pill px-3 py-1 text-white">
+          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+            <i class="fa-solid fa-user small"></i>
+          </div>
+          <div class="lh-sm text-start me-2">
+            <div class="fw-bold small" id="navbarUserNome">Carregando...</div>
+            <div class="text-muted" style="font-size: 0.72rem;" id="navbarUserEmail">autenticando...</div>
+          </div>
+          <span class="badge bg-primary rounded-pill small" id="navbarUserCargo">Dev</span>
+        </div>
+
+        <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" onclick="fazerLogout()" title="Sair ou trocar de conta">
+          <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Sair
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="container-fluid py-4 px-md-4">
+    
+    <!-- ABAS -->
+    <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" id="tab-esteira-btn" data-bs-toggle="tab" data-bs-target="#tab-esteira" type="button">
+          <i class="fa-solid fa-diagram-project me-2"></i>Minha Esteira Ágil
+        </button>
+      </li>
+
+      <!-- 1º ABA DO GERENTE: Oculta por padrão para desenvolvedores e só visível para Gerente/Ambos -->
+      <li class="nav-item d-none" id="navItemPainelGerente">
+        <button class="nav-link position-relative" id="tab-gerente-btn" data-bs-toggle="tab" data-bs-target="#tab-gerente" type="button">
+          <i class="fa-solid fa-user-tie me-2"></i>Painel do Gerente (Prazos)
+          <span class="badge bg-danger rounded-pill ms-1 d-none" id="badgeSolicitacoesPendentes">0</span>
+        </button>
+      </li>
+
+
+      <li class="nav-item">
+        <button class="nav-link" id="tab-relatorio-btn" data-bs-toggle="tab" data-bs-target="#tab-relatorio" type="button">
+          <i class="fa-solid fa-file-lines me-2"></i>Relatório Mensal
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-usuarios-btn" data-bs-toggle="tab" data-bs-target="#tab-usuarios" type="button">
+          <i class="fa-solid fa-users me-2"></i>Equipe
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="mainTabsContent">
+
+      <!-- ========================================== -->
+      <!-- ABA 1: ESTEIRA ÁGIL                        -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade show active" id="tab-esteira" role="tabpanel">
+        
+        <!-- CARDS RESUMO -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <div class="metric-box">
+              <div class="metric-icon bg-primary-subtle text-primary">
+                <i class="fa-solid fa-play"></i>
+              </div>
+              <div style="min-width: 0; flex: 1;">
+                <div class="text-muted small">Demanda Ativa</div>
+                <h6 class="mb-0 fw-bold text-dark text-truncate" id="metricAtivaTexto" title="Nenhuma demanda ativa">-</h6>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-box">
+              <div class="metric-icon bg-info-subtle text-info">
+                <i class="fa-solid fa-list-ol"></i>
+              </div>
+              <div>
+                <div class="text-muted small">Demandas Futuras</div>
+                <h4 class="mb-0 fw-bold text-dark" id="metricFuturasQtd">0</h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-box">
+              <div class="metric-icon bg-danger-subtle text-danger">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+              </div>
+              <div>
+                <div class="text-muted small">Demandas Atrasadas</div>
+                <h4 class="mb-0 fw-bold text-dark" id="metricAtrasadasQtd">0</h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-box">
+              <div class="metric-icon bg-success-subtle text-success">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <div>
+                <div class="text-muted small">Concluídas</div>
+                <h4 class="mb-0 fw-bold text-dark" id="metricConcluidasQtd">0</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEMANDA ATUAL EM PRODUÇÃO -->
+        <div class="card card-custom hero-task mb-4 p-4" id="cardDemandaAtual">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <div>
+              <span class="badge bg-dark me-2"><i class="fa-solid fa-bolt me-1 text-warning"></i> DEMANDA ATUAL EM EXECUÇÃO</span>
+              <span class="badge bg-secondary-subtle text-secondary border font-monospace me-1" id="badgeModuloAtual">SIOPLEEx</span>
+              <span id="badgeStatusAtual" class="badge-status-dia">Em Dia</span>
+              <span id="badgeUrgenciaAtual" class="badge badge-media ms-1">Média</span>
+            </div>
+            <div class="text-muted small mt-2 mt-sm-0">
+              <i class="fa-solid fa-user me-1"></i> Responsável: <strong id="devNomeAtual">-</strong>
+            </div>
+          </div>
+
+          <div id="conteudoDemandaAtual">
+            <h3 class="fw-bold mb-2 text-dark" id="tituloDemandaAtual">Nenhuma demanda ativa no momento</h3>
+            <p class="text-muted mb-3" id="descDemandaAtual">Selecione uma demanda nas Demandas Futuras ou cadastre uma nova para começar.</p>
+
+            <div class="row g-3 py-3 border-top border-bottom my-3">
+              <div class="col-6 col-md-3">
+                <span class="text-muted small d-block">Prazo Estimado:</span>
+                <strong class="fs-5 text-primary" id="tempoEstimadoAtual">0 dias</strong>
+              </div>
+              <div class="col-6 col-md-3">
+                <span class="text-muted small d-block">Em Produção:</span>
+                <div class="d-flex align-items-center gap-1">
+                  <strong class="fs-5 text-dark" id="tempoDemandadoAtual">1 dia</strong>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle small ms-1">
+                    <i class="fa-solid fa-calendar-day me-1"></i>Produção
+                  </span>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <span class="text-muted small d-block">Entrou em Produção:</span>
+                <strong class="fs-6 text-secondary" id="dataInicioAtual">-</strong>
+              </div>
+              <div class="col-6 col-md-3">
+                <span class="text-muted small d-block">Prazo Final:</span>
+                <strong class="fs-6 text-danger" id="dataPrazoAtual">-</strong>
+              </div>
+            </div>
+
+            <!-- ALERTA DE ATRASO COM SOLICITAÇÃO DE NOVO PRAZO -->
+            <div class="alert alert-danger d-none align-items-center justify-content-between p-3 rounded-3" id="alertaAtrasoAtual">
+              <div class="d-flex align-items-center gap-3">
+                <i class="fa-solid fa-triangle-exclamation fs-3 text-danger"></i>
+                <div>
+                  <h6 class="mb-1 fw-bold">Atenção: Esta demanda excedeu o prazo previsto!</h6>
+                  <small>Solicite um novo prazo ao Gerente do Projeto para dar continuidade na esteira.</small>
+                </div>
+              </div>
+              <button type="button" class="btn btn-danger btn-sm px-3 mt-2 mt-md-0 fw-semibold" onclick="abrirModalSolicitarPrazo()">
+                <i class="fa-solid fa-calendar-plus me-1"></i> Solicitar Novo Prazo
+              </button>
+            </div>
+
+            <!-- AÇÃO DA DEMANDA ATUAL -->
+            <div class="d-flex flex-wrap align-items-center gap-3 mt-3" id="botoesAcaoAtual">
+              <button type="button" class="btn btn-success px-4 py-2 fw-semibold rounded-pill shadow-sm" onclick="finalizarDemandaAtual()">
+                <i class="fa-solid fa-circle-check me-2"></i> Concluir Demanda
+              </button>
+              <button type="button" class="btn btn-outline-danger px-3 py-2 fw-semibold rounded-pill shadow-sm" id="btnExcluirDemandaAtual" onclick="excluirDemandaAtualConfirm()">
+                <i class="fa-solid fa-trash-can me-1"></i> Excluir Demanda
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DIVISÃO DE TELA: DEMANDAS FUTURAS & DEMANDAS CONCLUÍDAS -->
+        <div class="row g-4">
+          
+          <!-- COLUNA ESQUERDA: DEMANDAS FUTURAS -->
+          <div class="col-lg-6">
+            <div class="card card-custom p-4 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h5 class="fw-bold mb-1">
+                    <i class="fa-solid fa-bars-staggered me-2 text-primary"></i>Demandas Futuras
+                    <span class="badge bg-primary-subtle text-primary rounded-pill ms-1" id="badgeQtdFuturasAba">0</span>
+                  </h5>
+                  <p class="text-muted small mb-0">Selecione qual demanda será realizada no momento.</p>
+                </div>
+                <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3" onclick="abrirModalNovaDemanda()">
+                  <i class="fa-solid fa-plus me-1"></i> Nova Demanda
+                </button>
+              </div>
+
+              <div id="listaFuturasDemandas" style="max-height: 480px; overflow-y: auto;">
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUNA DIREITA: DEMANDAS CONCLUÍDAS -->
+          <div class="col-lg-6">
+            <div class="card card-custom p-4 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h5 class="fw-bold mb-1">
+                    <i class="fa-solid fa-circle-check me-2 text-success"></i>Demandas Concluídas
+                    <span class="badge bg-success-subtle text-success rounded-pill ms-1" id="badgeQtdConcluidasAba">0</span>
+                  </h5>
+                  <p class="text-muted small mb-0">Histórico de entregas finalizadas na esteira.</p>
+                </div>
+                <span class="badge bg-light text-muted border px-2 py-1 small">
+                  <i class="fa-solid fa-clock-rotate-left me-1"></i> Finalizadas
+                </span>
+              </div>
+
+              <div id="listaConcluidasDemandas" style="max-height: 480px; overflow-y: auto;">
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- ABA 2: PAINEL DO GERENTE (CIENTE E ESTEIRA)-->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-gerente" role="tabpanel">
+        <div class="card card-custom p-4 mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-clipboard-check me-2 text-primary"></i>Solicitações de Novo Prazo
+              </h5>
+              <p class="text-muted small mb-0">O Gerente dá "Ciente" no novo prazo solicitado e a atividade retorna imediatamente para a esteira.</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Tarefa</th>
+                  <th>Desenvolvedor</th>
+                  <th>Novo Prazo Solicitado</th>
+                  <th>Data Registro</th>
+                  <th>Status</th>
+                  <th class="text-end">Ação do Gerente</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaAprovacoesGerente">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- ========================================== -->
+      <!-- ABA 4: RELATÓRIO MENSAL                    -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-relatorio" role="tabpanel">
+        
+        <div class="card card-custom p-3 mb-4">
+          <div class="row g-2 align-items-end">
+            <div class="col-xl-2 col-md-4 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar me-1 text-primary"></i>Mês de Referência:</label>
+              <select class="form-select form-select-sm" id="filtroRelatorioMes" onchange="atualizarRelatorioMensal()">
+                <option value="TODOS" selected>Todos os Meses</option>
+                <option value="0">Janeiro</option>
+                <option value="1">Fevereiro</option>
+                <option value="2">Março</option>
+                <option value="3">Abril</option>
+                <option value="4">Maio</option>
+                <option value="5">Junho</option>
+                <option value="6">Julho</option>
+                <option value="7">Agosto</option>
+                <option value="8">Setembro</option>
+                <option value="9">Outubro</option>
+                <option value="10">Novembro</option>
+                <option value="11">Dezembro</option>
+              </select>
+            </div>
+            <div class="col-xl-1 col-md-2 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar-days me-1 text-primary"></i>Ano:</label>
+              <input type="number" class="form-control form-control-sm" id="filtroRelatorioAno" value="2026" onchange="atualizarRelatorioMensal()">
+            </div>
+            <div class="col-xl-2 col-md-3 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-user me-1 text-primary"></i>Desenvolvedor:</label>
+              <select class="form-select form-select-sm" id="filtroRelatorioDev" onchange="atualizarRelatorioMensal()">
+                <option value="TODOS">Todos os Desenvolvedores</option>
+              </select>
+            </div>
+            <div class="col-xl-3 col-md-3 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-cube me-1 text-primary"></i>Módulo:</label>
+              <select class="form-select form-select-sm" id="filtroRelatorioModulo" onchange="atualizarRelatorioMensal()">
+                <option value="TODOS" selected>Todos os Módulos</option>
+              </select>
+            </div>
+            <div class="col-xl-2 col-md-6 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-list-check me-1 text-primary"></i>Status:</label>
+              <select class="form-select form-select-sm" id="filtroRelatorioStatus" onchange="atualizarRelatorioMensal()">
+                <option value="TODOS" selected>Todos os Status</option>
+                <option value="Em Andamento">Em Andamento</option>
+                <option value="Atrasada">Atrasada</option>
+                <option value="Concluída">Concluída</option>
+              </select>
+            </div>
+            <div class="col-xl-2 col-md-6 col-sm-12 d-flex gap-2">
+              <button type="button" class="btn btn-primary btn-sm flex-fill fw-semibold py-1" onclick="atualizarRelatorioMensalComFeedback()">
+                <i class="fa-solid fa-filter me-1"></i> Filtrar
+              </button>
+              <button type="button" class="btn btn-success btn-sm flex-fill fw-semibold py-1" onclick="baixarRelatorioPDF()">
+                <i class="fa-solid fa-file-pdf me-1"></i> Baixar PDF
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="areaRelatorioImpressao" class="border shadow-sm">
+          <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-4">
+            <div>
+              <h3 class="fw-bold text-dark mb-1"><span class="badge bg-primary text-white fw-bold me-1 px-2 py-1 fs-5">SM</span> Sys Manager</h3>
+              <p class="text-muted mb-0">Relatório de Gestão Ágil e Esteira de Demandas (SM)</p>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-primary fs-6 mb-1" id="lblPeriodoRelatorio">Período Geral (2026)</span>
+              <div class="small text-muted" id="lblEmissaoRelatorio">Emitido em: 01/10/2026</div>
+            </div>
+          </div>
+
+          <!-- DASHBOARD DO RELATÓRIO: 4 CARDS (TOTAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) -->
+          <div class="row g-3 mb-4 text-center">
+            <!-- 1. Total de Demandas -->
+            <div class="col-md-3 col-6">
+              <div class="p-3 bg-light rounded border h-100 d-flex flex-column justify-content-center shadow-sm">
+                <div class="text-muted small fw-semibold text-uppercase mb-1">
+                  <i class="fa-solid fa-list-check text-primary me-1"></i> Total de Demandas
+                </div>
+                <h3 class="fw-bold mb-0 text-dark" id="relTotalDemandas">0</h3>
+                <small class="text-secondary">demandas registradas</small>
+              </div>
+            </div>
+
+            <!-- 2. Demandas Concluídas -->
+            <div class="col-md-3 col-6">
+              <div class="p-3 bg-success-subtle border border-success-subtle rounded h-100 d-flex flex-column justify-content-center shadow-sm">
+                <div class="text-success small fw-semibold text-uppercase mb-1">
+                  <i class="fa-solid fa-circle-check me-1"></i> Demandas Concluídas
+                </div>
+                <h3 class="fw-bold mb-0 text-success" id="relConcluidas">0</h3>
+                <small class="text-success-emphasis" id="relConcluidasPercent">0% entregues no período</small>
+              </div>
+            </div>
+
+            <!-- 3. Demandas Em Andamento -->
+            <div class="col-md-3 col-6">
+              <div class="p-3 bg-primary-subtle border border-primary-subtle rounded h-100 d-flex flex-column justify-content-center shadow-sm">
+                <div class="text-primary small fw-semibold text-uppercase mb-1">
+                  <i class="fa-solid fa-bars-progress me-1"></i> Demandas Em Andamento
+                </div>
+                <h3 class="fw-bold mb-0 text-primary" id="relEmAndamento">0</h3>
+                <small class="text-primary-emphasis" id="relEmAndamentoDesc">em produção ativa</small>
+              </div>
+            </div>
+
+            <!-- 4. Demandas Atrasadas -->
+            <div class="col-md-3 col-6">
+              <div class="p-3 bg-danger-subtle border border-danger-subtle rounded h-100 d-flex flex-column justify-content-center shadow-sm">
+                <div class="text-danger small fw-semibold text-uppercase mb-1">
+                  <i class="fa-solid fa-triangle-exclamation me-1"></i> Demandas Atrasadas
+                </div>
+                <h3 class="fw-bold mb-0 text-danger" id="relAtrasadas">0</h3>
+                <small class="text-danger-emphasis" id="relAtrasadasDesc">fora do prazo</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- DETALHAMENTO COM NUMERAÇÃO, MÓDULO E REORDENAÇÃO DE TODAS AS COLUNAS -->
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-dark">
+              <i class="fa-solid fa-table-list text-primary me-2"></i>Detalhamento das Demandas do Período
+            </h5>
+            <div class="small text-muted" data-html2canvas-ignore="true">
+              <i class="fa-solid fa-arrow-down-up-across-line me-1 text-primary"></i> Clique no título de qualquer coluna para reordenar
+            </div>
+          </div>
+
+          <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm text-center align-middle" id="tabelaRelatorioDoc" style="table-layout: fixed; width: 100%;">
+              <thead class="table-dark">
+                <tr>
+                  <th style="width: 3%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('num')" title="Ordenar por número">
+                    # <i class="fa-solid fa-sort ms-1 small" id="sortIcon_num"></i>
+                  </th>
+                  <th style="width: 16%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('modulo')" title="Ordenar por Módulo">
+                    Módulo <i class="fa-solid fa-sort ms-1 small" id="sortIcon_modulo"></i>
+                  </th>
+                  <th class="text-start" style="width: 22%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('titulo')" title="Ordenar por Título da Demanda">
+                    Título da Demanda <i class="fa-solid fa-sort ms-1 small" id="sortIcon_titulo"></i>
+                  </th>
+                  <th style="width: 12%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('devNome')" title="Ordenar por Desenvolvedor">
+                    Desenvolvedor <i class="fa-solid fa-sort ms-1 small" id="sortIcon_devNome"></i>
+                  </th>
+                  <th style="width: 8%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('dataInsercao')" title="Ordenar por Data de Inserção">
+                    Data de Inserção <i class="fa-solid fa-sort ms-1 small" id="sortIcon_dataInsercao"></i>
+                  </th>
+                  <th style="width: 7%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('urgencia')" title="Ordenar por Urgência">
+                    Urgência <i class="fa-solid fa-sort ms-1 small" id="sortIcon_urgencia"></i>
+                  </th>
+                  <th style="width: 6%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('diasEstimados')" title="Ordenar por Prazo Estimado">
+                    Estimado <i class="fa-solid fa-sort ms-1 small" id="sortIcon_diasEstimados"></i>
+                  </th>
+                  <th style="width: 7%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('diasTrabalhados')" title="Ordenar por Dias Em Produção">
+                    Em Produção <i class="fa-solid fa-sort ms-1 small" id="sortIcon_diasTrabalhados"></i>
+                  </th>
+                  <th style="width: 7%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('status')" title="Ordenar por Status">
+                    Status <i class="fa-solid fa-sort ms-1 small" id="sortIcon_status"></i>
+                  </th>
+                  <th style="width: 8%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('prazoFinal')" title="Ordenar por Prazo Final">
+                    Prazo Final <i class="fa-solid fa-sort ms-1 small" id="sortIcon_prazoFinal"></i>
+                  </th>
+                  <th id="thAcoesRelatorio" data-html2canvas-ignore="true" style="width: 4%;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaCorpoRelatorio">
+              </tbody>
+            </table>
+          </div>
+
+          <div class="text-end text-muted small mt-4">
+            <em>SysManager - Relatório gerado automaticamente para controle de esteira ágil.</em>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- ABA 5: EQUIPE                              -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-usuarios" role="tabpanel">
+        <div class="row g-4">
+          <div class="col-lg-4 col-md-5">
+            <div class="card card-custom p-4">
+              <h5 class="fw-bold text-dark mb-3">
+                <i class="fa-solid fa-user-plus me-2 text-primary"></i>Cadastrar Membro
+              </h5>
+
+              <div>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Nome Completo:</label>
+                  <input type="text" class="form-control" id="cadNome" placeholder="Ex: Elvys Maia">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold d-flex align-items-center justify-content-between">
+                    <span>E-mail Google (Gmail):</span>
+                    <span class="text-primary" role="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Informe a conta @gmail.com com a qual o membro acessará o sistema. O login será autorizado automaticamente!">
+                      <i class="fa-solid fa-circle-question fs-6"></i>
+                    </span>
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-envelope"></i></span>
+                    <input type="email" class="form-control" id="cadEmail" placeholder="usuario@gmail.com">
+                  </div>
+                  <div class="form-text text-muted" style="font-size: 0.74rem;">
+                    <i class="fa-brands fa-google text-danger me-1"></i> Necessário conta @gmail.com para autorização imediata de acesso.
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Função / Perfil:</label>
+                  <select class="form-select" id="cadCargo">
+                    <option value="Desenvolvedor" selected>Desenvolvedor</option>
+                    <option value="Gerente de Projetos">Gerente de Projetos</option>
+                  </select>
+                </div>
+                <button type="button" class="btn btn-primary w-100 fw-semibold py-2" onclick="salvarUsuarioRapido()">
+                  <i class="fa-solid fa-user-plus me-1"></i> Cadastrar Membro
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-8 col-md-7">
+            <div class="card card-custom p-4">
+              <div class="mb-3">
+                <h5 class="fw-bold text-dark mb-0">Membros Cadastrados</h5>
+                <small class="text-muted">Gerencie a equipe e liberação de acesso da esteira ágil.</small>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nome</th>
+                      <th>E-mail Google</th>
+                      <th>Função</th>
+                      <th class="text-center">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tabelaUsuariosCorpo">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR MEMBRO -->
+  <div class="modal fade" id="modalEditarUsuario" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-pen me-2"></i>Alterar Dados do Membro</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editUserId">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">ID do Usuário:</label>
+            <input type="text" class="form-control bg-light" id="editUserIdDisplay" readonly>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Nome Completo:</label>
+            <input type="text" class="form-control" id="editUserNome">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold d-flex align-items-center justify-content-between">
+              <span>E-mail Google (Gmail):</span>
+              <span class="text-primary" role="button" data-bs-toggle="tooltip" data-bs-placement="top" title="E-mail da conta Google para login e autorização automática no sistema.">
+                <i class="fa-solid fa-circle-question fs-6"></i>
+              </span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-envelope"></i></span>
+              <input type="email" class="form-control" id="editUserEmail" placeholder="usuario@gmail.com">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Função / Perfil:</label>
+            <select class="form-select" id="editUserCargo">
+              <option value="Desenvolvedor">Desenvolvedor</option>
+              <option value="Gerente de Projetos">Gerente de Projetos</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-semibold" onclick="salvarEdicaoUsuarioRapido()">
+            <i class="fa-solid fa-check me-1"></i> Salvar Alterações
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CADASTRAR DEMANDA -->
+  <div class="modal fade" id="modalNovaTarefa" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-circle-plus me-2"></i>Cadastrar Demanda</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- MÓDULO COM BUSCA E LUPA -->
+          <div class="mb-3 position-relative">
+            <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
+              <span><i class="fa-solid fa-cube text-primary me-1"></i> Módulo:</span>
+              <small class="text-muted fw-normal" style="font-size: 0.74rem;">Selecione ou busque na lupa</small>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-primary">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" class="form-control border-start-0 ps-0" id="taskModuloInput" list="listaModulosDatalist" placeholder="Pesquisar módulo..." value="SIOPLEEx" autocomplete="off" onfocus="this.select()">
+              <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Ver lista de módulos"></button>
+              <ul class="dropdown-menu dropdown-menu-end shadow w-100" style="max-height: 240px; overflow-y: auto;" id="taskModuloDropdownMenu">
+              </ul>
+            </div>
+            <datalist id="listaModulosDatalist">
+            </datalist>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Título da Demanda:</label>
+            <input type="text" class="form-control" id="taskTitulo" placeholder="Ex: Criar tela de login com OAuth">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Descrição / Requisitos:</label>
+            <textarea class="form-control" id="taskDescricao" rows="2" placeholder="Detalhes técnicos da tarefa..."></textarea>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Prazo Estimado (em Dias):</label>
+              <input type="number" class="form-control" id="taskDias" min="1" value="2">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Urgência:</label>
+              <select class="form-select" id="taskUrgencia" onchange="aoMudarUrgenciaNovaDemanda()">
+                <option value="Baixa">Baixa</option>
+                <option value="Media" selected>Média</option>
+                <option value="Alta">Alta</option>
+                <option value="Urgente">🚨 Urgente (Prioridade Alta)</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Desenvolvedor Responsável:</label>
+            <select class="form-select" id="taskDevSelect">
+            </select>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="taskAtivaAgora">
+            <label class="form-check-label small" for="taskAtivaAgora">
+              Colocar imediatamente como <strong>Demanda Ativa na Esteira</strong>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-semibold" id="btnConfirmarNovaDemanda" onclick="salvarNovaTarefaInstantanea()">
+            <i class="fa-solid fa-plus me-1"></i> Cadastrar Demanda
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SOLICITAR NOVO PRAZO (SEM JUSTIFICATIVA) -->
+  <div class="modal fade" id="modalSolicitarPrazo" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-calendar-plus me-2"></i>Solicitar Novo Prazo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning small d-flex align-items-center gap-2">
+            <i class="fa-solid fa-circle-info fs-5"></i>
+            <div>
+              Informe a quantidade de dias adicionais necessários. O <strong>Gerente do Projeto</strong> dará ciência e a demanda continuará na esteira.
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Título da Demanda:</label>
+            <input type="text" class="form-control bg-light" id="solTarefaTitulo" readonly>
+            <input type="hidden" id="solTarefaId">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Quantos DIAS adicionais você necessita?</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="fa-solid fa-calendar-day text-primary"></i></span>
+              <input type="number" class="form-control" id="solNovosDias" min="1" value="2">
+              <span class="input-group-text">dia(s)</span>
+            </div>
+            <div class="form-text text-muted">O prazo da demanda será estendido a partir de hoje com essa quantidade de dias.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-warning fw-semibold px-4 text-dark" onclick="enviarSolicitacaoPrazoInstantanea()">
+            <i class="fa-solid fa-paper-plane me-1"></i> Solicitar Novo Prazo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRÉ-VISUALIZAÇÃO E DOWNLOAD DO RELATÓRIO PDF (SM) -->
+  <div class="modal fade" id="modalPreviewRelatorioPdf" tabindex="-1" aria-labelledby="modalPreviewRelatorioPdfLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content shadow-lg border-0">
+        <div class="modal-header bg-dark text-white py-2 px-3">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary fw-bold px-2 py-1 fs-6">SM</span>
+            <h5 class="modal-title fw-bold fs-6 mb-0" id="modalPreviewRelatorioPdfLabel">
+              Relatório de Demandas da Esteira Ágil (SM) - Pré-visualização & Download
+            </h5>
+          </div>
+          <div class="d-flex align-items-center gap-2 ms-auto">
+            <button type="button" class="btn btn-success btn-sm fw-semibold" id="btnBaixarPdfModal" onclick="executarDownloadPdfDireto()">
+              <i class="fa-solid fa-download me-1"></i> Baixar Arquivo PDF
+            </button>
+            <button type="button" class="btn btn-outline-light btn-sm fw-semibold" onclick="imprimirRelatorioDireto()">
+              <i class="fa-solid fa-print me-1"></i> Imprimir / Salvar PDF
+            </button>
+            <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+        </div>
+        <div class="modal-body p-3 bg-secondary-subtle">
+          <div class="d-flex justify-content-center">
+            <div id="corpoVisualizacaoPdf" class="bg-white shadow p-4 rounded" style="width: 100%; max-width: 1060px; font-family: Arial, Helvetica, sans-serif; color: #1e293b; box-sizing: border-box;">
+              <!-- Conteúdo renderizado dinamicamente -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer py-2 px-3 justify-content-between bg-light">
+          <div class="small fw-semibold" id="statusGeracaoPdfModal">
+            <span class="spinner-border spinner-border-sm text-primary me-1"></span> Preparando visualização e arquivo PDF...
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Fechar</button>
+            <button type="button" class="btn btn-success btn-sm px-3 fw-semibold" onclick="executarDownloadPdfDireto()">
+              <i class="fa-solid fa-download me-1"></i> Baixar PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANNER DE FUNDO SysManager PARA TELA DE LOGIN -->
+  <div id="bannerFundoLogin">
+    <div class="banner-grid-overlay"></div>
+    <div class="banner-watermark">SM • SYSMANAGER</div>
+
+    <!-- Header do Banner SysManager -->
+    <div class="d-flex justify-content-between align-items-center position-relative w-100" style="z-index: 2;">
+      <div class="d-flex align-items-center gap-3">
+        <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, #2563eb, #06b6d4); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 25px rgba(37, 99, 235, 0.5);">
+          <span class="fw-bold text-white fs-4">SM</span>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <h3 class="fw-bold mb-0 text-white" style="letter-spacing: -0.5px; font-size: 1.6rem;"><span class="fs-5 text-white-50 fw-normal">• </span>Sys Manager</h3>
+            <span class="badge bg-primary bg-opacity-75 text-white" style="font-size: 0.72rem; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.2);">Agile</span>
+          </div>
+          <small class="text-white-50">Slogan <strong>SM</strong> • Sistema de Gestão Ágil e Esteira de Demandas</small>
+        </div>
+      </div>
+
+      <div class="d-none d-md-flex align-items-center gap-3">
+        <span class="banner-tag-pill">
+          <i class="fa-solid fa-shield-halved text-info"></i> Acesso Protegido
+        </span>
+        <span class="banner-tag-pill">
+          <i class="fa-solid fa-bolt text-warning"></i> Tempo Real Google
+        </span>
+      </div>
+    </div>
+
+    <!-- Centro Decorativo / Ambient Graphic (sutilmente atrás do card de login) -->
+    <div class="position-relative text-center d-flex flex-column align-items-center justify-content-center w-100 my-auto" style="z-index: 2; pointer-events: none;">
+      <div class="px-4 py-2 rounded-pill mb-2" style="background: rgba(37, 99, 235, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); backdrop-filter: blur(8px);">
+        <span class="text-info fw-bold small text-uppercase" style="letter-spacing: 2px;">
+          <i class="fa-solid fa-diagram-project me-2 text-info"></i>SM • Ambiente de Produção & Governança de Tarefas
+        </span>
+      </div>
+    </div>
+
+    <!-- Rodapé do Banner SysManager -->
+    <div class="d-flex justify-content-between align-items-end position-relative w-100" style="z-index: 2;">
+      <div class="d-none d-lg-flex gap-3 align-items-center">
+        <span class="banner-tag-pill">
+          <i class="fa-solid fa-code-branch text-primary"></i> Esteira Kanban Integrada
+        </span>
+        <span class="banner-tag-pill">
+          <i class="fa-solid fa-stopwatch text-success"></i> Gestão de Tempo de Produção
+        </span>
+        <span class="banner-tag-pill">
+          <i class="fa-solid fa-chart-line text-info"></i> Painel Gerencial & Métricas
+        </span>
+      </div>
+
+      <div class="text-end text-white-50 small ms-auto">
+        <div class="fw-semibold text-white">Google Workspace & Apps Script</div>
+        <div style="font-size: 0.72rem; opacity: 0.75;">Desenvolvido para Gestão de Alta Performance</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LOGIN / IDENTIFICAÇÃO DA EQUIPE -->
+  <div class="modal fade" id="modalLoginEquipe" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+        <div class="modal-header border-0 bg-dark text-white p-4 pb-3" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center text-primary" style="width: 48px; height: 48px; font-size: 22px;">
+              <span class="fw-bold text-info fs-5">SM</span>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold text-white mb-0">Sys Manager - Acesso da Equipe</h5>
+              <small class="text-white-50">Identificação com conta Google (@gmail.com)</small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-body p-4">
+          <p class="text-muted small mb-3">
+            Para acessar a sua esteira ágil e visualizar suas demandas em produção, informe o seu e-mail <strong>@gmail.com</strong> cadastrado:
+          </p>
+
+          <div id="alertaErroLogin" class="alert alert-danger d-none py-2 px-3 small mb-3">
+            <i class="fa-solid fa-circle-exclamation me-1"></i>
+            <span id="alertaErroLoginMsg">E-mail não cadastrado na equipe.</span>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">E-mail Google Cadastrado:</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-envelope"></i></span>
+              <input type="email" class="form-control" id="inputLoginEmail" placeholder="seuemail@gmail.com" onkeydown="if(event.key === 'Enter') efetuarLoginEquipe()">
+            </div>
+            <div class="form-text text-muted" style="font-size: 0.74rem;">
+              <i class="fa-brands fa-google text-danger me-1"></i> Apenas membros previamente autorizados têm acesso liberado.
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-primary w-100 fw-semibold py-2" id="btnLoginEntrar" onclick="efetuarLoginEquipe()">
+            <span id="btnLoginTexto"><i class="fa-solid fa-right-to-bracket me-1"></i> Acessar Minha Esteira</span>
+            <span id="btnLoginSpinner" class="spinner-border spinner-border-sm ms-1 d-none"></span>
+          </button>
+
+          <div class="text-center mt-3">
+            <small class="text-muted" style="font-size: 0.72rem;">
+              Administrador: <strong>Nicolas Richardt</strong>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- JAVASCRIPT ULTRA RÁPIDO -->
+  <script>
+    let appState = {
+      currentUser: null,
+      usuarios: [],
+      tarefas: [],
+      solicitacoes: []
+    };
+
+    // 22 Módulos Oficiais do Sistema
+    const LISTA_MODULOS = [
+      'SIOPLEEx',
+      'SIOPLEEx_BD',
+      'SIOPLEEx_BPMN',
+      'SIOPLEEx_Destaques',
+      'SIOPLEEx_Destaques_BD',
+      'SIOPLEEx_EMENDAS',
+      'SIOPLEEx_EMENDAS_BD',
+      'SIOPLEEx_Indicadores',
+      'SIOPLEEx_Indicadores_BD',
+      'SIOPLEEx_Iniciativa',
+      'SIOPLEEx_Iniciativa_BD',
+      'SIOPLEEx_InstrumentoDeParceria',
+      'SIOPLEEx_InstrumentoDeParceria_BD',
+      'SIOPLEEx_Orcamento',
+      'SIOPLEEx_Orcamento_BD',
+      'SIOPLEEx_Painel',
+      'SIOPLEEx_Painel_BD',
+      'SIOPLEEx_Processos',
+      'SIOPLEEx_Processos_BD',
+      'SIOPLEEx_SIPLEX',
+      'SIOPLEEx_SIPLEX_BD',
+      'SIOPLEEx_BD_Externo'
+    ];
+
+    let relatorioSortColuna = 'dataInsercao';
+    let relatorioSortDirecao = 'DESC';
+    let relatorioFiltradoAtual = [];
+
+    function limparNomeDev(nome) {
+      if (!nome) return '';
+      return nome.replace(/\s*\([Aa]mbos\)/gi, '').trim();
+    }
+
+    function popularModulosUI() {
+      const datalist = document.getElementById('listaModulosDatalist');
+      const dropdown = document.getElementById('taskModuloDropdownMenu');
+      const selectModuloFiltro = document.getElementById('filtroRelatorioModulo');
+
+      if (datalist && datalist.children.length === 0) {
+        datalist.innerHTML = LISTA_MODULOS.map(m => `<option value="${m}">`).join('');
+      }
+      if (dropdown && dropdown.children.length === 0) {
+        dropdown.innerHTML = LISTA_MODULOS.map(m => `
+          <li><a class="dropdown-item py-1 small" href="javascript:void(0)" onclick="selecionarModulo('${m}')"><i class="fa-solid fa-cube text-primary me-2"></i>${m}</a></li>
+        `).join('');
+      }
+      if (selectModuloFiltro && selectModuloFiltro.options.length <= 1) {
+        selectModuloFiltro.innerHTML = '<option value="TODOS" selected>Todos os Módulos</option>' +
+          LISTA_MODULOS.map(m => `<option value="${m}">${m}</option>`).join('');
+      }
+    }
+
+    function selecionarModulo(mod) {
+      const input = document.getElementById('taskModuloInput');
+      if (input) input.value = mod;
+    }
+
+    function ordenarRelatorioPorColuna(coluna) {
+      if (relatorioSortColuna === coluna) {
+        relatorioSortDirecao = (relatorioSortDirecao === 'ASC') ? 'DESC' : 'ASC';
+      } else {
+        relatorioSortColuna = coluna;
+        if (['num', 'modulo', 'titulo', 'devNome', 'status'].includes(coluna)) {
+          relatorioSortDirecao = 'ASC';
+        } else {
+          relatorioSortDirecao = 'DESC';
+        }
+      }
+      atualizarRelatorioMensal();
+      mostrarToast(`Ordenado por ${obterNomeAmigavelColuna(coluna)} (${relatorioSortDirecao === 'ASC' ? 'Crescente' : 'Decrescente'})`);
+    }
+
+    function obterNomeAmigavelColuna(col) {
+      const map = {
+        'num': 'Número (#)',
+        'modulo': 'Módulo',
+        'titulo': 'Título',
+        'devNome': 'Desenvolvedor',
+        'dataInsercao': 'Data de Inserção',
+        'urgencia': 'Urgência',
+        'diasEstimados': 'Estimado',
+        'diasTrabalhados': 'Em Produção',
+        'status': 'Status',
+        'prazoFinal': 'Prazo Final'
+      };
+      return map[col] || col;
+    }
+
+
+    // 🌐 URL Oficial da API Google Apps Script (Conecta a Vercel à sua Planilha Google Sheets)
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz-Z--vizc3igabZp67LoNIxvri_d-CFd76qijRBj5dV4EVGzj-jZLyNXYsLa3CmBBHYQ/exec';
+
+    const isGoogleScript = typeof google !== 'undefined' && google.script && google.script.run;
+
+    /**
+     * Executa comandos no servidor (compatível nativamente com Google Apps Script e via API na Vercel)
+     */
+    function executarNoServidor(action, data, onSuccess, onFailure) {
+      if (isGoogleScript) {
+        const runner = google.script.run;
+        if (onSuccess) runner.withSuccessHandler(onSuccess);
+        if (onFailure) runner.withFailureHandler(onFailure);
+
+        if (action === 'getAppData') runner.getAppData((data && data.email) || '');
+        else if (action === 'verificarEmailLogin') runner.verificarEmailLogin((data && data.email) || '');
+        else if (action === 'cadastrarTarefa') runner.cadastrarTarefa(data);
+        else if (action === 'selecionarTarefaAtiva') runner.selecionarTarefaAtiva(data.tarefaId, data.devId);
+        else if (action === 'concluirTarefa' || action === 'finalizarTarefa') runner.concluirTarefa(data.tarefaId, data.devId);
+        else if (action === 'solicitarNovoPrazo') runner.solicitarNovoPrazo(data);
+        else if (action === 'darCientePrazo') runner.darCientePrazo(data.solicitacaoId, data.gerenteNome || '');
+        else if (action === 'excluirTarefa') runner.excluirTarefa(data.tarefaId);
+        else if (action === 'cadastrarUsuario') runner.cadastrarUsuario(data);
+        else if (action === 'atualizarUsuario') runner.atualizarUsuario(data);
+        else if (action === 'excluirUsuario') runner.excluirUsuario(data.usuarioId || data.id || data);
+      } else if (APPS_SCRIPT_URL) {
+        fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: action, data: data })
+        })
+        .then(r => r.json())
+        .then(res => {
+          if (onSuccess) onSuccess(res);
+        })
+        .catch(err => {
+          const params = new URLSearchParams({ action: action, ...data });
+          fetch(`${APPS_SCRIPT_URL}?${params.toString()}`)
+            .then(r => r.json())
+            .then(res => { if (onSuccess) onSuccess(res); })
+            .catch(getErr => {
+              if (onFailure) onFailure(getErr);
+              else console.error('Erro de conexão com o servidor:', getErr);
+            });
+        });
+      }
+    }
+
+    // Toast de confirmação visual instantânea
+    function mostrarToast(msg) {
+      const toast = document.getElementById('toastFeedback');
+      const txt = document.getElementById('toastFeedbackTexto');
+      txt.innerText = msg;
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 1600);
+    }
+
+    // Fecha qualquer modal em 0 milissegundos
+    function fecharModalSeguro(modalId) {
+      const el = document.getElementById(modalId);
+      if (!el) return;
+      const btnClose = el.querySelector('[data-bs-dismiss="modal"]');
+      if (btnClose) {
+        btnClose.click();
+      } else {
+        const inst = bootstrap.Modal.getOrCreateInstance(el);
+        if (inst) inst.hide();
+      }
+      setTimeout(() => {
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+      }, 50);
+    }
+
+    function abrirModalNovaDemanda() {
+      popularModulosUI();
+      atualizarSelectsDev();
+
+      const moduloInput = document.getElementById('taskModuloInput');
+      if (moduloInput) moduloInput.value = 'SIOPLEEx';
+
+      const tituloInput = document.getElementById('taskTitulo');
+      if (tituloInput) tituloInput.value = '';
+
+      const descInput = document.getElementById('taskDescricao');
+      if (descInput) descInput.value = '';
+
+      const diasInput = document.getElementById('taskDias');
+      if (diasInput) diasInput.value = '2';
+
+      const urgSelect = document.getElementById('taskUrgencia');
+      if (urgSelect) urgSelect.value = 'Media';
+
+      // Checkbox de colocar na esteira SEMPRE false por padrão
+      const ativaCheckbox = document.getElementById('taskAtivaAgora');
+      if (ativaCheckbox) ativaCheckbox.checked = false;
+
+      // Pré-seleciona o desenvolvedor logado automaticamente
+      const devSelect = document.getElementById('taskDevSelect');
+      if (devSelect && appState.currentUser) {
+        devSelect.value = appState.currentUser.id;
+      }
+
+      const el = document.getElementById('modalNovaTarefa');
+      bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    function aoMudarUrgenciaNovaDemanda() {
+      const urgSelect = document.getElementById('taskUrgencia');
+      const ativaCheckbox = document.getElementById('taskAtivaAgora');
+      if (!urgSelect || !ativaCheckbox) return;
+
+      const urg = urgSelect.value;
+      // Checkbox SOMENTE true quando for alta a urgência (Alta ou Urgente)
+      ativaCheckbox.checked = (urg === 'Alta' || urg === 'Urgente');
+    }
+
+    function inicializarTooltips() {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+      tooltipTriggerList.forEach(el => {
+        bootstrap.Tooltip.getOrCreateInstance(el);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Inicializa tooltips Bootstrap e módulos
+      inicializarTooltips();
+      popularModulosUI();
+
+      // 2. Se não houver e-mail salvo, abre imediatamente a tela de login com o banner do SysManager
+      const emailSalvo = localStorage.getItem('SYSMANAGER_USER_EMAIL');
+      if (!emailSalvo) {
+        abrirModalLogin();
+      } else {
+        // Carrega dados do cache local em 0ms se existirem
+        const cache = localStorage.getItem('SYSMANAGER_CACHE');
+        if (cache) {
+          try {
+            renderizarDados(JSON.parse(cache));
+          } catch(e) {}
+        }
+      }
+
+      // 3. Busca dados atualizados do servidor em segundo plano
+      carregarDados();
+    });
+
+    function parseDataLocal(str) {
+      if (!str) return new Date();
+      if (str instanceof Date) {
+        return new Date(str.getFullYear(), str.getMonth(), str.getDate());
+      }
+      const partes = str.toString().split('T')[0].split('-');
+      if (partes.length === 3) {
+        return new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
+      }
+      const d = new Date(str);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    function formatarDataIso(d) {
+      const ano = d.getFullYear();
+      const mes = String(d.getMonth() + 1).padStart(2, '0');
+      const dia = String(d.getDate()).padStart(2, '0');
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    function calcularDiasEmProducao(dataInicioStr, dataConclusaoStr, status, ativo) {
+      if (!ativo && status !== 'Concluída') {
+        return 0;
+      }
+      if (!dataInicioStr) return 1;
+
+      const dInicio = parseDataLocal(dataInicioStr);
+      const dFim = (status === 'Concluída' && dataConclusaoStr) 
+        ? parseDataLocal(dataConclusaoStr) 
+        : parseDataLocal(new Date());
+
+      const diffMs = dFim.getTime() - dInicio.getTime();
+      const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+      return Math.max(1, diffDias + 1);
+    }
+
+    function carregarDados() {
+      const emailSalvo = localStorage.getItem('SYSMANAGER_USER_EMAIL') || '';
+      executarNoServidor(
+        'getAppData',
+        { email: emailSalvo },
+        res => {
+          if (res && (res.usuarios || res.tarefas)) {
+            renderizarDados(res);
+          } else {
+            renderizarDados(getMockData());
+          }
+        },
+        err => {
+          console.error('Aviso ao carregar dados:', err);
+          abrirModalLogin('Não foi possível conectar ao servidor. Verifique sua conexão.');
+        }
+      );
+    }
+
+    function abrirModalLogin(erroMsg) {
+      const banner = document.getElementById('bannerFundoLogin');
+      if (banner) banner.style.display = 'flex';
+
+      const modalEl = document.getElementById('modalLoginEquipe');
+      if (modalEl) {
+        const alerta = document.getElementById('alertaErroLogin');
+        const alertaMsg = document.getElementById('alertaErroLoginMsg');
+        if (erroMsg) {
+          if (alertaMsg) alertaMsg.innerText = erroMsg;
+          if (alerta) alerta.classList.remove('d-none');
+        } else {
+          if (alerta) alerta.classList.add('d-none');
+        }
+        const inst = bootstrap.Modal.getOrCreateInstance(modalEl, { backdrop: 'static', keyboard: false });
+        inst.show();
+        setTimeout(() => {
+          document.querySelectorAll('.modal-backdrop').forEach(b => b.classList.add('login-backdrop'));
+        }, 30);
+      }
+    }
+
+    function fecharModalLogin() {
+      const banner = document.getElementById('bannerFundoLogin');
+      if (banner) banner.style.display = 'none';
+
+      const modalEl = document.getElementById('modalLoginEquipe');
+      if (modalEl) {
+        fecharModalSeguro('modalLoginEquipe');
+      }
+    }
+
+    function efetuarLoginEquipe() {
+      const input = document.getElementById('inputLoginEmail');
+      const email = (input ? input.value : '').trim().toLowerCase();
+      const alerta = document.getElementById('alertaErroLogin');
+      const alertaMsg = document.getElementById('alertaErroLoginMsg');
+      const btnTexto = document.getElementById('btnLoginTexto');
+      const btnSpinner = document.getElementById('btnLoginSpinner');
+      const btnEntrar = document.getElementById('btnLoginEntrar');
+
+      if (!email || !email.includes('@')) {
+        if (alerta && alertaMsg) {
+          alertaMsg.innerText = 'Por favor, digite um e-mail válido (ex: exemplo@gmail.com).';
+          alerta.classList.remove('d-none');
+        }
+        return;
+      }
+
+      if (alerta) alerta.classList.add('d-none');
+      if (btnSpinner) btnSpinner.classList.remove('d-none');
+      if (btnTexto) btnTexto.classList.add('d-none');
+      if (btnEntrar) btnEntrar.disabled = true;
+
+      const resetBotoesLogin = () => {
+        if (btnSpinner) btnSpinner.classList.add('d-none');
+        if (btnTexto) btnTexto.classList.remove('d-none');
+        if (btnEntrar) btnEntrar.disabled = false;
+      };
+
+      // FAST-TRACK: Se for o Administrador (nicolasrichardt@gmail.com), acesso garantido imediato (0ms)!
+      if (email === 'nicolasrichardt@gmail.com') {
+        localStorage.setItem('SYSMANAGER_USER_EMAIL', email);
+        resetBotoesLogin();
+        fecharModalLogin();
+        carregarDados();
+        mostrarToast('Acesso concedido com sucesso! Bem-vindo, Administrador Nicolas.');
+        return;
+      }
+
+      // Timeout de segurança (10s) para nunca deixar o spinner travado caso a rede oscile
+      const timeoutSeguranca = setTimeout(() => {
+        resetBotoesLogin();
+        if (alerta && alertaMsg) {
+          alertaMsg.innerText = 'Tempo de resposta esgotado. Tente novamente.';
+          alerta.classList.remove('d-none');
+        }
+      }, 10000);
+
+      executarNoServidor(
+        'verificarEmailLogin',
+        { email: email },
+        res => {
+          clearTimeout(timeoutSeguranca);
+          resetBotoesLogin();
+
+          if (res && res.autorizado) {
+            localStorage.setItem('SYSMANAGER_USER_EMAIL', res.email);
+            fecharModalLogin();
+            carregarDados();
+            mostrarToast('Acesso liberado! Bem-vindo(a), ' + (res.usuario ? res.usuario.nome : res.email));
+          } else {
+            if (alerta && alertaMsg) {
+              alertaMsg.innerText = (res && res.message) ? res.message : 'E-mail não autorizado na equipe.';
+              alerta.classList.remove('d-none');
+            }
+          }
+        },
+        err => {
+          clearTimeout(timeoutSeguranca);
+          resetBotoesLogin();
+          if (alerta && alertaMsg) {
+            alertaMsg.innerText = 'Erro ao autenticar: ' + (err.message || err);
+            alerta.classList.remove('d-none');
+          }
+        }
+      );
+    }
+
+    function fazerLogout() {
+      if (confirm('Deseja realmente sair e trocar de conta Google?')) {
+        localStorage.removeItem('SYSMANAGER_USER_EMAIL');
+        localStorage.removeItem('SYSMANAGER_CACHE');
+        appState.currentUser = null;
+        const input = document.getElementById('inputLoginEmail');
+        if (input) input.value = '';
+        const alerta = document.getElementById('alertaErroLogin');
+        if (alerta) alerta.classList.add('d-none');
+        abrirModalLogin();
+      }
+    }
+
+    function renderizarDados(dados) {
+      if (!dados) return;
+
+      if (dados.precisaLogin || !dados.autorizado) {
+        abrirModalLogin(dados.error || '');
+        return;
+      }
+
+      fecharModalLogin();
+
+      appState.usuarios = dados.usuarios || [];
+      appState.tarefas = dados.tarefas || [];
+      appState.solicitacoes = dados.solicitacoes || [];
+
+      // Normaliza perfis da equipe: apenas 'Desenvolvedor' e 'Gerente de Projetos' (onde Gerente de Projetos também desenvolve)
+      appState.usuarios.forEach(u => {
+        const cLower = (u.cargo || '').toLowerCase();
+        if (cLower.includes('gerente') || cLower.includes('ambos') || cLower.includes('admin')) {
+          u.cargo = 'Gerente de Projetos';
+        } else {
+          u.cargo = 'Desenvolvedor';
+        }
+      });
+
+      // Salva no cache local para abertura instantânea futura
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      // Recalcula tempo em produção
+      appState.tarefas.forEach(t => {
+        t.diasTrabalhados = calcularDiasEmProducao(t.dataInicio, t.dataConclusao, t.status, t.ativo);
+      });
+
+      // Vincula diretamente o usuário autenticado ao seu perfil
+      if (dados.currentUser) {
+        appState.currentUser = dados.currentUser;
+      } else if (dados.emailAutenticado) {
+        const emailLower = dados.emailAutenticado.toLowerCase();
+        const u = appState.usuarios.find(x => x.email && x.email.toLowerCase() === emailLower);
+        if (u) {
+          appState.currentUser = u;
+        } else if (emailLower.includes('nicolas')) {
+          const uNick = appState.usuarios.find(x => x.nome.toLowerCase().includes('nicolas'));
+          if (uNick) appState.currentUser = uNick;
+        }
+      }
+
+      if (!appState.currentUser && appState.usuarios.length > 0) {
+        appState.currentUser = appState.usuarios[0];
+      }
+
+      if (appState.currentUser) {
+        const cLower = (appState.currentUser.cargo || '').toLowerCase();
+        if (cLower.includes('gerente') || cLower.includes('ambos') || cLower.includes('admin')) {
+          appState.currentUser.cargo = 'Gerente de Projetos';
+        } else {
+          appState.currentUser.cargo = 'Desenvolvedor';
+        }
+      }
+
+      // Se autenticado com sucesso, garante salvar no localStorage
+      if (appState.currentUser && appState.currentUser.email) {
+        try {
+          localStorage.setItem('SYSMANAGER_USER_EMAIL', appState.currentUser.email);
+        } catch(e) {}
+      }
+
+      atualizarNavbarUsuario();
+      atualizarAbaEsteira();
+      atualizarPainelGerente();
+      renderizarGraficos();
+      atualizarSelectsDev();
+      atualizarRelatorioMensal();
+      atualizarTabelaUsuarios();
+      inicializarTooltips();
+    }
+
+    /**
+     * Regra de acesso ao Painel do Gerente:
+     * - Qualquer usuário com perfil "Gerente de Projetos"
+     * - E SEMPRE o perfil nicolasrichardt@gmail.com, independente de qual função/cargo esteja!
+     */
+    function usuarioPodeVerPainelGerente(user) {
+      if (!user) return false;
+      const email = (user.email || '').toLowerCase().trim();
+      const nome = (user.nome || '').toLowerCase().trim();
+      const id = (user.id || '').toUpperCase().trim();
+      if (email === 'nicolasrichardt@gmail.com' || nome.includes('nicolas') || id === 'USR-1' || id === 'USR-ADMIN') {
+        return true;
+      }
+      const cargo = (user.cargo || '').toLowerCase().trim();
+      return cargo.includes('gerente') || cargo.includes('ambos');
+    }
+
+    /**
+     * ABA PAINEL DO GERENTE: Visível para Gerente de Projetos e irrestrito para nicolasrichardt@gmail.com
+     * Exibe o usuário autenticado diretamente
+     */
+    function atualizarNavbarUsuario() {
+      if (!appState.currentUser) return;
+      
+      const isGerenteRole = (appState.currentUser.cargo === 'Gerente de Projetos' || (appState.currentUser.cargo || '').toLowerCase().includes('gerente'));
+      const cargoDisplay = isGerenteRole ? 'Gerente de Projetos' : 'Desenvolvedor';
+      const podeVerGerente = usuarioPodeVerPainelGerente(appState.currentUser);
+
+      document.getElementById('navbarUserNome').innerText = appState.currentUser.nome;
+      const cargoBadge = document.getElementById('navbarUserCargo');
+      if (cargoBadge) {
+        cargoBadge.innerText = cargoDisplay;
+        cargoBadge.className = `badge ${isGerenteRole ? 'bg-danger' : 'bg-primary'} rounded-pill small`;
+      }
+      
+      const emailEl = document.getElementById('navbarUserEmail');
+      if (emailEl) {
+        emailEl.innerText = appState.currentUser.email || 'Conta autorizada';
+      }
+
+      // Controle de visibilidade da aba do Gerente: Gerente de Projetos + nicolasrichardt@gmail.com (independente de qual função esteja)
+      const navItemGerente = document.getElementById('navItemPainelGerente');
+      if (navItemGerente) {
+        if (podeVerGerente) {
+          navItemGerente.classList.remove('d-none');
+        } else {
+          navItemGerente.classList.add('d-none');
+          // Se estava na aba do gerente, retorna para a esteira
+          const btnGerente = document.getElementById('tab-gerente-btn');
+          if (btnGerente && btnGerente.classList.contains('active')) {
+            bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-esteira-btn')).show();
+          }
+        }
+      }
+    }
+
+    function atualizarAbaEsteira() {
+      const devId = appState.currentUser ? appState.currentUser.id : null;
+      if (!devId) return;
+
+      const podeExcluir = usuarioPodeVerPainelGerente(appState.currentUser);
+
+      const tarefasDev = appState.tarefas.filter(t => t.devId === devId);
+      const tarefasAtivas = tarefasDev.filter(t => t.ativo && t.status !== 'Concluída');
+      const demandaAtual = tarefasAtivas.length > 0 ? tarefasAtivas[0] : null;
+      const futurasDemandas = tarefasDev.filter(t => !t.ativo && t.status !== 'Concluída');
+      const atrasadas = tarefasDev.filter(t => t.status === 'Atrasada');
+      const concluidas = tarefasDev.filter(t => t.status === 'Concluída');
+
+      const metricAtiva = document.getElementById('metricAtivaTexto');
+      if (demandaAtual) {
+        metricAtiva.innerText = demandaAtual.titulo;
+        metricAtiva.title = demandaAtual.titulo;
+        metricAtiva.className = 'mb-0 fw-bold text-primary text-truncate';
+      } else {
+        metricAtiva.innerText = 'Nenhuma ativa';
+        metricAtiva.title = 'Nenhuma demanda ativa no momento';
+        metricAtiva.className = 'mb-0 fw-bold text-muted';
+      }
+
+      document.getElementById('metricFuturasQtd').innerText = futurasDemandas.length;
+      document.getElementById('metricAtrasadasQtd').innerText = atrasadas.length;
+      document.getElementById('metricConcluidasQtd').innerText = concluidas.length;
+
+      const cardAtual = document.getElementById('cardDemandaAtual');
+      const alertaAtraso = document.getElementById('alertaAtrasoAtual');
+      const botoesAcao = document.getElementById('botoesAcaoAtual');
+      const badgeModuloAtual = document.getElementById('badgeModuloAtual');
+      const btnExcluirAtual = document.getElementById('btnExcluirDemandaAtual');
+
+      if (demandaAtual) {
+        document.getElementById('tituloDemandaAtual').innerText = demandaAtual.titulo;
+        document.getElementById('descDemandaAtual').innerText = demandaAtual.descricao || 'Sem descrição informada.';
+        document.getElementById('devNomeAtual').innerText = demandaAtual.devNome;
+        document.getElementById('tempoEstimadoAtual').innerText = demandaAtual.diasEstimados + ' dia(s)';
+        
+        const diasProducao = calcularDiasEmProducao(demandaAtual.dataInicio, demandaAtual.dataConclusao, demandaAtual.status, true);
+        document.getElementById('tempoDemandadoAtual').innerText = diasProducao === 1 ? '1 dia' : `${diasProducao} dias`;
+        
+        document.getElementById('dataInicioAtual').innerText = formatarData(demandaAtual.dataInicio);
+        document.getElementById('dataPrazoAtual').innerText = formatarData(demandaAtual.dataPrazo);
+
+        if (badgeModuloAtual) {
+          badgeModuloAtual.innerText = demandaAtual.modulo || 'SIOPLEEx';
+          badgeModuloAtual.title = 'Módulo: ' + (demandaAtual.modulo || 'SIOPLEEx');
+        }
+
+        const badgeStatus = document.getElementById('badgeStatusAtual');
+        if (demandaAtual.status === 'Atrasada') {
+          badgeStatus.className = 'badge-status-atrasada';
+          badgeStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> Atrasada';
+          cardAtual.classList.add('atrasada');
+          alertaAtraso.classList.remove('d-none');
+          alertaAtraso.classList.add('d-flex');
+        } else {
+          badgeStatus.className = 'badge-status-dia';
+          badgeStatus.innerHTML = '<i class="fa-solid fa-check me-1"></i> Em Dia';
+          cardAtual.classList.remove('atrasada');
+          alertaAtraso.classList.add('d-none');
+          alertaAtraso.classList.remove('d-flex');
+        }
+
+        const badgeUrg = document.getElementById('badgeUrgenciaAtual');
+        badgeUrg.innerText = demandaAtual.urgencia;
+        badgeUrg.className = `badge badge-${demandaAtual.urgencia.toLowerCase()}`;
+
+        botoesAcao.classList.remove('d-none');
+        if (btnExcluirAtual) {
+          if (podeExcluir) btnExcluirAtual.classList.remove('d-none');
+          else btnExcluirAtual.classList.add('d-none');
+        }
+      } else {
+        document.getElementById('tituloDemandaAtual').innerText = 'Nenhuma demanda ativa na esteira';
+        document.getElementById('descDemandaAtual').innerText = 'Selecione uma demanda nas Demandas Futuras ou cadastre uma nova para iniciar!';
+        document.getElementById('devNomeAtual').innerText = appState.currentUser.nome;
+        document.getElementById('tempoEstimadoAtual').innerText = '0 dias';
+        document.getElementById('tempoDemandadoAtual').innerText = '0 dias';
+        document.getElementById('dataInicioAtual').innerText = '-';
+        document.getElementById('dataPrazoAtual').innerText = '-';
+        if (badgeModuloAtual) badgeModuloAtual.innerText = 'SIOPLEEx';
+        cardAtual.classList.remove('atrasada');
+        alertaAtraso.classList.add('d-none');
+        botoesAcao.classList.add('d-none');
+      }
+
+      // Atualiza badges das abas lado a lado
+      const badgeFuturas = document.getElementById('badgeQtdFuturasAba');
+      if (badgeFuturas) badgeFuturas.innerText = futurasDemandas.length;
+
+      const badgeConcluidas = document.getElementById('badgeQtdConcluidasAba');
+      if (badgeConcluidas) badgeConcluidas.innerText = concluidas.length;
+
+      // 1. Demandas Futuras (Coluna Esquerda)
+      const divFuturas = document.getElementById('listaFuturasDemandas');
+      if (divFuturas) {
+        divFuturas.innerHTML = '';
+        if (futurasDemandas.length === 0) {
+          divFuturas.innerHTML = `
+            <div class="text-center py-4 text-muted">
+              <i class="fa-solid fa-circle-check fs-2 text-success mb-2"></i>
+              <p class="mb-0 small">Nenhuma demanda futura na fila para este desenvolvedor. Esteira livre!</p>
+            </div>
+          `;
+        } else {
+          futurasDemandas.forEach(task => {
+            const item = document.createElement('div');
+            item.className = 'esteira-item d-flex flex-column gap-2';
+            item.innerHTML = `
+              <div class="d-flex align-items-start gap-3">
+                <div class="badge bg-light text-dark p-2 border mt-1">
+                  <i class="fa-solid fa-clock me-1 text-primary"></i> ${task.diasEstimados}d
+                </div>
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <span class="badge bg-secondary-subtle text-secondary border font-monospace small"><i class="fa-solid fa-cube me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                    <h6 class="mb-0 fw-bold text-dark">${task.titulo}</h6>
+                  </div>
+                  ${task.descricao ? `<small class="text-muted d-block mb-1">${task.descricao}</small>` : ''}
+                  <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                    <span class="badge badge-${task.urgencia.toLowerCase()}">${task.urgencia}</span>
+                    <span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo Final: ${formatarData(task.dataPrazo)}</span>
+                    ${task.status === 'Atrasada' ? '<span class="badge bg-danger">Atrasada</span>' : '<span class="badge bg-success-subtle text-success">Em Dia</span>'}
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2 pt-1">
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold" onclick="selecionarComoAtivaInstantanea('${task.id}')">
+                  <i class="fa-solid fa-bolt me-1 text-warning"></i> Iniciar Agora
+                </button>
+                ${podeExcluir ? `
+                  <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2" title="Excluir Demanda (Gerente/Admin)" onclick="excluirDemandaConfirm('${task.id}')">
+                    <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                  </button>
+                ` : ''}
+              </div>
+            `;
+            divFuturas.appendChild(item);
+          });
+        }
+      }
+
+      // 2. Demandas Concluídas (Coluna Direita)
+      const divConcluidas = document.getElementById('listaConcluidasDemandas');
+      if (divConcluidas) {
+        divConcluidas.innerHTML = '';
+        if (concluidas.length === 0) {
+          divConcluidas.innerHTML = `
+            <div class="text-center py-4 text-muted">
+              <i class="fa-solid fa-clock-rotate-left fs-2 text-secondary opacity-50 mb-2"></i>
+              <p class="mb-0 small">Nenhuma demanda concluída ainda por este desenvolvedor.</p>
+            </div>
+          `;
+        } else {
+          concluidas.forEach(task => {
+            const item = document.createElement('div');
+            item.className = 'esteira-item d-flex flex-wrap justify-content-between align-items-center gap-3 border-start border-success border-4';
+            item.innerHTML = `
+              <div class="d-flex align-items-center gap-3">
+                <div class="badge bg-success-subtle text-success p-2 border border-success-subtle">
+                  <i class="fa-solid fa-check-double"></i>
+                </div>
+                <div>
+                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <span class="badge bg-secondary-subtle text-secondary border font-monospace small"><i class="fa-solid fa-cube me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                    <h6 class="mb-0 fw-bold text-dark text-truncate" style="max-width: 250px;">${task.titulo}</h6>
+                  </div>
+                  <small class="text-muted d-block text-truncate" style="max-width: 260px;">${task.descricao || 'Demanda concluída com sucesso.'}</small>
+                  <div class="mt-1 d-flex flex-wrap align-items-center gap-1">
+                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Concluída</span>
+                    <span class="badge bg-secondary-subtle text-secondary small">
+                      <i class="fa-solid fa-calendar-check me-1"></i>${formatarData(task.dataConclusao || task.dataPrazo)}
+                    </span>
+                    <span class="badge bg-warning-subtle text-dark small">
+                      <i class="fa-solid fa-stopwatch me-1"></i>${task.diasTrabalhados} dia(s) em produção
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge badge-${task.urgencia.toLowerCase()}">${task.urgencia}</span>
+                ${podeExcluir ? `
+                  <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda (Gerente/Admin)" onclick="excluirDemandaConfirm('${task.id}')">
+                    <i class="fa-solid fa-trash-can" style="font-size: 0.75rem;"></i>
+                  </button>
+                ` : ''}
+              </div>
+            `;
+            divConcluidas.appendChild(item);
+          });
+        }
+      }
+    }
+
+    function selecionarComoAtivaInstantanea(tarefaId) {
+      const devId = appState.currentUser.id;
+      const hojeIso = formatarDataIso(new Date());
+
+      appState.tarefas.forEach(t => {
+        if (t.devId === devId && t.status !== 'Concluída') {
+          if (t.id === tarefaId) {
+            t.ativo = true;
+            t.dataInicio = hojeIso;
+            t.diasTrabalhados = 1;
+          } else {
+            t.ativo = false;
+          }
+        }
+      });
+
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      mostrarToast('Demanda ativada na esteira!');
+
+      executarNoServidor('selecionarTarefaAtiva', { tarefaId: tarefaId, devId: devId });
+    }
+
+    function finalizarDemandaAtual() {
+      const devId = appState.currentUser.id;
+      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo && t.status !== 'Concluída');
+      if (!tarefaAtiva) return;
+
+      if (!confirm(`Deseja concluir a demanda "${tarefaAtiva.titulo}"?`)) return;
+
+      const hojeIso = formatarDataIso(new Date());
+      tarefaAtiva.status = 'Concluída';
+      tarefaAtiva.ativo = false;
+      tarefaAtiva.dataConclusao = hojeIso;
+
+      // O usuário escolherá manualmente qual demanda mover para produção em seguida
+
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      atualizarRelatorioMensal();
+      mostrarToast('Demanda concluída com sucesso! Escolha qual demanda mover para produção.');
+
+      executarNoServidor('concluirTarefa', { tarefaId: tarefaAtiva.id, devId: devId });
+    }
+
+    function excluirDemandaAtualConfirm() {
+      const devSelect = document.getElementById('filtroDevEsteira');
+      const devId = (devSelect && devSelect.value) ? devSelect.value : (appState.currentUser ? appState.currentUser.id : '');
+      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo && t.status !== 'Concluída');
+      if (!tarefaAtiva) {
+        mostrarToast('Nenhuma demanda ativa no momento para excluir.');
+        return;
+      }
+      excluirDemandaConfirm(tarefaAtiva.id);
+    }
+
+    function excluirDemandaConfirm(tarefaId) {
+      if (!usuarioPodeVerPainelGerente(appState.currentUser)) {
+        alert('Permissão restrita: Apenas o Gerente de Projetos ou o Administrador Geral (Nicolas Richardt) podem excluir demandas.');
+        return;
+      }
+
+      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
+      const nomeDemanda = tarefa ? `"${tarefa.titulo}"` : 'esta demanda';
+
+      if (!confirm(`Deseja realmente excluir ${nomeDemanda}?\nEsta ação removerá a demanda permanentemente.`)) {
+        return;
+      }
+
+      // Remoção otimista em 0ms
+      appState.tarefas = appState.tarefas.filter(t => t.id !== tarefaId);
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      atualizarRelatorioMensal();
+      mostrarToast('Demanda excluída com sucesso!');
+
+      executarNoServidor(
+        'excluirTarefa',
+        { tarefaId: tarefaId },
+        res => {
+          if (res && !res.success) {
+            console.warn('Aviso ao excluir demanda no servidor:', res.message);
+          }
+        },
+        err => {
+          console.error('Erro ao excluir demanda:', err);
+          mostrarToast('Erro de comunicação ao excluir demanda: ' + (err.message || err));
+        }
+      );
+    }
+
+    /**
+     * CADASTRAR DEMANDA ULTRA-RÁPIDO (0ms de atraso)
+     */
+    function salvarNovaTarefaInstantanea() {
+      const tituloInput = document.getElementById('taskTitulo');
+      const moduloInput = document.getElementById('taskModuloInput');
+      const descInput = document.getElementById('taskDescricao');
+      const diasInput = document.getElementById('taskDias');
+      const urgSelect = document.getElementById('taskUrgencia');
+      const devSelect = document.getElementById('taskDevSelect');
+      const ativaCheckbox = document.getElementById('taskAtivaAgora');
+
+      const titulo = (tituloInput.value || '').trim();
+      if (!titulo) {
+        alert('Por favor, informe o título da demanda.');
+        return;
+      }
+
+      const modulo = (moduloInput && moduloInput.value.trim()) ? moduloInput.value.trim() : 'SIOPLEEx';
+
+      // Fecha o modal IMEDIATAMENTE (0ms)
+      fecharModalSeguro('modalNovaTarefa');
+
+      let devId = 'USR-1';
+      let devNome = appState.currentUser ? appState.currentUser.nome : 'Desenvolvedor';
+
+      if (devSelect && devSelect.selectedOptions && devSelect.selectedOptions.length > 0 && devSelect.value) {
+        devId = devSelect.value;
+        const foundUser = appState.usuarios.find(u => u.id === devId);
+        devNome = foundUser ? foundUser.nome : devSelect.selectedOptions[0].text;
+      } else if (appState.usuarios.length > 0) {
+        devId = appState.usuarios[0].id;
+        devNome = appState.usuarios[0].nome;
+      }
+
+      const diasEstimados = parseInt(diasInput.value) || 2;
+      const tornarAtiva = ativaCheckbox.checked;
+
+      const hoje = new Date();
+      const prazo = new Date(hoje);
+      prazo.setDate(hoje.getDate() + diasEstimados);
+
+      const novaTarefa = {
+        id: 'TSK-' + Math.floor(Math.random() * 9000 + 1000),
+        modulo: modulo,
+        titulo: titulo,
+        descricao: (descInput.value || '').trim(),
+        devId: devId,
+        devNome: devNome,
+        diasEstimados: diasEstimados,
+        diasTrabalhados: tornarAtiva ? 1 : 0,
+        dataInicio: formatarDataIso(hoje),
+        dataInsercao: formatarDataIso(hoje),
+        dataPrazo: formatarDataIso(prazo),
+        status: 'Em Andamento',
+        ativo: tornarAtiva,
+        urgencia: urgSelect.value || 'Media',
+        dataConclusao: ''
+      };
+
+      if (tornarAtiva) {
+        appState.tarefas.forEach(t => {
+          if (t.devId === devId && t.status !== 'Concluída') t.ativo = false;
+        });
+      }
+
+      appState.tarefas.unshift(novaTarefa);
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      tituloInput.value = '';
+      descInput.value = '';
+
+      // Atualiza interface INSTANTANEAMENTE
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      atualizarRelatorioMensal();
+      mostrarToast('Demanda cadastrada com sucesso!');
+
+      executarNoServidor(
+        'cadastrarTarefa',
+        {
+          titulo: novaTarefa.titulo,
+          descricao: novaTarefa.descricao,
+          diasEstimados: novaTarefa.diasEstimados,
+          urgencia: novaTarefa.urgencia,
+          devId: devId,
+          devNome: devNome,
+          tornarAtiva: tornarAtiva,
+          modulo: modulo
+        },
+        res => {
+          if (res && res.success && res.id) {
+            novaTarefa.id = res.id;
+            try {
+              localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+            } catch(e) {}
+            atualizarAbaEsteira();
+            atualizarRelatorioMensal();
+          }
+        },
+        err => console.error('Erro em segundo plano:', err)
+      );
+    }
+
+    function salvarUsuarioRapido() {
+      const nomeInput = document.getElementById('cadNome');
+      const emailInput = document.getElementById('cadEmail');
+      const cargoInput = document.getElementById('cadCargo');
+      
+      const nome = (nomeInput.value || '').trim();
+      const email = (emailInput.value || '').trim().toLowerCase();
+
+      if (!nome) {
+        alert('Digite o nome do membro.');
+        return;
+      }
+
+      if (!email || !email.includes('@')) {
+        alert('Informe um e-mail Google (@gmail.com) válido para autorizar o acesso.');
+        return;
+      }
+
+      const tempId = 'USR-' + Math.floor(Math.random() * 9000 + 1000);
+      const novoUsuario = {
+        id: tempId,
+        nome: nome,
+        email: email,
+        cargo: cargoInput.value,
+        dataCriacao: formatarDataIso(new Date())
+      };
+
+      nomeInput.value = '';
+      emailInput.value = '';
+
+      appState.usuarios.push(novoUsuario);
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      atualizarTabelaUsuarios();
+      atualizarSelectsDev();
+      renderizarGraficos();
+      mostrarToast('Membro cadastrado com sucesso!');
+
+      executarNoServidor(
+        'cadastrarUsuario',
+        { 
+          nome: novoUsuario.nome, 
+          email: novoUsuario.email, 
+          cargo: novoUsuario.cargo 
+        },
+        res => {
+          if (res && res.success && res.id) {
+            novoUsuario.id = res.id;
+            try {
+              localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+            } catch(e) {}
+            atualizarTabelaUsuarios();
+            atualizarSelectsDev();
+          } else if (res && !res.success) {
+            alert('Aviso do servidor ao cadastrar membro: ' + (res.message || 'Erro desconhecido'));
+          }
+        },
+        err => {
+          console.error('Erro ao cadastrar usuário:', err);
+          alert('Erro de comunicação ao cadastrar membro: ' + (err.message || err));
+        }
+      );
+    }
+
+    function abrirModalEditarUsuario(userId) {
+      const u = appState.usuarios.find(x => x.id === userId);
+      if (!u) return;
+
+      document.getElementById('editUserId').value = u.id;
+      document.getElementById('editUserIdDisplay').value = u.id;
+      document.getElementById('editUserNome').value = u.nome;
+      document.getElementById('editUserEmail').value = u.email || '';
+      const isGer = (u.cargo === 'Gerente de Projetos' || u.cargo === 'Gerente' || u.cargo === 'Ambos' || (u.cargo || '').toLowerCase().includes('gerente'));
+      document.getElementById('editUserCargo').value = isGer ? 'Gerente de Projetos' : 'Desenvolvedor';
+
+      const el = document.getElementById('modalEditarUsuario');
+      bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    function salvarEdicaoUsuarioRapido() {
+      const id = document.getElementById('editUserId').value;
+      const nome = document.getElementById('editUserNome').value.trim();
+      const email = document.getElementById('editUserEmail').value.trim().toLowerCase();
+      const cargo = document.getElementById('editUserCargo').value;
+
+      if (!nome) {
+        alert('O nome não pode ficar em branco.');
+        return;
+      }
+
+      fecharModalSeguro('modalEditarUsuario');
+
+      const u = appState.usuarios.find(x => x.id === id);
+      if (u) {
+        u.nome = nome;
+        u.email = email;
+        u.cargo = cargo;
+        appState.tarefas.forEach(t => {
+          if (t.devId === id) t.devNome = nome;
+        });
+      }
+
+      if (appState.currentUser && appState.currentUser.id === id) {
+        appState.currentUser.nome = nome;
+        appState.currentUser.email = email;
+        appState.currentUser.cargo = cargo;
+        atualizarNavbarUsuario();
+      }
+
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      atualizarTabelaUsuarios();
+      atualizarAbaEsteira();
+      atualizarSelectsDev();
+      renderizarGraficos();
+      mostrarToast('Dados do membro atualizados!');
+
+      executarNoServidor(
+        'atualizarUsuario',
+        { id: id, nome: nome, email: email, cargo: cargo },
+        res => {
+          if (res && !res.success) {
+            alert('Aviso do servidor ao atualizar membro: ' + (res.message || 'Erro desconhecido'));
+          }
+        },
+        err => {
+          console.error('Erro ao atualizar usuário:', err);
+          alert('Erro de comunicação ao atualizar membro: ' + (err.message || err));
+        }
+      );
+    }
+
+    function deletarUsuario(userId) {
+      if (!confirm('Deseja realmente excluir este membro?')) return;
+
+      appState.usuarios = appState.usuarios.filter(u => u.id !== userId);
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      atualizarTabelaUsuarios();
+      atualizarSelectsDev();
+      renderizarGraficos();
+      mostrarToast('Membro excluído!');
+
+      executarNoServidor(
+        'excluirUsuario',
+        { usuarioId: userId },
+        res => {
+          if (res && !res.success) {
+            alert('Aviso ao excluir no servidor: ' + (res.message || 'Erro'));
+          }
+        },
+        err => {
+          console.error('Erro ao excluir usuário:', err);
+          alert('Erro de comunicação ao excluir membro: ' + (err.message || err));
+        }
+      );
+    }
+
+    function atualizarTabelaUsuarios() {
+      const tbody = document.getElementById('tabelaUsuariosCorpo');
+      tbody.innerHTML = '';
+      if (appState.usuarios.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3 text-muted">Nenhum membro cadastrado ainda.</td></tr>';
+        return;
+      }
+
+      appState.usuarios.forEach(u => {
+        const isGer = (u.cargo === 'Gerente de Projetos' || u.cargo === 'Gerente' || u.cargo === 'Ambos' || (u.cargo || '').toLowerCase().includes('gerente'));
+        const badgeClass = isGer ? 'bg-danger' : 'bg-primary';
+        const badgeText = isGer ? 'Gerente de Projetos' : 'Desenvolvedor';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${u.nome}</strong></td>
+          <td>
+            <small class="text-secondary">
+              <i class="fa-brands fa-google text-danger me-1"></i>${u.email || '<span class="text-muted fst-italic">Não informado</span>'}
+            </small>
+          </td>
+          <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 me-1" onclick="abrirModalEditarUsuario('${u.id}')">
+              <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1" onclick="deletarUsuario('${u.id}')">
+              <i class="fa-solid fa-trash-can me-1"></i> Excluir
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      inicializarTooltips();
+    }
+
+    function abrirModalSolicitarPrazo() {
+      const devId = appState.currentUser.id;
+      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo);
+      if (!tarefaAtiva) return;
+
+      document.getElementById('solTarefaId').value = tarefaAtiva.id;
+      document.getElementById('solTarefaTitulo').value = tarefaAtiva.titulo;
+      document.getElementById('solNovosDias').value = 2;
+
+      const el = document.getElementById('modalSolicitarPrazo');
+      bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    function enviarSolicitacaoPrazoInstantanea() {
+      const tarefaId = document.getElementById('solTarefaId').value;
+      const tarefaTitulo = document.getElementById('solTarefaTitulo').value;
+      const novosDias = parseInt(document.getElementById('solNovosDias').value) || 1;
+
+      if (novosDias <= 0) {
+        alert('Informe ao menos 1 dia adicional.');
+        return;
+      }
+
+      fecharModalSeguro('modalSolicitarPrazo');
+
+      const novaSol = {
+        id: 'SOL-' + Math.floor(Math.random() * 9000 + 1000),
+        tarefaId: tarefaId,
+        tarefaTitulo: tarefaTitulo,
+        devId: appState.currentUser.id,
+        devNome: appState.currentUser.nome,
+        justificativa: '',
+        novosDiasSolicitados: novosDias,
+        status: 'Pendente',
+        gerenteNome: '',
+        dataSolicitacao: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR').substring(0,5)
+      };
+
+      appState.solicitacoes.unshift(novaSol);
+      atualizarPainelGerente();
+      mostrarToast('Novo prazo solicitado ao Gerente!');
+
+      executarNoServidor('solicitarNovoPrazo', novaSol);
+    }
+
+    function atualizarPainelGerente() {
+      const isGerente = usuarioPodeVerPainelGerente(appState.currentUser);
+      const badgeAvisos = document.getElementById('badgeSolicitacoesPendentes');
+      const tbody = document.getElementById('tabelaAprovacoesGerente');
+
+      const pendentes = appState.solicitacoes.filter(s => s.status === 'Pendente');
+      if (pendentes.length > 0) {
+        badgeAvisos.innerText = pendentes.length;
+        badgeAvisos.classList.remove('d-none');
+      } else {
+        badgeAvisos.classList.add('d-none');
+      }
+
+      tbody.innerHTML = '';
+      if (appState.solicitacoes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Nenhuma solicitação de prazo registrada.</td></tr>';
+        return;
+      }
+
+      appState.solicitacoes.forEach(sol => {
+        const tr = document.createElement('tr');
+        const isPendente = sol.status === 'Pendente';
+        tr.innerHTML = `
+          <td><strong>${sol.tarefaTitulo}</strong><br><small class="text-muted">${sol.tarefaId}</small></td>
+          <td>${sol.devNome}</td>
+          <td><span class="badge bg-warning text-dark">+${sol.novosDiasSolicitados} dia(s)</span></td>
+          <td><small class="text-muted">${sol.dataSolicitacao}</small></td>
+          <td>
+            <span class="badge ${sol.status === 'Pendente' ? 'bg-warning text-dark' : 'bg-success'}">
+              ${sol.status}
+            </span>
+            ${sol.gerenteNome ? `<br><small class="text-muted">Por: ${sol.gerenteNome}</small>` : ''}
+          </td>
+          <td class="text-end">
+            ${isPendente && isGerente ? `
+              <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold" onclick="darCienteGerenteInstantaneo('${sol.id}')">
+                <i class="fa-solid fa-check-double me-1"></i> Ciente
+              </button>
+            ` : '<i class="fa-solid fa-circle-check text-success"></i> Na Esteira'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function darCienteGerenteInstantaneo(solId) {
+      const sol = appState.solicitacoes.find(s => s.id === solId);
+      if (sol) {
+        sol.status = 'Ciente';
+        sol.gerenteNome = appState.currentUser.nome;
+
+        const tar = appState.tarefas.find(t => t.id === sol.tarefaId);
+        if (tar) {
+          tar.diasEstimados += sol.novosDiasSolicitados;
+          tar.status = 'Em Andamento';
+          tar.ativo = true;
+          const p = new Date();
+          p.setDate(p.getDate() + sol.novosDiasSolicitados);
+          tar.dataPrazo = formatarDataIso(p);
+        }
+      }
+
+      atualizarPainelGerente();
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      mostrarToast('Ciente registrado! Demanda retornou à esteira.');
+
+      executarNoServidor('darCientePrazo', { solicitacaoId: solId, gerenteNome: appState.currentUser.nome });
+    }
+
+    /**
+    /**
+     * Aba Dashboard & Gráficos desativada
+     */
+    function renderizarGraficos() {}
+
+    let ordemInsercaoRelatorio = 'DESC'; // 'DESC' = mais recentes primeiro, 'ASC' = mais antigas primeiro
+
+    function alternarOrdemInsercaoRelatorio() {
+      ordemInsercaoRelatorio = (ordemInsercaoRelatorio === 'DESC') ? 'ASC' : 'DESC';
+      const lbl = document.getElementById('lblOrdemSortTexto');
+      if (lbl) {
+        lbl.innerText = (ordemInsercaoRelatorio === 'DESC') ? 'Mais Recentes' : 'Mais Antigas';
+      }
+      atualizarRelatorioMensal();
+      mostrarToast('Ordenado por data de inserção: ' + (ordemInsercaoRelatorio === 'DESC' ? 'Mais Recentes' : 'Mais Antigas'));
+    }
+
+    function atualizarRelatorioMensalComFeedback() {
+      atualizarRelatorioMensal();
+      mostrarToast('Filtro aplicado com sucesso!');
+    }
+
+    function atualizarRelatorioMensal() {
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      const mesFiltro = mesSelect ? mesSelect.value : 'TODOS';
+      const anoFiltro = parseInt(document.getElementById('filtroRelatorioAno').value) || 2026;
+
+      const nomesMeses = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
+
+      if (mesFiltro === 'TODOS') {
+        document.getElementById('lblPeriodoRelatorio').innerText = `Período Geral (${anoFiltro})`;
+      } else {
+        document.getElementById('lblPeriodoRelatorio').innerText = `${nomesMeses[parseInt(mesFiltro)]} / ${anoFiltro}`;
+      }
+
+      document.getElementById('lblEmissaoRelatorio').innerText = `Emitido em: ${new Date().toLocaleDateString('pt-BR')}`;
+
+      // 7º Regra Ágil: Caso uma demanda não tenha terminado no mês de criação, ela prossegue para o mês seguinte!
+      let filtradas = appState.tarefas.filter(t => {
+        const dCriacao = parseDataLocal(t.dataInsercao || t.dataInicio);
+        const dConclusao = t.dataConclusao ? parseDataLocal(t.dataConclusao) : null;
+
+        if (mesFiltro === 'TODOS') {
+          const anoCriacao = dCriacao.getFullYear();
+          const anoConclusao = dConclusao ? dConclusao.getFullYear() : null;
+          if (anoCriacao === anoFiltro) return true;
+          if (anoConclusao && anoConclusao === anoFiltro) return true;
+          if (!dConclusao && anoCriacao <= anoFiltro) return true;
+          return false;
+        }
+
+        const mesIdx = parseInt(mesFiltro, 10);
+        const inicioMes = new Date(anoFiltro, mesIdx, 1, 0, 0, 0, 0);
+        const fimMes = new Date(anoFiltro, mesIdx + 1, 0, 23, 59, 59, 999);
+
+        // A demanda precisa ter sido criada até o final deste mês de referência
+        if (dCriacao > fimMes) return false;
+
+        // Se concluída: ela só não aparece se foi concluída antes do início deste mês
+        if (dConclusao) {
+          return dConclusao >= inicioMes;
+        }
+
+        // Se ainda não concluída (aberta/em andamento/atrasada): prossegue para este mês!
+        return true;
+      });
+
+      // Filtro por Desenvolvedor (se selecionado)
+      const devRelFiltro = document.getElementById('filtroRelatorioDev');
+      if (devRelFiltro && devRelFiltro.value && devRelFiltro.value !== 'TODOS') {
+        const devIdFiltro = devRelFiltro.value;
+        const devNomeFiltro = devRelFiltro.options[devRelFiltro.selectedIndex] ? devRelFiltro.options[devRelFiltro.selectedIndex].text : '';
+        filtradas = filtradas.filter(t => t.devId === devIdFiltro || t.devNome === devNomeFiltro || limparNomeDev(t.devNome) === limparNomeDev(devNomeFiltro));
+      }
+
+      // 3º Filtro por Módulo (se selecionado)
+      const moduloRelFiltro = document.getElementById('filtroRelatorioModulo');
+      if (moduloRelFiltro && moduloRelFiltro.value && moduloRelFiltro.value !== 'TODOS') {
+        filtradas = filtradas.filter(t => (t.modulo || 'SIOPLEEx') === moduloRelFiltro.value);
+      }
+
+      // 3º Filtro por Status (se selecionado)
+      const statusRelFiltro = document.getElementById('filtroRelatorioStatus');
+      if (statusRelFiltro && statusRelFiltro.value && statusRelFiltro.value !== 'TODOS') {
+        filtradas = filtradas.filter(t => t.status === statusRelFiltro.value);
+      }
+
+      // 6º Reordenação em todas as colunas da lista
+      filtradas.sort((a, b) => {
+        let valA, valB;
+        if (relatorioSortColuna === 'num') {
+          valA = parseDataLocal(a.dataInsercao || a.dataInicio).getTime();
+          valB = parseDataLocal(b.dataInsercao || b.dataInicio).getTime();
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        } else if (relatorioSortColuna === 'modulo') {
+          valA = (a.modulo || 'SIOPLEEx').toLowerCase();
+          valB = (b.modulo || 'SIOPLEEx').toLowerCase();
+          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else if (relatorioSortColuna === 'titulo') {
+          valA = (a.titulo || '').toLowerCase();
+          valB = (b.titulo || '').toLowerCase();
+          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else if (relatorioSortColuna === 'devNome') {
+          valA = (a.devNome || '').toLowerCase();
+          valB = (b.devNome || '').toLowerCase();
+          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else if (relatorioSortColuna === 'dataInsercao') {
+          valA = parseDataLocal(a.dataInsercao || a.dataInicio).getTime();
+          valB = parseDataLocal(b.dataInsercao || b.dataInicio).getTime();
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        } else if (relatorioSortColuna === 'urgencia') {
+          const pesos = { 'Baixa': 1, 'Media': 2, 'Alta': 3, 'Urgente': 4 };
+          valA = pesos[a.urgencia] || 2;
+          valB = pesos[b.urgencia] || 2;
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        } else if (relatorioSortColuna === 'diasEstimados') {
+          valA = parseInt(a.diasEstimados) || 0;
+          valB = parseInt(b.diasEstimados) || 0;
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        } else if (relatorioSortColuna === 'diasTrabalhados') {
+          valA = parseInt(a.diasTrabalhados) || 0;
+          valB = parseInt(b.diasTrabalhados) || 0;
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        } else if (relatorioSortColuna === 'status') {
+          valA = (a.status || '').toLowerCase();
+          valB = (b.status || '').toLowerCase();
+          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else if (relatorioSortColuna === 'prazoFinal') {
+          const pA = a.status === 'Concluída' ? (a.dataConclusao || a.dataPrazo) : a.dataPrazo;
+          const pB = b.status === 'Concluída' ? (b.dataConclusao || b.dataPrazo) : b.dataPrazo;
+          valA = parseDataLocal(pA).getTime();
+          valB = parseDataLocal(pB).getTime();
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        }
+        return 0;
+      });
+
+      // Atualiza ícones visuais nos cabeçalhos da tabela
+      const colunasIcones = ['num', 'modulo', 'titulo', 'devNome', 'dataInsercao', 'urgencia', 'diasEstimados', 'diasTrabalhados', 'status', 'prazoFinal'];
+      colunasIcones.forEach(col => {
+        const icone = document.getElementById(`sortIcon_${col}`);
+        if (icone) {
+          if (col === relatorioSortColuna) {
+            icone.className = (relatorioSortDirecao === 'ASC')
+              ? 'fa-solid fa-arrow-up-short-wide ms-1 text-warning'
+              : 'fa-solid fa-arrow-down-wide-short ms-1 text-warning';
+          } else {
+            icone.className = 'fa-solid fa-sort ms-1 small text-white-50';
+          }
+        }
+      });
+
+      // Guarda resultado filtrado atual para exportação precisa em PDF
+      relatorioFiltradoAtual = filtradas;
+
+      const totalDemandas = filtradas.length;
+      const totalConcluidas = filtradas.filter(t => t.status === 'Concluída').length;
+      const totalAtrasadas = filtradas.filter(t => t.status === 'Atrasada').length;
+      const totalEmAndamento = filtradas.filter(t => t.status !== 'Concluída' && t.status !== 'Atrasada').length;
+
+      // 1. Total de Demandas
+      const elTotal = document.getElementById('relTotalDemandas');
+      if (elTotal) elTotal.innerText = totalDemandas;
+
+      // 2. Demandas Concluídas
+      const elConcluidas = document.getElementById('relConcluidas');
+      if (elConcluidas) elConcluidas.innerText = totalConcluidas;
+
+      const elConcluidasPct = document.getElementById('relConcluidasPercent');
+      if (elConcluidasPct) {
+        const pct = totalDemandas > 0 ? Math.round((totalConcluidas / totalDemandas) * 100) : 0;
+        elConcluidasPct.innerText = `${pct}% entregues no período`;
+      }
+
+      // 3. Demandas Em Andamento (2º Solicitado)
+      const elEmAndamento = document.getElementById('relEmAndamento');
+      if (elEmAndamento) elEmAndamento.innerText = totalEmAndamento;
+      const elEmAndamentoDesc = document.getElementById('relEmAndamentoDesc');
+      if (elEmAndamentoDesc) {
+        elEmAndamentoDesc.innerText = totalEmAndamento === 1 ? '1 demanda em produção' : `${totalEmAndamento} demandas em produção`;
+      }
+
+      // 4. Demandas Atrasadas (2º Solicitado)
+      const elAtrasadas = document.getElementById('relAtrasadas');
+      if (elAtrasadas) elAtrasadas.innerText = totalAtrasadas;
+      const elAtrasadasDesc = document.getElementById('relAtrasadasDesc');
+      if (elAtrasadasDesc) {
+        elAtrasadasDesc.innerText = totalAtrasadas === 0 ? 'nenhum atraso' : `${totalAtrasadas} fora do prazo`;
+      }
+
+      // 9º Permissão de exclusão restrita a Gerente de Projetos ou Nicolas Richardt
+      const podeExcluir = usuarioPodeVerPainelGerente(appState.currentUser);
+      const thAcoes = document.getElementById('thAcoesRelatorio');
+      if (thAcoes) {
+        if (podeExcluir) thAcoes.classList.remove('d-none');
+        else thAcoes.classList.add('d-none');
+      }
+
+      // Renderiza Tabela com Coluna Módulo, larguras ajustadas e "Em Produção"
+      const tbody = document.getElementById('tabelaCorpoRelatorio');
+      tbody.innerHTML = '';
+
+      if (filtradas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${podeExcluir ? 11 : 10}" class="text-center py-4 text-muted">Nenhuma demanda encontrada para o período/filtro selecionado.</td></tr>`;
+      } else {
+        filtradas.forEach((t, index) => {
+          const tr = document.createElement('tr');
+          const mod = t.modulo || 'SIOPLEEx';
+          const devNomeLimpo = limparNomeDev(t.devNome);
+          tr.innerHTML = `
+            <td class="fw-bold text-muted small">${index + 1}</td>
+            <td>
+              <span class="badge bg-secondary-subtle text-secondary border font-monospace text-wrap" style="font-size: 0.76rem; word-break: break-word; line-height: 1.25; display: inline-block; padding: 4px 6px;" title="${mod}">
+                ${mod}
+              </span>
+            </td>
+            <td class="text-start text-break fw-semibold">${t.titulo}</td>
+            <td class="text-break"><span class="badge bg-light text-dark border small">${devNomeLimpo}</span></td>
+            <td><small class="text-muted"><i class="fa-regular fa-calendar me-1"></i>${formatarData(t.dataInsercao || t.dataInicio)}</small></td>
+            <td><span class="badge badge-${(t.urgencia || 'Media').toLowerCase()}">${t.urgencia || 'Média'}</span></td>
+            <td class="small">${t.diasEstimados} d</td>
+            <td class="small"><strong>${t.diasTrabalhados} d</strong></td>
+            <td>
+              <span class="badge ${t.status === 'Concluída' ? 'bg-success' : (t.status === 'Atrasada' ? 'bg-danger' : 'bg-primary')}">
+                ${t.status}
+              </span>
+            </td>
+            <td class="small">${t.status === 'Concluída' ? formatarData(t.dataConclusao || t.dataPrazo) : formatarData(t.dataPrazo)}</td>
+            ${podeExcluir ? `
+              <td data-html2canvas-ignore="true">
+                <button type="button" class="btn btn-outline-danger btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda (Gerente/Admin)" onclick="excluirDemandaConfirm('${t.id}')">
+                  <i class="fa-solid fa-trash-can" style="font-size: 0.72rem;"></i>
+                </button>
+              </td>
+            ` : ''}
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    /**
+     * 4º GERAÇÃO, PRÉ-VISUALIZAÇÃO E DOWNLOAD EM PDF DO RELATÓRIO MENSAL (SM)
+     * - Abre instantaneamente o Modal de Pré-Visualização na tela (o usuário vê o relatório na hora, sem tela branca)
+     * - Acima: 4 caixas com Geral de demandas, Concluídas, Em Andamento e Atrasadas
+     * - Abaixo: Lista de demandas do filtro selecionado com módulo, título, desenvolvedor, status e prazo final
+     * - Dispara o download automático do PDF formatado (200KB+, não 3KB)
+     * - Oferece botões de Download Direto e Impressão / Salvar PDF via Navegador
+     */
+    let dadosRelatorioPdfAtual = null;
+
+    function baixarRelatorioPDF() {
+      // Garante que o relatório e a lista filtrada estejam calculados
+      if (!relatorioFiltradoAtual || relatorioFiltradoAtual.length === 0) {
+        atualizarRelatorioMensal();
+      }
+
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      const mesTexto = mesSelect ? mesSelect.selectedOptions[0].text : 'Todos os Meses';
+      const anoTexto = document.getElementById('filtroRelatorioAno').value || '2026';
+      const devSelect = document.getElementById('filtroRelatorioDev');
+      const devTexto = (devSelect && devSelect.value !== 'TODOS') ? devSelect.options[devSelect.selectedIndex].text : '';
+      const modSelect = document.getElementById('filtroRelatorioModulo');
+      const modTexto = (modSelect && modSelect.value !== 'TODOS') ? modSelect.value : '';
+      const statusSelect = document.getElementById('filtroRelatorioStatus');
+      const statusTexto = (statusSelect && statusSelect.value !== 'TODOS') ? statusSelect.value : '';
+
+      const periodoDesc = (mesSelect && mesSelect.value !== 'TODOS') 
+        ? `${mesTexto} / ${anoTexto}` 
+        : `Período Geral (${anoTexto})`;
+
+      const demandas = relatorioFiltradoAtual || [];
+      const totalDemandas = demandas.length;
+      const concluidas = demandas.filter(t => t.status === 'Concluída').length;
+      const atrasadas = demandas.filter(t => t.status === 'Atrasada').length;
+      const emAndamento = demandas.filter(t => t.status !== 'Concluída' && t.status !== 'Atrasada').length;
+
+      dadosRelatorioPdfAtual = {
+        mesTexto, anoTexto, devTexto, modTexto, statusTexto, periodoDesc,
+        totalDemandas, concluidas, atrasadas, emAndamento, demandas
+      };
+
+      // Tags de filtros adicionais ativos
+      const tagsFiltros = [];
+      if (devTexto) tagsFiltros.push(`Dev: ${limparNomeDev(devTexto)}`);
+      if (modTexto) tagsFiltros.push(`Módulo: ${modTexto}`);
+      if (statusTexto) tagsFiltros.push(`Status: ${statusTexto}`);
+
+      // Monta as linhas da tabela
+      let linhasTabelaHtml = '';
+      if (demandas.length === 0) {
+        linhasTabelaHtml = `<tr><td colspan="6" style="padding: 16px; text-align: center; color: #64748b; border: 1px solid #cbd5e1; font-style: italic;">Nenhuma demanda encontrada para o filtro selecionado.</td></tr>`;
+      } else {
+        demandas.forEach((d, idx) => {
+          let statusBadgeColor = '#2563eb';
+          let statusBg = '#eff6ff';
+          if (d.status === 'Concluída') {
+            statusBadgeColor = '#16a34a';
+            statusBg = '#f0fdf4';
+          } else if (d.status === 'Atrasada') {
+            statusBadgeColor = '#dc2626';
+            statusBg = '#fef2f2';
+          }
+
+          const prazo = d.status === 'Concluída' 
+            ? formatarData(d.dataConclusao || d.dataPrazo) 
+            : formatarData(d.dataPrazo);
+
+          linhasTabelaHtml += `
+            <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+              <td style="padding: 7px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #64748b; font-size: 11px;">${idx + 1}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 10.5px; color: #475569;">${d.modulo || 'SIOPLEEx'}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; font-weight: 600; color: #0f172a; font-size: 11px;">${d.titulo}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; color: #334155; font-size: 11px;">${limparNomeDev(d.devNome)}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center;">
+                <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; color: ${statusBadgeColor}; background-color: ${statusBg}; border: 1px solid ${statusBadgeColor};">
+                  ${d.status}
+                </span>
+              </td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center; color: #475569; font-size: 11px;">${prazo}</td>
+            </tr>
+          `;
+        });
+      }
+
+      // Monta o HTML do documento dentro de corpoVisualizacaoPdf
+      const containerPdf = document.getElementById('corpoVisualizacaoPdf');
+      if (containerPdf) {
+        containerPdf.innerHTML = `
+          <!-- CABEÇALHO SM -->
+          <div style="display: table; width: 100%; border-bottom: 3px solid #2563eb; padding-bottom: 12px; margin-bottom: 14px;">
+            <div style="display: table-cell; vertical-align: middle;">
+              <div style="display: inline-block; vertical-align: middle;">
+                <span style="background: #2563eb; color: #ffffff; font-weight: 900; font-size: 18px; padding: 4px 10px; border-radius: 4px; margin-right: 8px; letter-spacing: 1px;">SM</span>
+                <span style="font-size: 22px; font-weight: 800; color: #0f172a; vertical-align: middle;">Sys Manager</span>
+              </div>
+              <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Relatório de Demandas da Esteira Ágil (SM)</div>
+            </div>
+            <div style="display: table-cell; vertical-align: middle; text-align: right;">
+              <div style="display: inline-block; background: #2563eb; color: #ffffff; font-weight: bold; font-size: 12px; padding: 4px 12px; border-radius: 12px; margin-bottom: 4px;">
+                ${periodoDesc}
+              </div>
+              ${tagsFiltros.length > 0 ? `<div style="font-size: 10.5px; color: #2563eb; font-weight: 600;">${tagsFiltros.join(' | ')}</div>` : ''}
+              <div style="font-size: 10px; color: #64748b; margin-top: 2px;">
+                Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}
+              </div>
+            </div>
+          </div>
+
+          <!-- 2º RESUMO ACIMA (4 CAIXAS: GERAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) -->
+          <div style="display: table; width: 100%; margin-bottom: 16px; border-collapse: separate; border-spacing: 10px 0;">
+            <div style="display: table-row;">
+              <!-- 1. Geral de Demandas -->
+              <div style="display: table-cell; width: 25%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Geral de Demandas (${mesTexto})</div>
+                <div style="font-size: 24px; font-weight: 900; color: #0f172a; margin: 3px 0;">${totalDemandas}</div>
+                <div style="font-size: 10px; color: #64748b;">${totalDemandas === 1 ? '1 demanda' : `${totalDemandas} demandas`}</div>
+              </div>
+
+              <!-- 2. Demandas Concluídas -->
+              <div style="display: table-cell; width: 25%; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Concluídas</div>
+                <div style="font-size: 24px; font-weight: 900; color: #16a34a; margin: 3px 0;">${concluidas}</div>
+                <div style="font-size: 10px; color: #15803d; font-weight: 600;">
+                  ${totalDemandas > 0 ? Math.round((concluidas / totalDemandas) * 100) : 0}% entregues
+                </div>
+              </div>
+
+              <!-- 3. Demandas Em Andamento -->
+              <div style="display: table-cell; width: 25%; background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Em Andamento</div>
+                <div style="font-size: 24px; font-weight: 900; color: #2563eb; margin: 3px 0;">${emAndamento}</div>
+                <div style="font-size: 10px; color: #1d4ed8; font-weight: 600;">em produção ativa</div>
+              </div>
+
+              <!-- 4. Demandas Atrasadas -->
+              <div style="display: table-cell; width: 25%; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #991b1b; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Atrasadas</div>
+                <div style="font-size: 24px; font-weight: 900; color: #dc2626; margin: 3px 0;">${atrasadas}</div>
+                <div style="font-size: 10px; color: #b91c1c;">
+                  ${atrasadas === 0 ? 'Nenhum atraso' : `${atrasadas} fora do prazo`}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TÍTULO DA LISTA DE DEMANDAS -->
+          <div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #1e293b;">
+            Lista de Demandas do Filtro Selecionado:
+          </div>
+
+          <!-- TABELA DE DEMANDAS -->
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+              <tr style="background-color: #0f172a; color: #ffffff;">
+                <th style="padding: 8px 6px; border: 1px solid #334155; width: 32px; text-align: center;">#</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 150px; text-align: left;">Módulo</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; text-align: left;">Título da Demanda</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 140px; text-align: left;">Desenvolvedor</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 95px; text-align: center;">Status</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 90px; text-align: center;">Prazo Final</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${linhasTabelaHtml}
+            </tbody>
+          </table>
+
+          <!-- RODAPÉ LIMPO -->
+          <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #e2e8f0; display: table; width: 100%; font-size: 10px; color: #94a3b8;">
+            <div style="display: table-cell; text-align: left;">SM - Sys Manager • Gestão de Esteira Ágil</div>
+            <div style="display: table-cell; text-align: right;">Documento de acompanhamento e auditoria</div>
+          </div>
+        `;
+      }
+
+      // Abre o Modal com o relatório renderizado imediatamente
+      const modalEl = document.getElementById('modalPreviewRelatorioPdf');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+
+      // Atualiza status do modal
+      const statusEl = document.getElementById('statusGeracaoPdfModal');
+      if (statusEl) {
+        statusEl.innerHTML = `<span class="spinner-border spinner-border-sm text-primary me-1"></span> Gerando arquivo PDF oficial...`;
+      }
+
+      // Dispara o download automático do arquivo PDF
+      setTimeout(() => {
+        executarDownloadPdfDireto();
+      }, 400);
+    }
+
+    /**
+     * Executa o download direto do PDF usando html2pdf sobre o container visível e renderizado
+     */
+    function executarDownloadPdfDireto() {
+      const containerPdf = document.getElementById('corpoVisualizacaoPdf');
+      if (!containerPdf) return;
+
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      const mesTexto = mesSelect ? mesSelect.selectedOptions[0].text : 'Todos_os_Meses';
+      const anoTexto = document.getElementById('filtroRelatorioAno').value || '2026';
+      const nomeArquivo = `SM_Relatorio_${mesTexto.replace(/\s+/g, '_')}_${anoTexto}.pdf`;
+
+      const statusEl = document.getElementById('statusGeracaoPdfModal');
+      if (statusEl) {
+        statusEl.innerHTML = `<span class="spinner-border spinner-border-sm text-primary me-1"></span> Baixando ${nomeArquivo}...`;
+      }
+
+      const opt = {
+        margin:       [8, 8, 8, 8],
+        filename:     nomeArquivo,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+
+      html2pdf()
+        .set(opt)
+        .from(containerPdf)
+        .toPdf()
+        .get('pdf')
+        .then(function(pdfObj) {
+          // 1. Gera Blob e realiza download com link <a> compatível
+          try {
+            const blob = pdfObj.output('blob');
+            const blobUrl = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = nomeArquivo;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
+
+            // 2. Tenta também abrir em nova aba
+            try {
+              window.open(blobUrl, '_blank');
+            } catch(e) {}
+          } catch(e) {
+            // Fallback para save padrão do pdfObj
+            pdfObj.save(nomeArquivo);
+          }
+
+          if (statusEl) {
+            statusEl.innerHTML = `<i class="fa-solid fa-circle-check text-success me-1"></i> Arquivo <strong>${nomeArquivo}</strong> baixado com sucesso!`;
+          }
+          mostrarToast('Download do PDF concluído!');
+        })
+        .catch(err => {
+          console.error('Erro na exportação do PDF:', err);
+          if (statusEl) {
+            statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-danger me-1"></i> Não foi possível baixar diretamente. Use o botão <strong>Imprimir / Salvar PDF</strong> acima.`;
+          }
+          mostrarToast('Aviso: utilize a opção Imprimir / Salvar PDF.');
+        });
+    }
+
+    /**
+     * Imprime ou salva como PDF diretamente pelo navegador
+     */
+    function imprimirRelatorioDireto() {
+      const conteudo = document.getElementById('corpoVisualizacaoPdf');
+      if (!conteudo) return;
+
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      const mesTexto = mesSelect ? mesSelect.selectedOptions[0].text : 'Relatorio';
+      const anoTexto = document.getElementById('filtroRelatorioAno').value || '2026';
+
+      const win = window.open('', '_blank', 'width=1100,height=750');
+      if (win) {
+        win.document.write(`
+          <!DOCTYPE html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="UTF-8">
+            <title>SM_Relatorio_${mesTexto}_${anoTexto}</title>
+            <style>
+              @page { size: landscape; margin: 8mm; }
+              body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 12px; color: #1e293b; background: #fff; }
+              @media print {
+                body { padding: 0; }
+              }
+            </style>
+          </head>
+          <body>
+            ${conteudo.innerHTML}
+            <script>
+              window.onload = function() {
+                window.focus();
+                window.print();
+              };
+            <\/script>
+          </body>
+          </html>
+        `);
+        win.document.close();
+      } else {
+        window.print();
+      }
+    }
+
+    function atualizarSelectsDev() {
+      const selectModal = document.getElementById('taskDevSelect');
+      const selectRel = document.getElementById('filtroRelatorioDev');
+
+      if (selectModal) selectModal.innerHTML = '';
+      if (selectRel) selectRel.innerHTML = '<option value="TODOS">Todos os Desenvolvedores</option>';
+
+      if (appState.usuarios.length === 0) {
+        if (selectModal) {
+          const optDefault = document.createElement('option');
+          optDefault.value = 'USR-1';
+          optDefault.innerText = 'Ten Nicolas';
+          selectModal.appendChild(optDefault);
+        }
+
+        if (selectRel) {
+          const optRelDefault = document.createElement('option');
+          optRelDefault.value = 'USR-1';
+          optRelDefault.innerText = 'Ten Nicolas';
+          selectRel.appendChild(optRelDefault);
+        }
+      } else {
+        appState.usuarios.forEach(u => {
+          if (selectModal) {
+            const opt1 = document.createElement('option');
+            opt1.value = u.id;
+            opt1.innerText = `${u.nome} (${u.cargo || 'Membro'})`;
+            selectModal.appendChild(opt1);
+          }
+
+          if (selectRel) {
+            const opt2 = document.createElement('option');
+            opt2.value = u.id;
+            opt2.innerText = u.nome;
+            selectRel.appendChild(opt2);
+          }
+        });
+
+        if (selectModal && appState.currentUser) {
+          selectModal.value = appState.currentUser.id;
+        }
+      }
+    }
+
+    function formatarData(dataStr) {
+      if (!dataStr) return '-';
+      const partes = dataStr.toString().split('T')[0].split('-');
+      if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+      return dataStr;
+    }
+
+    function getMockData() {
+      return {
+        emailAutenticado: 'nicolasrichardt@gmail.com',
+        currentUser: { id: 'USR-1', nome: 'Ten Nicolas', email: 'nicolasrichardt@gmail.com', cargo: 'Gerente de Projetos' },
+        usuarios: [
+          { id: 'USR-1', nome: 'Ten Nicolas', email: 'nicolasrichardt@gmail.com', cargo: 'Gerente de Projetos', dataCriacao: '2026-09-01' },
+          { id: 'USR-2', nome: 'Elvys Maia', email: 'elvysmaia@gmail.com', cargo: 'Desenvolvedor', dataCriacao: '2026-09-05' }
+        ],
+        tarefas: [
+          {
+            id: 'TSK-101',
+            modulo: 'SIOPLEEx_Orcamento',
+            titulo: 'Criar API de Pagamento',
+            descricao: 'Integração com gateway',
+            devId: 'USR-1',
+            devNome: 'Ten Nicolas',
+            diasEstimados: 4,
+            diasTrabalhados: 1,
+            dataInicio: formatarDataIso(new Date()),
+            dataInsercao: formatarDataIso(new Date()),
+            dataPrazo: '2026-10-04',
+            status: 'Em Andamento',
+            ativo: true,
+            urgencia: 'Alta',
+            dataConclusao: ''
+          },
+          {
+            id: 'TSK-102',
+            modulo: 'SIOPLEEx_BD',
+            titulo: 'Otimizar Banco de Dados',
+            descricao: 'Índices e queries',
+            devId: 'USR-2',
+            devNome: 'Elvys Maia',
+            diasEstimados: 2,
+            diasTrabalhados: 1,
+            dataInicio: formatarDataIso(new Date()),
+            dataInsercao: formatarDataIso(new Date()),
+            dataPrazo: '2026-10-02',
+            status: 'Em Andamento',
+            ativo: true,
+            urgencia: 'Urgente',
+            dataConclusao: ''
+          }
+        ],
+        solicitacoes: []
+      };
+    }
+  </script>
+</body>
+</html>
