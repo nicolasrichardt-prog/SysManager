@@ -560,7 +560,7 @@
           <div class="row g-2 align-items-end">
             <div class="col-xl-2 col-md-4 col-sm-6">
               <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar me-1 text-primary"></i>Mês de Referência:</label>
-              <select class="form-select form-select-sm" id="filtroRelatorioMes" onchange="atualizarRelatorioMensal()">
+              <select class="form-select form-select-sm" id="filtroRelatorioMes" onchange="aoMudarMesOuAnoRelatorio()">
                 <option value="TODOS" selected>Todos os Meses</option>
                 <option value="0">Janeiro</option>
                 <option value="1">Fevereiro</option>
@@ -578,36 +578,65 @@
             </div>
             <div class="col-xl-1 col-md-2 col-sm-6">
               <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar-days me-1 text-primary"></i>Ano:</label>
-              <input type="number" class="form-control form-control-sm" id="filtroRelatorioAno" value="2026" onchange="atualizarRelatorioMensal()">
+              <input type="number" class="form-control form-control-sm" id="filtroRelatorioAno" value="2026" onchange="aoMudarMesOuAnoRelatorio()">
             </div>
-            <div class="col-xl-2 col-md-3 col-sm-6">
+            <div class="col-xl-2 col-md-4 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-calendar-week me-1 text-primary"></i>Intervalo / Semana:</label>
+              <select class="form-select form-select-sm" id="filtroRelatorioIntervalo" onchange="aoMudarIntervaloRelatorio()">
+                <option value="TODOS" selected>Mês Completo</option>
+                <option value="SEM_1">1ª Semana (Dias 1 a 7)</option>
+                <option value="SEM_2">2ª Semana (Dias 8 a 14)</option>
+                <option value="SEM_3">3ª Semana (Dias 15 a 21)</option>
+                <option value="SEM_4">4ª Semana (Dias 22 a 28)</option>
+                <option value="SEM_5">5ª Semana (Dias 29 ao fim)</option>
+                <option value="ESTA_SEMANA">Semana Atual (Seg a Dom)</option>
+                <option value="ULT_7">Últimos 7 dias</option>
+                <option value="ULT_15">Últimos 15 dias</option>
+                <option value="CUSTOM">📅 Personalizado (De / Até)...</option>
+              </select>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
               <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-user me-1 text-primary"></i>Desenvolvedor:</label>
               <select class="form-select form-select-sm" id="filtroRelatorioDev" onchange="atualizarRelatorioMensal()">
                 <option value="TODOS">Todos os Desenvolvedores</option>
               </select>
             </div>
-            <div class="col-xl-3 col-md-3 col-sm-6">
+            <div class="col-xl-2 col-md-4 col-sm-6">
               <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-cube me-1 text-primary"></i>Módulo:</label>
               <select class="form-select form-select-sm" id="filtroRelatorioModulo" onchange="atualizarRelatorioMensal()">
                 <option value="TODOS" selected>Todos os Módulos</option>
               </select>
             </div>
-            <div class="col-xl-2 col-md-6 col-sm-6">
+            <div class="col-xl-1 col-md-4 col-sm-6">
               <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-list-check me-1 text-primary"></i>Status:</label>
               <select class="form-select form-select-sm" id="filtroRelatorioStatus" onchange="atualizarRelatorioMensal()">
-                <option value="TODOS" selected>Todos os Status</option>
+                <option value="TODOS" selected>Todos</option>
                 <option value="Em Andamento">Em Andamento</option>
                 <option value="Atrasada">Atrasada</option>
                 <option value="Concluída">Concluída</option>
               </select>
             </div>
-            <div class="col-xl-2 col-md-6 col-sm-12 d-flex gap-2">
+            <div class="col-xl-2 col-md-4 col-sm-12 d-flex gap-2">
               <button type="button" class="btn btn-primary btn-sm flex-fill fw-semibold py-1" onclick="atualizarRelatorioMensalComFeedback()">
                 <i class="fa-solid fa-filter me-1"></i> Filtrar
               </button>
               <button type="button" class="btn btn-success btn-sm flex-fill fw-semibold py-1" onclick="baixarRelatorioPDF()">
                 <i class="fa-solid fa-file-pdf me-1"></i> Baixar PDF
               </button>
+            </div>
+          </div>
+          <!-- Linha extra para Datas Personalizadas caso selecionado CUSTOM -->
+          <div class="row g-2 mt-2 pt-2 border-top d-none" id="linhaDatasPersonalizadas">
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar-plus me-1 text-primary"></i>Data Inicial:</label>
+              <input type="date" class="form-control form-control-sm" id="filtroRelatorioDataInicio" onchange="atualizarRelatorioMensal()">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar-check me-1 text-primary"></i>Data Final:</label>
+              <input type="date" class="form-control form-control-sm" id="filtroRelatorioDataFim" onchange="atualizarRelatorioMensal()">
+            </div>
+            <div class="col-md-6 col-sm-12 d-flex align-items-end">
+              <small class="text-muted mb-1"><i class="fa-solid fa-circle-info text-primary me-1"></i>Filtrando tarefas com atividade ou criação entre as duas datas selecionadas.</small>
             </div>
           </div>
         </div>
@@ -1414,6 +1443,12 @@
       inicializarTooltips();
       popularModulosUI();
 
+      // Ajusta ano padrão para o ano corrente se necessário
+      const inputAno = document.getElementById('filtroRelatorioAno');
+      if (inputAno && !inputAno.value) {
+        inputAno.value = new Date().getFullYear();
+      }
+
       // 2. Se não houver e-mail salvo, abre imediatamente a tela de login com o banner do SysManager
       const emailSalvo = localStorage.getItem('SYSMANAGER_USER_EMAIL');
       if (!emailSalvo) {
@@ -1437,12 +1472,24 @@
       if (str instanceof Date) {
         return new Date(str.getFullYear(), str.getMonth(), str.getDate());
       }
-      const partes = str.toString().split('T')[0].split('-');
+      const s = str.toString().trim();
+      // Suporte a formato brasileiro DD/MM/AAAA
+      if (s.includes('/')) {
+        const partesBarra = s.split(' ')[0].split('/');
+        if (partesBarra.length === 3) {
+          return new Date(parseInt(partesBarra[2], 10), parseInt(partesBarra[1], 10) - 1, parseInt(partesBarra[0], 10));
+        }
+      }
+      // Suporte a formato ISO YYYY-MM-DD
+      const partes = s.split('T')[0].split(' ')[0].split('-');
       if (partes.length === 3) {
         return new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
       }
       const d = new Date(str);
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      if (!isNaN(d.getTime())) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+      return new Date();
     }
 
     function formatarDataIso(d) {
@@ -1790,8 +1837,14 @@
         document.getElementById('dataPrazoAtual').innerText = formatarData(demandaAtual.dataPrazo);
 
         if (badgeModuloAtual) {
-          badgeModuloAtual.innerText = demandaAtual.modulo || 'SIOPLEEx';
-          badgeModuloAtual.title = 'Módulo: ' + (demandaAtual.modulo || 'SIOPLEEx');
+          const modText = demandaAtual.modulo || 'SIOPLEEx';
+          badgeModuloAtual.innerText = modText;
+          badgeModuloAtual.title = 'Módulo: ' + modText;
+          if (modText === 'Demanda Externa') {
+            badgeModuloAtual.className = 'badge bg-primary-subtle text-primary border border-primary-subtle font-monospace me-1';
+          } else {
+            badgeModuloAtual.className = 'badge bg-secondary-subtle text-secondary border font-monospace me-1';
+          }
         }
 
         const badgeStatus = document.getElementById('badgeStatusAtual');
@@ -1861,7 +1914,7 @@
                 </div>
                 <div class="flex-grow-1">
                   <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                    <span class="badge bg-secondary-subtle text-secondary border font-monospace small"><i class="fa-solid fa-cube me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                    <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
                     <h6 class="mb-0 fw-bold text-dark">${task.titulo}</h6>
                   </div>
                   ${task.descricao ? `<small class="text-muted d-block mb-1">${task.descricao}</small>` : ''}
@@ -1910,7 +1963,7 @@
                 </div>
                 <div>
                   <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                    <span class="badge bg-secondary-subtle text-secondary border font-monospace small"><i class="fa-solid fa-cube me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                    <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
                     <h6 class="mb-0 fw-bold text-dark text-truncate" style="max-width: 250px;">${task.titulo}</h6>
                   </div>
                   <small class="text-muted d-block text-truncate" style="max-width: 260px;">${task.descricao || 'Demanda concluída com sucesso.'}</small>
@@ -2471,12 +2524,13 @@
     }
 
     /**
-    /**
      * Aba Dashboard & Gráficos desativada
      */
     function renderizarGraficos() {}
 
     let ordemInsercaoRelatorio = 'DESC'; // 'DESC' = mais recentes primeiro, 'ASC' = mais antigas primeiro
+    let periodoRelatorioFormatadoAtual = '';
+    let periodoCardTextoAtual = '';
 
     function alternarOrdemInsercaoRelatorio() {
       ordemInsercaoRelatorio = (ordemInsercaoRelatorio === 'DESC') ? 'ASC' : 'DESC';
@@ -2493,51 +2547,167 @@
       mostrarToast('Filtro aplicado com sucesso!');
     }
 
+    function aoMudarIntervaloRelatorio() {
+      const sel = document.getElementById('filtroRelatorioIntervalo');
+      const linhaCustom = document.getElementById('linhaDatasPersonalizadas');
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      if (!sel) return;
+
+      const val = sel.value;
+      if (val === 'CUSTOM') {
+        if (linhaCustom) linhaCustom.classList.remove('d-none');
+        const dtIni = document.getElementById('filtroRelatorioDataInicio');
+        const dtFim = document.getElementById('filtroRelatorioDataFim');
+        if (dtFim && !dtFim.value) dtFim.value = formatarDataIso(new Date());
+        if (dtIni && !dtIni.value) {
+          const d7 = new Date();
+          d7.setDate(d7.getDate() - 7);
+          dtIni.value = formatarDataIso(d7);
+        }
+      } else {
+        if (linhaCustom) linhaCustom.classList.add('d-none');
+        // Se escolheu uma semana específica (SEM_1 a SEM_5) e o mês está em 'TODOS',
+        // ajusta para o mês corrente automaticamente para ter visualização imediata
+        if (val.startsWith('SEM_') && mesSelect && mesSelect.value === 'TODOS') {
+          mesSelect.value = String(new Date().getMonth());
+        }
+      }
+      atualizarRelatorioMensal();
+    }
+
+    function aoMudarMesOuAnoRelatorio() {
+      atualizarRelatorioMensal();
+    }
+
     function atualizarRelatorioMensal() {
       const mesSelect = document.getElementById('filtroRelatorioMes');
       const mesFiltro = mesSelect ? mesSelect.value : 'TODOS';
-      const anoFiltro = parseInt(document.getElementById('filtroRelatorioAno').value) || 2026;
+      const anoFiltro = parseInt(document.getElementById('filtroRelatorioAno').value) || new Date().getFullYear();
+      const intervaloSelect = document.getElementById('filtroRelatorioIntervalo');
+      const intervaloFiltro = intervaloSelect ? intervaloSelect.value : 'TODOS';
 
       const nomesMeses = [
         'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
       ];
 
-      if (mesFiltro === 'TODOS') {
-        document.getElementById('lblPeriodoRelatorio').innerText = `Período Geral (${anoFiltro})`;
+      let dataInicioFiltro = null;
+      let dataFimFiltro = null;
+      let periodoTextoFormatado = '';
+      let periodoDescCard = '';
+
+      if (intervaloFiltro === 'CUSTOM') {
+        const dtIniVal = document.getElementById('filtroRelatorioDataInicio') ? document.getElementById('filtroRelatorioDataInicio').value : '';
+        const dtFimVal = document.getElementById('filtroRelatorioDataFim') ? document.getElementById('filtroRelatorioDataFim').value : '';
+        if (dtIniVal && dtFimVal) {
+          dataInicioFiltro = parseDataLocal(dtIniVal);
+          dataInicioFiltro.setHours(0, 0, 0, 0);
+          dataFimFiltro = parseDataLocal(dtFimVal);
+          dataFimFiltro.setHours(23, 59, 59, 999);
+          periodoTextoFormatado = `${formatarData(dtIniVal)} a ${formatarData(dtFimVal)}`;
+          periodoDescCard = `${formatarData(dtIniVal)} a ${formatarData(dtFimVal)}`;
+        } else {
+          periodoTextoFormatado = `Intervalo Personalizado`;
+          periodoDescCard = 'Personalizado';
+        }
+      } else if (intervaloFiltro === 'ESTA_SEMANA') {
+        const hoje = new Date();
+        const diaSemana = hoje.getDay(); // 0=Dom, 1=Seg, ...
+        const diffSeg = diaSemana === 0 ? -6 : 1 - diaSemana;
+        const seg = new Date(hoje);
+        seg.setDate(hoje.getDate() + diffSeg);
+        seg.setHours(0, 0, 0, 0);
+        const dom = new Date(seg);
+        dom.setDate(seg.getDate() + 6);
+        dom.setHours(23, 59, 59, 999);
+        dataInicioFiltro = seg;
+        dataFimFiltro = dom;
+        const sIni = formatarData(formatarDataIso(seg));
+        const sFim = formatarData(formatarDataIso(dom));
+        periodoTextoFormatado = `Esta Semana (${sIni} a ${sFim})`;
+        periodoDescCard = 'Esta Semana';
+      } else if (intervaloFiltro === 'ULT_7') {
+        const hoje = new Date();
+        const ini = new Date(hoje);
+        ini.setDate(hoje.getDate() - 6);
+        ini.setHours(0, 0, 0, 0);
+        const fim = new Date(hoje);
+        fim.setHours(23, 59, 59, 999);
+        dataInicioFiltro = ini;
+        dataFimFiltro = fim;
+        const sIni = formatarData(formatarDataIso(ini));
+        const sFim = formatarData(formatarDataIso(fim));
+        periodoTextoFormatado = `Últimos 7 dias (${sIni} a ${sFim})`;
+        periodoDescCard = 'Últimos 7 dias';
+      } else if (intervaloFiltro === 'ULT_15') {
+        const hoje = new Date();
+        const ini = new Date(hoje);
+        ini.setDate(hoje.getDate() - 14);
+        ini.setHours(0, 0, 0, 0);
+        const fim = new Date(hoje);
+        fim.setHours(23, 59, 59, 999);
+        dataInicioFiltro = ini;
+        dataFimFiltro = fim;
+        const sIni = formatarData(formatarDataIso(ini));
+        const sFim = formatarData(formatarDataIso(fim));
+        periodoTextoFormatado = `Últimos 15 dias (${sIni} a ${sFim})`;
+        periodoDescCard = 'Últimos 15 dias';
+      } else if (intervaloFiltro && intervaloFiltro.startsWith('SEM_')) {
+        const mesIdx = (mesFiltro === 'TODOS') ? new Date().getMonth() : parseInt(mesFiltro, 10);
+        const ultimoDiaMes = new Date(anoFiltro, mesIdx + 1, 0).getDate();
+        let diaIni = 1, diaFim = 7, rotuloSem = '1ª Semana';
+        if (intervaloFiltro === 'SEM_1') { diaIni = 1; diaFim = Math.min(7, ultimoDiaMes); rotuloSem = '1ª Semana'; }
+        else if (intervaloFiltro === 'SEM_2') { diaIni = 8; diaFim = Math.min(14, ultimoDiaMes); rotuloSem = '2ª Semana'; }
+        else if (intervaloFiltro === 'SEM_3') { diaIni = 15; diaFim = Math.min(21, ultimoDiaMes); rotuloSem = '3ª Semana'; }
+        else if (intervaloFiltro === 'SEM_4') { diaIni = 22; diaFim = Math.min(28, ultimoDiaMes); rotuloSem = '4ª Semana'; }
+        else if (intervaloFiltro === 'SEM_5') { diaIni = 29; diaFim = ultimoDiaMes; rotuloSem = '5ª Semana'; }
+
+        dataInicioFiltro = new Date(anoFiltro, mesIdx, diaIni, 0, 0, 0, 0);
+        dataFimFiltro = new Date(anoFiltro, mesIdx, diaFim, 23, 59, 59, 999);
+        const d1 = String(diaIni).padStart(2, '0');
+        const d2 = String(diaFim).padStart(2, '0');
+        const mStr = String(mesIdx + 1).padStart(2, '0');
+        periodoTextoFormatado = `${rotuloSem} (${d1}/${mStr} a ${d2}/${mStr}) • ${nomesMeses[mesIdx]} / ${anoFiltro}`;
+        periodoDescCard = `${rotuloSem} (${nomesMeses[mesIdx]})`;
       } else {
-        document.getElementById('lblPeriodoRelatorio').innerText = `${nomesMeses[parseInt(mesFiltro)]} / ${anoFiltro}`;
+        // Mês completo ou Ano todo
+        if (mesFiltro === 'TODOS') {
+          dataInicioFiltro = new Date(anoFiltro, 0, 1, 0, 0, 0, 0);
+          dataFimFiltro = new Date(anoFiltro, 11, 31, 23, 59, 59, 999);
+          periodoTextoFormatado = `Período Geral (${anoFiltro})`;
+          periodoDescCard = `Geral (${anoFiltro})`;
+        } else {
+          const mesIdx = parseInt(mesFiltro, 10);
+          dataInicioFiltro = new Date(anoFiltro, mesIdx, 1, 0, 0, 0, 0);
+          dataFimFiltro = new Date(anoFiltro, mesIdx + 1, 0, 23, 59, 59, 999);
+          periodoTextoFormatado = `${nomesMeses[mesIdx]} / ${anoFiltro}`;
+          periodoDescCard = `${nomesMeses[mesIdx]} / ${anoFiltro}`;
+        }
       }
 
-      document.getElementById('lblEmissaoRelatorio').innerText = `Emitido em: ${new Date().toLocaleDateString('pt-BR')}`;
+      periodoRelatorioFormatadoAtual = periodoTextoFormatado;
+      periodoCardTextoAtual = periodoDescCard;
 
-      // 7º Regra Ágil: Caso uma demanda não tenha terminado no mês de criação, ela prossegue para o mês seguinte!
+      document.getElementById('lblPeriodoRelatorio').innerText = periodoTextoFormatado;
+      document.getElementById('lblEmissaoRelatorio').innerText = `Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}`;
+
+      // Filtragem ágil precisa: tarefas em produção ou inseridas no período
       let filtradas = appState.tarefas.filter(t => {
         const dCriacao = parseDataLocal(t.dataInsercao || t.dataInicio);
+        dCriacao.setHours(0, 0, 0, 0);
         const dConclusao = t.dataConclusao ? parseDataLocal(t.dataConclusao) : null;
+        if (dConclusao) dConclusao.setHours(0, 0, 0, 0);
 
-        if (mesFiltro === 'TODOS') {
-          const anoCriacao = dCriacao.getFullYear();
-          const anoConclusao = dConclusao ? dConclusao.getFullYear() : null;
-          if (anoCriacao === anoFiltro) return true;
-          if (anoConclusao && anoConclusao === anoFiltro) return true;
-          if (!dConclusao && anoCriacao <= anoFiltro) return true;
+        // Se a demanda foi criada após o término do período filtrado, ela ainda não existia
+        if (dataFimFiltro && dCriacao.getTime() > dataFimFiltro.getTime()) {
           return false;
         }
 
-        const mesIdx = parseInt(mesFiltro, 10);
-        const inicioMes = new Date(anoFiltro, mesIdx, 1, 0, 0, 0, 0);
-        const fimMes = new Date(anoFiltro, mesIdx + 1, 0, 23, 59, 59, 999);
-
-        // A demanda precisa ter sido criada até o final deste mês de referência
-        if (dCriacao > fimMes) return false;
-
-        // Se concluída: ela só não aparece se foi concluída antes do início deste mês
-        if (dConclusao) {
-          return dConclusao >= inicioMes;
+        // Se a demanda já havia sido concluída antes do início deste corte, não pertence a este intervalo
+        if (dataInicioFiltro && dConclusao && dConclusao.getTime() < dataInicioFiltro.getTime()) {
+          return false;
         }
 
-        // Se ainda não concluída (aberta/em andamento/atrasada): prossegue para este mês!
         return true;
       });
 
@@ -2746,9 +2916,10 @@
       const statusSelect = document.getElementById('filtroRelatorioStatus');
       const statusTexto = (statusSelect && statusSelect.value !== 'TODOS') ? statusSelect.value : '';
 
-      const periodoDesc = (mesSelect && mesSelect.value !== 'TODOS') 
+      const periodoDesc = periodoRelatorioFormatadoAtual || ((mesSelect && mesSelect.value !== 'TODOS') 
         ? `${mesTexto} / ${anoTexto}` 
-        : `Período Geral (${anoTexto})`;
+        : `Período Geral (${anoTexto})`);
+      const periodoCard = periodoCardTextoAtual || mesTexto;
 
       const demandas = relatorioFiltradoAtual || [];
       const totalDemandas = demandas.length;
@@ -2763,14 +2934,18 @@
 
       // Tags de filtros adicionais ativos
       const tagsFiltros = [];
+      const intervaloSelect = document.getElementById('filtroRelatorioIntervalo');
+      if (intervaloSelect && intervaloSelect.value !== 'TODOS') {
+        tagsFiltros.push(`Intervalo: ${intervaloSelect.options[intervaloSelect.selectedIndex].text}`);
+      }
       if (devTexto) tagsFiltros.push(`Dev: ${limparNomeDev(devTexto)}`);
       if (modTexto) tagsFiltros.push(`Módulo: ${modTexto}`);
       if (statusTexto) tagsFiltros.push(`Status: ${statusTexto}`);
 
-      // Monta as linhas da tabela
+      // Monta as linhas da tabela com a coluna Data de Inserção
       let linhasTabelaHtml = '';
       if (demandas.length === 0) {
-        linhasTabelaHtml = `<tr><td colspan="6" style="padding: 16px; text-align: center; color: #64748b; border: 1px solid #cbd5e1; font-style: italic;">Nenhuma demanda encontrada para o filtro selecionado.</td></tr>`;
+        linhasTabelaHtml = `<tr><td colspan="7" style="padding: 16px; text-align: center; color: #64748b; border: 1px solid #cbd5e1; font-style: italic;">Nenhuma demanda encontrada para o filtro selecionado.</td></tr>`;
       } else {
         demandas.forEach((d, idx) => {
           let statusBadgeColor = '#2563eb';
@@ -2789,6 +2964,7 @@
 
           const isExternaPdf = (d.demandaExterna === true || d.demandaExterna === 'true' || d.modulo === 'Demanda Externa');
           const modPdf = isExternaPdf ? 'Demanda Externa' : (d.modulo || 'SIOPLEEx');
+          const dtInsercaoFormatada = formatarData(d.dataInsercao || d.dataInicio);
 
           linhasTabelaHtml += `
             <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
@@ -2796,6 +2972,7 @@
               <td style="padding: 7px 8px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 10.5px; color: ${isExternaPdf ? '#2563eb; font-weight: 600;' : '#475569;'}">${modPdf}</td>
               <td style="padding: 7px 8px; border: 1px solid #cbd5e1; font-weight: 600; color: #0f172a; font-size: 11px;">${d.titulo}</td>
               <td style="padding: 7px 8px; border: 1px solid #cbd5e1; color: #334155; font-size: 11px;">${limparNomeDev(d.devNome)}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center; color: #475569; font-size: 11px;">${dtInsercaoFormatada}</td>
               <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center;">
                 <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; color: ${statusBadgeColor}; background-color: ${statusBg}; border: 1px solid ${statusBadgeColor};">
                   ${d.status}
@@ -2836,7 +3013,7 @@
             <div style="display: table-row;">
               <!-- 1. Geral de Demandas -->
               <div style="display: table-cell; width: 25%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; text-align: center;">
-                <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Geral de Demandas (${mesTexto})</div>
+                <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Geral de Demandas (${periodoCard})</div>
                 <div style="font-size: 24px; font-weight: 900; color: #0f172a; margin: 3px 0;">${totalDemandas}</div>
                 <div style="font-size: 10px; color: #64748b;">${totalDemandas === 1 ? '1 demanda' : `${totalDemandas} demandas`}</div>
               </div>
@@ -2877,10 +3054,11 @@
           <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
             <thead>
               <tr style="background-color: #0f172a; color: #ffffff;">
-                <th style="padding: 8px 6px; border: 1px solid #334155; width: 32px; text-align: center;">#</th>
-                <th style="padding: 8px 8px; border: 1px solid #334155; width: 150px; text-align: left;">Módulo</th>
+                <th style="padding: 8px 6px; border: 1px solid #334155; width: 30px; text-align: center;">#</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 135px; text-align: left;">Módulo</th>
                 <th style="padding: 8px 8px; border: 1px solid #334155; text-align: left;">Título da Demanda</th>
-                <th style="padding: 8px 8px; border: 1px solid #334155; width: 140px; text-align: left;">Desenvolvedor</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 125px; text-align: left;">Desenvolvedor</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 95px; text-align: center;">Data de Inserção</th>
                 <th style="padding: 8px 8px; border: 1px solid #334155; width: 95px; text-align: center;">Status</th>
                 <th style="padding: 8px 8px; border: 1px solid #334155; width: 90px; text-align: center;">Prazo Final</th>
               </tr>
@@ -2926,8 +3104,9 @@
 
       const mesSelect = document.getElementById('filtroRelatorioMes');
       const mesTexto = mesSelect ? mesSelect.selectedOptions[0].text : 'Todos_os_Meses';
-      const anoTexto = document.getElementById('filtroRelatorioAno').value || '2026';
-      const nomeArquivo = `SM_Relatorio_${mesTexto.replace(/\s+/g, '_')}_${anoTexto}.pdf`;
+      const anoTexto = document.getElementById('filtroRelatorioAno').value || new Date().getFullYear();
+      const slugPeriodo = (periodoCardTextoAtual || mesTexto).toString().replace(/[^a-zA-Z0-9]/g, '_');
+      const nomeArquivo = `SM_Relatorio_${slugPeriodo}_${anoTexto}.pdf`;
 
       const statusEl = document.getElementById('statusGeracaoPdfModal');
       if (statusEl) {
@@ -2992,7 +3171,8 @@
 
       const mesSelect = document.getElementById('filtroRelatorioMes');
       const mesTexto = mesSelect ? mesSelect.selectedOptions[0].text : 'Relatorio';
-      const anoTexto = document.getElementById('filtroRelatorioAno').value || '2026';
+      const anoTexto = document.getElementById('filtroRelatorioAno').value || new Date().getFullYear();
+      const slugPeriodo = (periodoCardTextoAtual || mesTexto).toString().replace(/[^a-zA-Z0-9]/g, '_');
 
       const win = window.open('', '_blank', 'width=1100,height=750');
       if (win) {
@@ -3001,7 +3181,7 @@
           <html lang="pt-BR">
           <head>
             <meta charset="UTF-8">
-            <title>SM_Relatorio_${mesTexto}_${anoTexto}</title>
+            <title>SM_Relatorio_${slugPeriodo}_${anoTexto}</title>
             <style>
               @page { size: landscape; margin: 8mm; }
               body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 12px; color: #1e293b; background: #fff; }
