@@ -1827,9 +1827,9 @@
      */
     function executarNoServidor(action, data, onSuccess, onFailure) {
       if (isGoogleScript) {
-        const runner = google.script.run;
-        if (onSuccess) runner.withSuccessHandler(onSuccess);
-        if (onFailure) runner.withFailureHandler(onFailure);
+        let runner = google.script.run;
+        if (onSuccess) runner = runner.withSuccessHandler(onSuccess);
+        if (onFailure) runner = runner.withFailureHandler(onFailure);
 
         if (action === 'getAppData') runner.getAppData((data && data.email) || '');
         else if (action === 'verificarEmailLogin') runner.verificarEmailLogin((data && data.email) || '');
@@ -1838,9 +1838,9 @@
         else if (action === 'concluirTarefa' || action === 'finalizarTarefa') runner.concluirTarefa(data.tarefaId, data.devId);
         else if (action === 'solicitarNovoPrazo') runner.solicitarNovoPrazo(data);
         else if (action === 'darCientePrazo') runner.darCientePrazo(data.solicitacaoId, data.gerenteNome || '');
-        else if (action === 'excluirTarefa') runner.excluirTarefa(data.tarefaId);
-        else if (action === 'trocarOrdemTarefas' || action === 'reordenarTarefas') runner.trocarOrdemTarefas(data.tarefaId1, data.tarefaId2);
-        else if (action === 'atualizarTarefa' || action === 'editarTarefa') runner.atualizarTarefa(data);
+        else if (action === 'excluirTarefa') runner.excluirTarefa(data.tarefaId || data.id);
+        else if (action === 'trocarOrdemTarefas' || action === 'reordenarTarefas') runner.trocarOrdemTarefas(data.tarefaId1 || data.id1, data.tarefaId2 || data.id2);
+        else if (action === 'atualizarTarefa' || action === 'editarTarefa' || action === 'salvarEdicaoTarefa') runner.atualizarTarefa(data);
         else if (action === 'cadastrarUsuario') runner.cadastrarUsuario(data);
         else if (action === 'atualizarUsuario') runner.atualizarUsuario(data);
         else if (action === 'excluirUsuario') runner.excluirUsuario(data.usuarioId || data.id || data);
@@ -3160,8 +3160,13 @@
           urgencia: tarefa.urgencia
         },
         res => {
-          if (res && !res.success) {
+          if (res && res.success) {
+            try {
+              localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+            } catch(e) {}
+          } else if (res && !res.success) {
             console.warn('Aviso ao sincronizar alteração de demanda:', res.message);
+            mostrarToast('Atenção: Salvo apenas localmente (' + (res.message || 'Atualize o Code.gs no Apps Script') + ')');
           }
         },
         err => {
