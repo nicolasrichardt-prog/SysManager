@@ -29,6 +29,26 @@
       --light-bg: #f8fafc;
     }
 
+    /* Prevenção de quebra de páginas cortando linhas de tabelas em relatórios e PDF */
+    #corpoVisualizacaoPdf table, #documentoPdfRenderizado table {
+      page-break-inside: auto !important;
+      border-collapse: collapse !important;
+    }
+    #corpoVisualizacaoPdf thead, #documentoPdfRenderizado thead {
+      display: table-header-group !important;
+    }
+    #corpoVisualizacaoPdf tr, #documentoPdfRenderizado tr,
+    #corpoVisualizacaoPdf td, #documentoPdfRenderizado td,
+    #corpoVisualizacaoPdf th, #documentoPdfRenderizado th {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      -webkit-column-break-inside: avoid !important;
+    }
+    .no-split {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
     body {
       background-color: #f8fafc;
       font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -560,6 +580,9 @@
               <button type="button" class="btn btn-success px-4 py-2 fw-semibold rounded-pill shadow-sm" onclick="finalizarDemandaAtual()">
                 <i class="fa-solid fa-circle-check me-2"></i> Concluir Demanda
               </button>
+              <button type="button" class="btn btn-outline-primary px-3 py-2 fw-semibold rounded-pill shadow-sm" id="btnEditarDemandaAtual" onclick="editarDemandaAtualConfirm()">
+                <i class="fa-solid fa-pen-to-square me-1"></i> Editar Demanda
+              </button>
               <button type="button" class="btn btn-outline-danger px-3 py-2 fw-semibold rounded-pill shadow-sm" id="btnExcluirDemandaAtual" onclick="excluirDemandaAtualConfirm()">
                 <i class="fa-solid fa-trash-can me-1"></i> Excluir Demanda
               </button>
@@ -583,6 +606,20 @@
                 </div>
                 <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3" onclick="abrirModalNovaDemanda()">
                   <i class="fa-solid fa-plus me-1"></i> Nova Demanda
+                </button>
+              </div>
+
+              <!-- BARRA DE PESQUISA COM LUPA (1º Solicitado) -->
+              <div class="input-group input-group-sm mb-3">
+                <span class="input-group-text bg-white border-end-0 text-primary">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" class="form-control border-start-0 ps-1" id="pesquisaDemandasFuturas" 
+                       placeholder="Pesquisar por título, módulo ou descrição..." 
+                       oninput="filtrarDemandasFuturasAoDigitar()" autocomplete="off">
+                <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaFuturas" 
+                        onclick="limparPesquisaDemandasFuturas()" title="Limpar pesquisa">
+                  <i class="fa-solid fa-xmark"></i>
                 </button>
               </div>
 
@@ -1087,6 +1124,119 @@
     </div>
   </div>
 
+  <!-- MODAL: EDITAR DEMANDA (Permite alterar tudo MENOS a Data de Início) -->
+  <div class="modal fade" id="modalEditarTarefa" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 18px;">
+        <div class="modal-header bg-primary text-white" style="border-radius: 18px 18px 0 0;">
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i>Editar Demanda</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="editTaskId">
+
+          <!-- MÓDULO COM BUSCA E LUPA -->
+          <div class="mb-3 position-relative">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label small fw-bold mb-0">
+                <i class="fa-solid fa-cube text-primary me-1"></i> Módulo:
+              </label>
+              <div class="form-check m-0 d-flex align-items-center">
+                <input class="form-check-input mt-0 me-1" type="checkbox" id="editTaskDemandaExterna" onchange="aoAlternarEditDemandaExterna()" style="cursor: pointer;">
+                <label class="form-check-label small fw-semibold text-dark user-select-none" for="editTaskDemandaExterna" style="cursor: pointer;">
+                  Demanda Externa
+                </label>
+              </div>
+            </div>
+            <div class="input-group" id="inputGroupEditTaskModulo">
+              <span class="input-group-text bg-white border-end-0 text-primary">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" class="form-control border-start-0 ps-0" id="editTaskModuloInput" list="listaModulosDatalist" placeholder="Pesquisar módulo..." autocomplete="off">
+              <button class="btn btn-outline-secondary dropdown-toggle" id="btnDropdownEditModulo" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Ver lista de módulos"></button>
+              <ul class="dropdown-menu dropdown-menu-end shadow w-100" style="max-height: 240px; overflow-y: auto;" id="editTaskModuloDropdownMenu">
+              </ul>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Título da Demanda:</label>
+            <input type="text" class="form-control" id="editTaskTitulo" placeholder="Ex: Criar tela de login com OAuth">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Descrição / Requisitos:</label>
+            <textarea class="form-control" id="editTaskDescricao" rows="2" placeholder="Detalhes técnicos da tarefa..."></textarea>
+          </div>
+
+          <!-- DATAS: DATA DE INÍCIO (FIXA/BLOQUEADA) E DATA DE TÉRMINO/PRAZO (EDITÁVEL) -->
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-dark">
+                <i class="fa-regular fa-calendar text-muted me-1"></i> Data de Início:
+              </label>
+              <div class="input-group">
+                <input type="text" class="form-control bg-light text-muted border-secondary-subtle" id="editTaskDataInicioExibicao" readonly disabled>
+                <span class="input-group-text bg-light text-muted" title="Data de início não editável"><i class="fa-solid fa-lock text-secondary"></i></span>
+              </div>
+              <input type="hidden" id="editTaskDataInicio">
+              <div class="form-text text-muted" style="font-size: 0.72rem;">
+                <i class="fa-solid fa-lock text-secondary me-1"></i> Fixa (não editável).
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-dark">
+                <i class="fa-regular fa-calendar-check text-primary me-1"></i> Data de Término / Prazo:
+              </label>
+              <input type="date" class="form-control" id="editTaskDataPrazo" onchange="aoMudarDatasEdicaoDemanda()">
+              <div class="form-text text-muted" style="font-size: 0.72rem;">
+                <i class="fa-regular fa-calendar text-primary me-1"></i> Selecione pelo calendário.
+              </div>
+            </div>
+
+            <div class="col-12 mt-1">
+              <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3 border">
+                <small class="text-muted mb-0" id="editTaskDiasCalculadosDica">
+                  <i class="fa-solid fa-clock text-primary me-1"></i> Prazo Total: <strong id="editLblDuracaoDias" class="text-dark">-</strong>
+                </small>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapidoEdicao(1)">+1 dia</button>
+                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapidoEdicao(3)">+3 dias</button>
+                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapidoEdicao(7)">+7 dias</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">
+              <i class="fa-solid fa-flag text-primary me-1"></i> Urgência / Prioridade:
+            </label>
+            <select class="form-select" id="editTaskUrgencia">
+              <option value="Baixa">🟢 Baixa</option>
+              <option value="Media">🟡 Média</option>
+              <option value="Alta">🟠 Alta</option>
+              <option value="Urgente">🚨 Urgente (Prioridade Alta)</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Desenvolvedor Responsável:</label>
+            <select class="form-select" id="editTaskDevSelect">
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer bg-light" style="border-radius: 0 0 18px 18px;">
+          <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-semibold px-4" id="btnSalvarEdicaoTarefa" onclick="salvarEdicaoTarefaInstantanea()">
+            <i class="fa-solid fa-check me-1"></i> Salvar Alterações
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: SOLICITAR NOVO PRAZO (SEM JUSTIFICATIVA) -->
   <div class="modal fade" id="modalSolicitarPrazo" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -1331,6 +1481,7 @@
     function popularModulosUI() {
       const datalist = document.getElementById('listaModulosDatalist');
       const dropdown = document.getElementById('taskModuloDropdownMenu');
+      const editDropdown = document.getElementById('editTaskModuloDropdownMenu');
       const selectModuloFiltro = document.getElementById('filtroRelatorioModulo');
 
       if (datalist && datalist.children.length === 0) {
@@ -1339,6 +1490,11 @@
       if (dropdown && dropdown.children.length === 0) {
         dropdown.innerHTML = LISTA_MODULOS.map(m => `
           <li><a class="dropdown-item py-1 small" href="javascript:void(0)" onclick="selecionarModulo('${m}')"><i class="fa-solid fa-cube text-primary me-2"></i>${m}</a></li>
+        `).join('');
+      }
+      if (editDropdown && editDropdown.children.length === 0) {
+        editDropdown.innerHTML = LISTA_MODULOS.map(m => `
+          <li><a class="dropdown-item py-1 small" href="javascript:void(0)" onclick="selecionarModuloEdicao('${m}')"><i class="fa-solid fa-cube text-primary me-2"></i>${m}</a></li>
         `).join('');
       }
       if (selectModuloFiltro && selectModuloFiltro.options.length <= 1) {
@@ -1352,6 +1508,13 @@
       const check = document.getElementById('taskDemandaExterna');
       if (check && check.checked) return;
       const input = document.getElementById('taskModuloInput');
+      if (input) input.value = mod;
+    }
+
+    function selecionarModuloEdicao(mod) {
+      const check = document.getElementById('editTaskDemandaExterna');
+      if (check && check.checked) return;
+      const input = document.getElementById('editTaskModuloInput');
       if (input) input.value = mod;
     }
 
@@ -1393,6 +1556,62 @@
           addonLupa.classList.remove('bg-light', 'text-muted');
         }
       }
+    }
+
+    function aoAlternarEditDemandaExterna() {
+      const check = document.getElementById('editTaskDemandaExterna');
+      const input = document.getElementById('editTaskModuloInput');
+      const btnDropdown = document.getElementById('btnDropdownEditModulo');
+      const isChecked = check ? check.checked : false;
+
+      if (isChecked) {
+        if (input) {
+          if (!input.dataset.prevVal) {
+            input.dataset.prevVal = input.value || 'SIOPLEEx';
+          }
+          input.value = 'Demanda Externa';
+          input.disabled = true;
+          input.classList.add('bg-light', 'text-muted');
+        }
+        if (btnDropdown) {
+          btnDropdown.disabled = true;
+          btnDropdown.classList.add('disabled');
+        }
+      } else {
+        if (input) {
+          input.disabled = false;
+          input.value = input.dataset.prevVal || 'SIOPLEEx';
+          input.dataset.prevVal = '';
+          input.classList.remove('bg-light', 'text-muted');
+        }
+        if (btnDropdown) {
+          btnDropdown.disabled = false;
+          btnDropdown.classList.remove('disabled');
+        }
+      }
+    }
+
+    // Controle da Barra de Pesquisa em Demandas Futuras (com Lupa)
+    function filtrarDemandasFuturasAoDigitar() {
+      const input = document.getElementById('pesquisaDemandasFuturas');
+      const btnLimpar = document.getElementById('btnLimparPesquisaFuturas');
+      const termo = input ? input.value.trim() : '';
+      if (btnLimpar) {
+        if (termo) {
+          btnLimpar.classList.remove('d-none');
+        } else {
+          btnLimpar.classList.add('d-none');
+        }
+      }
+      atualizarAbaEsteira();
+    }
+
+    function limparPesquisaDemandasFuturas() {
+      const input = document.getElementById('pesquisaDemandasFuturas');
+      const btnLimpar = document.getElementById('btnLimparPesquisaFuturas');
+      if (input) input.value = '';
+      if (btnLimpar) btnLimpar.classList.add('d-none');
+      atualizarAbaEsteira();
     }
 
     function ordenarRelatorioPorColuna(coluna) {
@@ -1450,6 +1669,7 @@
         else if (action === 'darCientePrazo') runner.darCientePrazo(data.solicitacaoId, data.gerenteNome || '');
         else if (action === 'excluirTarefa') runner.excluirTarefa(data.tarefaId);
         else if (action === 'trocarOrdemTarefas' || action === 'reordenarTarefas') runner.trocarOrdemTarefas(data.tarefaId1, data.tarefaId2);
+        else if (action === 'atualizarTarefa' || action === 'editarTarefa') runner.atualizarTarefa(data);
         else if (action === 'cadastrarUsuario') runner.cadastrarUsuario(data);
         else if (action === 'atualizarUsuario') runner.atualizarUsuario(data);
         else if (action === 'excluirUsuario') runner.excluirUsuario(data.usuarioId || data.id || data);
@@ -2042,9 +2262,14 @@
         badgeUrg.className = `badge badge-${demandaAtual.urgencia.toLowerCase()}`;
 
         botoesAcao.classList.remove('d-none');
+        const podeEditarAtual = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (demandaAtual.devId === appState.currentUser.id || (demandaAtual.devNome && appState.currentUser.nome && demandaAtual.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+        const btnEditarAtual = document.getElementById('btnEditarDemandaAtual');
+        if (btnEditarAtual) {
+          if (podeEditarAtual) btnEditarAtual.classList.remove('d-none');
+          else btnEditarAtual.classList.add('d-none');
+        }
         if (btnExcluirAtual) {
-          const podeExcluirAtual = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (demandaAtual.devId === appState.currentUser.id || (demandaAtual.devNome && appState.currentUser.nome && demandaAtual.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
-          if (podeExcluirAtual) btnExcluirAtual.classList.remove('d-none');
+          if (podeEditarAtual) btnExcluirAtual.classList.remove('d-none');
           else btnExcluirAtual.classList.add('d-none');
         }
       } else {
@@ -2068,8 +2293,21 @@
       const badgeConcluidas = document.getElementById('badgeQtdConcluidasAba');
       if (badgeConcluidas) badgeConcluidas.innerText = concluidas.length;
 
-      // 1. Demandas Futuras (Coluna Esquerda)
+      // 1. Demandas Futuras (Coluna Esquerda) com Pesquisa por Lupa
       const divFuturas = document.getElementById('listaFuturasDemandas');
+      const termoBusca = (document.getElementById('pesquisaDemandasFuturas') ? document.getElementById('pesquisaDemandasFuturas').value : '').trim().toLowerCase();
+
+      let futurasExibidas = futurasDemandas;
+      if (termoBusca) {
+        futurasExibidas = futurasDemandas.filter(task => {
+          const tit = (task.titulo || '').toLowerCase();
+          const mod = (task.modulo || '').toLowerCase();
+          const desc = (task.descricao || '').toLowerCase();
+          const dev = (task.devNome || '').toLowerCase();
+          return tit.includes(termoBusca) || mod.includes(termoBusca) || desc.includes(termoBusca) || dev.includes(termoBusca);
+        });
+      }
+
       if (divFuturas) {
         divFuturas.innerHTML = '';
         if (futurasDemandas.length === 0) {
@@ -2079,11 +2317,22 @@
               <p class="mb-0 small">Nenhuma demanda futura na fila para este desenvolvedor. Esteira livre!</p>
             </div>
           `;
+        } else if (futurasExibidas.length === 0) {
+          divFuturas.innerHTML = `
+            <div class="text-center py-4 text-muted">
+              <i class="fa-solid fa-magnifying-glass fs-2 text-secondary opacity-50 mb-2"></i>
+              <p class="mb-1 fw-semibold small">Nenhuma demanda futura encontrada para "${termoBusca}".</p>
+              <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-1" onclick="limparPesquisaDemandasFuturas()">
+                <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
+              </button>
+            </div>
+          `;
         } else {
-          futurasDemandas.forEach((task, idx) => {
-            const isPrimeira = idx === 0;
-            const isUltima = idx === futurasDemandas.length - 1;
-            const podeExcluirTask = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+          futurasExibidas.forEach((task) => {
+            const realIdx = futurasDemandas.findIndex(t => t.id === task.id);
+            const isPrimeira = realIdx === 0;
+            const isUltima = realIdx === futurasDemandas.length - 1;
+            const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
 
             const item = document.createElement('div');
             item.className = 'esteira-item d-flex align-items-center gap-3';
@@ -2094,7 +2343,7 @@
                   <i class="fa-solid fa-chevron-up"></i>
                 </button>
                 <span class="badge bg-light text-secondary border font-monospace my-1" style="font-size: 0.68rem; padding: 2px 5px;" title="Posição na fila">
-                  #${idx + 1}
+                  #${realIdx + 1}
                 </span>
                 <button type="button" class="btn-reorder mt-1" title="Descer na lista (Diminuir prioridade)" onclick="moverDemandaFutura('${task.id}', 1)" ${isUltima ? 'disabled' : ''}>
                   <i class="fa-solid fa-chevron-down"></i>
@@ -2120,11 +2369,14 @@
                     </div>
                   </div>
                 </div>
-                <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light">
+                <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
                   <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold py-1 px-3" onclick="selecionarComoAtivaInstantanea('${task.id}')">
                     <i class="fa-solid fa-bolt me-1 text-warning"></i> Iniciar Agora
                   </button>
-                  ${podeExcluirTask ? `
+                  ${podeEditarOuExcluir ? `
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
+                      <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+                    </button>
                     <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
                       <i class="fa-solid fa-trash-can me-1"></i> Excluir
                     </button>
@@ -2150,7 +2402,7 @@
           `;
         } else {
           concluidas.forEach(task => {
-            const podeExcluirConcluida = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+            const podeEditarOuExcluirConcluida = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
 
             const item = document.createElement('div');
             item.className = 'esteira-item d-flex flex-wrap justify-content-between align-items-center gap-3 border-start border-success border-4';
@@ -2178,7 +2430,10 @@
               </div>
               <div class="d-flex align-items-center gap-2">
                 <span class="badge badge-${task.urgencia.toLowerCase()}">${task.urgencia}</span>
-                ${podeExcluirConcluida ? `
+                ${podeEditarOuExcluirConcluida ? `
+                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-circle p-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
+                    <i class="fa-solid fa-pen-to-square" style="font-size: 0.75rem;"></i>
+                  </button>
                   <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
                     <i class="fa-solid fa-trash-can" style="font-size: 0.75rem;"></i>
                   </button>
@@ -2479,6 +2734,269 @@
           }
         },
         err => console.error('Erro em segundo plano:', err)
+      );
+    }
+
+    /**
+     * Funções de Suporte para Edição de Demandas (Permite alterar tudo MENOS a Data de Início)
+     */
+    function aoMudarDatasEdicaoDemanda() {
+      const dtIniInput = document.getElementById('editTaskDataInicio');
+      const dtFimInput = document.getElementById('editTaskDataPrazo');
+      if (!dtIniInput || !dtFimInput || !dtIniInput.value || !dtFimInput.value) return;
+
+      const dtIni = new Date(dtIniInput.value + 'T00:00:00');
+      const dtFim = new Date(dtFimInput.value + 'T00:00:00');
+
+      if (dtFim < dtIni) {
+        dtFimInput.value = dtIniInput.value;
+      }
+      atualizarDicaDuracaoEdicaoModal();
+    }
+
+    function ajustarPrazoRapidoEdicao(diasAdicionais) {
+      const dtIniInput = document.getElementById('editTaskDataInicio');
+      const dtFimInput = document.getElementById('editTaskDataPrazo');
+      const baseVal = (dtIniInput && dtIniInput.value) ? dtIniInput.value : formatarDataIso(new Date());
+      const dtIni = new Date(baseVal + 'T00:00:00');
+      const dtFim = new Date(dtIni);
+      dtFim.setDate(dtIni.getDate() + diasAdicionais);
+      if (dtFimInput) dtFimInput.value = formatarDataIso(dtFim);
+      atualizarDicaDuracaoEdicaoModal();
+    }
+
+    function atualizarDicaDuracaoEdicaoModal() {
+      const dtIniInput = document.getElementById('editTaskDataInicio');
+      const dtFimInput = document.getElementById('editTaskDataPrazo');
+      const lbl = document.getElementById('editLblDuracaoDias');
+      if (!lbl) return;
+
+      if (dtIniInput && dtFimInput && dtIniInput.value && dtFimInput.value) {
+        const dtIni = new Date(dtIniInput.value + 'T00:00:00');
+        const dtFim = new Date(dtFimInput.value + 'T00:00:00');
+        const diffMs = dtFim - dtIni;
+        const diffDias = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+        lbl.innerText = diffDias === 1 ? '1 dia' : `${diffDias} dias`;
+      } else {
+        lbl.innerText = '-';
+      }
+    }
+
+    function editarDemandaAtualConfirm() {
+      const devSelect = document.getElementById('filtroDevEsteira');
+      const devId = (devSelect && devSelect.value) ? devSelect.value : (appState.currentUser ? appState.currentUser.id : '');
+      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo && t.status !== 'Concluída');
+      if (!tarefaAtiva) {
+        mostrarToast('Nenhuma demanda ativa no momento para editar.');
+        return;
+      }
+      abrirModalEditarTarefa(tarefaAtiva.id);
+    }
+
+    function abrirModalEditarTarefa(tarefaId) {
+      popularModulosUI();
+      atualizarSelectsDev();
+
+      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
+      if (!tarefa) {
+        mostrarToast('Demanda não encontrada.');
+        return;
+      }
+
+      // Permissão: Gerente ou Dono da Demanda
+      const isGerente = usuarioPodeVerPainelGerente(appState.currentUser);
+      const isDono = appState.currentUser && (
+        tarefa.devId === appState.currentUser.id || 
+        (tarefa.devNome && appState.currentUser.nome && tarefa.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())
+      );
+
+      if (!isGerente && !isDono) {
+        alert('Permissão restrita: Você só pode editar as suas próprias demandas.');
+        return;
+      }
+
+      const idInput = document.getElementById('editTaskId');
+      if (idInput) idInput.value = tarefa.id;
+
+      const checkExterna = document.getElementById('editTaskDemandaExterna');
+      const isExterna = (tarefa.demandaExterna === true || tarefa.modulo === 'Demanda Externa');
+      if (checkExterna) {
+        checkExterna.checked = isExterna;
+      }
+      aoAlternarEditDemandaExterna();
+
+      const moduloInput = document.getElementById('editTaskModuloInput');
+      if (moduloInput) {
+        moduloInput.value = isExterna ? 'Demanda Externa' : (tarefa.modulo || 'SIOPLEEx');
+      }
+
+      const tituloInput = document.getElementById('editTaskTitulo');
+      if (tituloInput) tituloInput.value = tarefa.titulo || '';
+
+      const descInput = document.getElementById('editTaskDescricao');
+      if (descInput) descInput.value = tarefa.descricao || '';
+
+      // DATA DE INÍCIO: RIGOROSAMENTE BLOQUEADA E INALTERÁVEL
+      const dtInicioExibicao = document.getElementById('editTaskDataInicioExibicao');
+      const dtInicioHidden = document.getElementById('editTaskDataInicio');
+      const inicioRaw = tarefa.dataInicio || formatarDataIso(new Date());
+      if (dtInicioHidden) dtInicioHidden.value = inicioRaw;
+      if (dtInicioExibicao) dtInicioExibicao.value = formatarData(inicioRaw) + ' (Inalterável)';
+
+      // DATA DE TÉRMINO / PRAZO: SELECIONÁVEL VIA CALENDÁRIO
+      const dtPrazoInput = document.getElementById('editTaskDataPrazo');
+      if (dtPrazoInput) {
+        let prazoVal = '';
+        if (tarefa.dataPrazo) {
+          const d = new Date(tarefa.dataPrazo);
+          if (!isNaN(d.getTime())) {
+            prazoVal = formatarDataIso(d);
+          }
+        }
+        if (!prazoVal) {
+          const dIni = new Date(inicioRaw + 'T00:00:00');
+          const dPrazo = new Date(dIni);
+          dPrazo.setDate(dIni.getDate() + (tarefa.diasEstimados || 2));
+          prazoVal = formatarDataIso(dPrazo);
+        }
+        dtPrazoInput.value = prazoVal;
+      }
+      atualizarDicaDuracaoEdicaoModal();
+
+      const urgSelect = document.getElementById('editTaskUrgencia');
+      if (urgSelect) urgSelect.value = tarefa.urgencia || 'Media';
+
+      const devSelect = document.getElementById('editTaskDevSelect');
+      if (devSelect && tarefa.devId) {
+        devSelect.value = tarefa.devId;
+      }
+
+      const el = document.getElementById('modalEditarTarefa');
+      bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    function salvarEdicaoTarefaInstantanea() {
+      const idInput = document.getElementById('editTaskId');
+      const tarefaId = idInput ? idInput.value : '';
+      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
+
+      if (!tarefa) {
+        alert('Demanda não encontrada para edição.');
+        return;
+      }
+
+      const tituloInput = document.getElementById('editTaskTitulo');
+      const moduloInput = document.getElementById('editTaskModuloInput');
+      const descInput = document.getElementById('editTaskDescricao');
+      const dtInicioHidden = document.getElementById('editTaskDataInicio');
+      const dtPrazoInput = document.getElementById('editTaskDataPrazo');
+      const urgSelect = document.getElementById('editTaskUrgencia');
+      const devSelect = document.getElementById('editTaskDevSelect');
+      const checkExterna = document.getElementById('editTaskDemandaExterna');
+
+      const titulo = (tituloInput ? tituloInput.value : '').trim();
+      if (!titulo) {
+        alert('Por favor, informe o título da demanda.');
+        return;
+      }
+
+      const isExterna = checkExterna ? checkExterna.checked : false;
+      let modulo = 'SIOPLEEx';
+      if (isExterna) {
+        modulo = 'Demanda Externa';
+      } else if (moduloInput && moduloInput.value.trim()) {
+        modulo = moduloInput.value.trim();
+      }
+
+      // Fecha modal imediatamente (0ms de atraso)
+      fecharModalSeguro('modalEditarTarefa');
+
+      // Desenvolvedor Responsável
+      let devId = tarefa.devId;
+      let devNome = tarefa.devNome;
+      if (devSelect && devSelect.value) {
+        devId = devSelect.value;
+        const foundUser = appState.usuarios.find(u => u.id === devId);
+        devNome = foundUser ? foundUser.nome : (devSelect.selectedOptions[0] ? devSelect.selectedOptions[0].text : devNome);
+      }
+
+      // Data de Início é estritamente mantida da tarefa original
+      const dataInicioIso = tarefa.dataInicio || (dtInicioHidden ? dtInicioHidden.value : formatarDataIso(new Date()));
+      let dataPrazoIso = dtPrazoInput && dtPrazoInput.value ? dtPrazoInput.value : (tarefa.dataPrazo || '');
+
+      const dtIniObj = new Date(dataInicioIso + 'T00:00:00');
+      let diasEstimados = tarefa.diasEstimados || 2;
+
+      if (dataPrazoIso) {
+        const dtFimObj = new Date(dataPrazoIso + 'T00:00:00');
+        if (dtFimObj >= dtIniObj) {
+          diasEstimados = Math.max(1, Math.round((dtFimObj - dtIniObj) / (1000 * 60 * 60 * 24)));
+        } else {
+          dataPrazoIso = dataInicioIso;
+          diasEstimados = 1;
+        }
+      }
+
+      // Atualiza propriedades da demanda no appState local (0ms instantâneo)
+      tarefa.titulo = titulo;
+      tarefa.descricao = (descInput ? descInput.value : '').trim();
+      tarefa.modulo = modulo;
+      tarefa.demandaExterna = isExterna;
+      tarefa.devId = devId;
+      tarefa.devNome = devNome;
+      tarefa.diasEstimados = diasEstimados;
+      tarefa.dataPrazo = dataPrazoIso;
+      // tarefa.dataInicio NUNCA É ALTERADA!
+      tarefa.urgencia = urgSelect ? urgSelect.value : (tarefa.urgencia || 'Media');
+
+      // Se a tarefa não estiver concluída, recalcula se está atrasada com base no novo prazo
+      if (tarefa.status !== 'Concluída') {
+        const hojeObj = new Date();
+        hojeObj.setHours(0, 0, 0, 0);
+        const prazoObj = new Date(dataPrazoIso + 'T00:00:00');
+        if (prazoObj < hojeObj) {
+          tarefa.status = 'Atrasada';
+        } else {
+          tarefa.status = 'Em Andamento';
+        }
+      }
+
+      // Salva no cache local
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      // Atualiza visualização imediatamente (0ms)
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      atualizarRelatorioMensal();
+      mostrarToast('Demanda atualizada com sucesso!');
+
+      // Sincroniza em segundo plano com o Google Sheets
+      executarNoServidor(
+        'atualizarTarefa',
+        {
+          id: tarefa.id,
+          tarefaId: tarefa.id,
+          titulo: tarefa.titulo,
+          descricao: tarefa.descricao,
+          modulo: tarefa.modulo,
+          demandaExterna: tarefa.demandaExterna,
+          devId: tarefa.devId,
+          devNome: tarefa.devNome,
+          diasEstimados: tarefa.diasEstimados,
+          dataPrazo: tarefa.dataPrazo,
+          urgencia: tarefa.urgencia
+        },
+        res => {
+          if (res && !res.success) {
+            console.warn('Aviso ao sincronizar alteração de demanda:', res.message);
+          }
+        },
+        err => {
+          console.error('Erro ao salvar alteração no servidor:', err);
+          mostrarToast('Erro ao sincronizar com servidor: ' + (err.message || err));
+        }
       );
     }
 
@@ -2878,8 +3396,8 @@
           dataInicioFiltro.setHours(0, 0, 0, 0);
           dataFimFiltro = parseDataLocal(dtFimVal);
           dataFimFiltro.setHours(23, 59, 59, 999);
-          periodoTextoFormatado = `${formatarData(dtIniVal)} a ${formatarData(dtFimVal)}`;
-          periodoDescCard = `${formatarData(dtIniVal)} a ${formatarData(dtFimVal)}`;
+          periodoTextoFormatado = `Intervalo: ${formatarData(dtIniVal)} - ${formatarData(dtFimVal)}`;
+          periodoDescCard = `${formatarData(dtIniVal)} - ${formatarData(dtFimVal)}`;
         } else {
           periodoTextoFormatado = `Intervalo Personalizado`;
           periodoDescCard = 'Personalizado';
@@ -2965,20 +3483,18 @@
       document.getElementById('lblPeriodoRelatorio').innerText = periodoTextoFormatado;
       document.getElementById('lblEmissaoRelatorio').innerText = `Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}`;
 
-      // Filtragem ágil precisa: tarefas em produção ou inseridas no período
+      // Filtragem precisa: exibe somente demandas cuja data de inserção pertença ao período filtrado
       let filtradas = appState.tarefas.filter(t => {
-        const dCriacao = parseDataLocal(t.dataInsercao || t.dataInicio);
-        dCriacao.setHours(0, 0, 0, 0);
-        const dConclusao = t.dataConclusao ? parseDataLocal(t.dataConclusao) : null;
-        if (dConclusao) dConclusao.setHours(0, 0, 0, 0);
+        const dRef = parseDataLocal(t.dataInsercao || t.dataInicio);
+        dRef.setHours(0, 0, 0, 0);
 
-        // Se a demanda foi criada após o término do período filtrado, ela ainda não existia
-        if (dataFimFiltro && dCriacao.getTime() > dataFimFiltro.getTime()) {
+        // Se a data de início do filtro foi informada e a inserção ocorreu antes dela -> descarta
+        if (dataInicioFiltro && dRef.getTime() < dataInicioFiltro.getTime()) {
           return false;
         }
 
-        // Se a demanda já havia sido concluída antes do início deste corte, não pertence a este intervalo
-        if (dataInicioFiltro && dConclusao && dConclusao.getTime() < dataInicioFiltro.getTime()) {
+        // Se a data de término do filtro foi informada e a inserção ocorreu após ela -> descarta
+        if (dataFimFiltro && dRef.getTime() > dataFimFiltro.getTime()) {
           return false;
         }
 
@@ -3154,11 +3670,16 @@
               </span>
             </td>
             <td class="small">${t.status === 'Concluída' ? formatarData(t.dataConclusao || t.dataPrazo) : formatarData(t.dataPrazo)}</td>
-            <td data-html2canvas-ignore="true" class="text-center">
+            <td data-html2canvas-ignore="true" class="text-center text-nowrap">
               ${podeExcluirEstaDemanda ? `
-                <button type="button" class="btn btn-outline-danger btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="excluirDemandaConfirm('${t.id}')">
-                  <i class="fa-solid fa-trash-can" style="font-size: 0.72rem;"></i>
-                </button>
+                <div class="d-inline-flex gap-1">
+                  <button type="button" class="btn btn-outline-secondary btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Editar Demanda" onclick="abrirModalEditarTarefa('${t.id}')">
+                    <i class="fa-solid fa-pen-to-square" style="font-size: 0.72rem;"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="excluirDemandaConfirm('${t.id}')">
+                    <i class="fa-solid fa-trash-can" style="font-size: 0.72rem;"></i>
+                  </button>
+                </div>
               ` : '<span class="text-muted small">-</span>'}
             </td>
           `;
@@ -3193,10 +3714,23 @@
       const statusSelect = document.getElementById('filtroRelatorioStatus');
       const statusTexto = (statusSelect && statusSelect.value !== 'TODOS') ? statusSelect.value : '';
 
-      const periodoDesc = periodoRelatorioFormatadoAtual || ((mesSelect && mesSelect.value !== 'TODOS') 
-        ? `${mesTexto} / ${anoTexto}` 
-        : `Período Geral (${anoTexto})`);
-      const periodoCard = periodoCardTextoAtual || mesTexto;
+      const intervaloSelect = document.getElementById('filtroRelatorioIntervalo');
+      const isCustomIntervalo = (intervaloSelect && intervaloSelect.value === 'CUSTOM');
+      const dtIniVal = document.getElementById('filtroRelatorioDataInicio') ? document.getElementById('filtroRelatorioDataInicio').value : '';
+      const dtFimVal = document.getElementById('filtroRelatorioDataFim') ? document.getElementById('filtroRelatorioDataFim').value : '';
+
+      // 1º No download do relatório, quando é personalizado, coloca apenas "Intervalo: xx/xx/xxxx - xx/xx/xxxx"
+      let periodoDesc = '';
+      if (isCustomIntervalo && dtIniVal && dtFimVal) {
+        periodoDesc = `Intervalo: ${formatarData(dtIniVal)} - ${formatarData(dtFimVal)}`;
+      } else {
+        periodoDesc = periodoRelatorioFormatadoAtual || ((mesSelect && mesSelect.value !== 'TODOS') 
+          ? `${mesTexto} / ${anoTexto}` 
+          : `Período Geral (${anoTexto})`);
+      }
+      const periodoCard = (isCustomIntervalo && dtIniVal && dtFimVal)
+        ? `${formatarData(dtIniVal)} - ${formatarData(dtFimVal)}`
+        : (periodoCardTextoAtual || mesTexto);
 
       const demandas = relatorioFiltradoAtual || [];
       const totalDemandas = demandas.length;
@@ -3209,20 +3743,19 @@
         totalDemandas, concluidas, atrasadas, emAndamento, demandas
       };
 
-      // Tags de filtros adicionais ativos
+      // Tags de filtros adicionais ativos (não duplica se for personalizado)
       const tagsFiltros = [];
-      const intervaloSelect = document.getElementById('filtroRelatorioIntervalo');
-      if (intervaloSelect && intervaloSelect.value !== 'TODOS') {
+      if (intervaloSelect && intervaloSelect.value !== 'TODOS' && intervaloSelect.value !== 'CUSTOM') {
         tagsFiltros.push(`Intervalo: ${intervaloSelect.options[intervaloSelect.selectedIndex].text}`);
       }
       if (devTexto) tagsFiltros.push(`Dev: ${limparNomeDev(devTexto)}`);
       if (modTexto) tagsFiltros.push(`Módulo: ${modTexto}`);
       if (statusTexto) tagsFiltros.push(`Status: ${statusTexto}`);
 
-      // Monta as linhas da tabela com a coluna Data de Inserção
+      // Monta as linhas da tabela com a coluna Data de Inserção e regras anti-corte de página
       let linhasTabelaHtml = '';
       if (demandas.length === 0) {
-        linhasTabelaHtml = `<tr><td colspan="7" style="padding: 16px; text-align: center; color: #64748b; border: 1px solid #cbd5e1; font-style: italic;">Nenhuma demanda encontrada para o filtro selecionado.</td></tr>`;
+        linhasTabelaHtml = `<tr class="no-split" style="page-break-inside: avoid !important; break-inside: avoid !important;"><td colspan="7" style="padding: 16px; text-align: center; color: #64748b; border: 1px solid #cbd5e1; font-style: italic;">Nenhuma demanda encontrada para o filtro selecionado.</td></tr>`;
       } else {
         demandas.forEach((d, idx) => {
           let statusBadgeColor = '#2563eb';
@@ -3244,18 +3777,18 @@
           const dtInsercaoFormatada = formatarData(d.dataInsercao || d.dataInicio);
 
           linhasTabelaHtml += `
-            <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
-              <td style="padding: 7px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #64748b; font-size: 11px;">${idx + 1}</td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 10.5px; color: ${isExternaPdf ? '#2563eb; font-weight: 600;' : '#475569;'}">${modPdf}</td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; font-weight: 600; color: #0f172a; font-size: 11px;">${d.titulo}</td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; color: #334155; font-size: 11px;">${limparNomeDev(d.devNome)}</td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center; color: #475569; font-size: 11px;">${dtInsercaoFormatada}</td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center;">
+            <tr class="no-split" style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; page-break-inside: avoid !important; break-inside: avoid !important;">
+              <td style="padding: 6px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #64748b; font-size: 11px; page-break-inside: avoid !important; break-inside: avoid !important;">${idx + 1}</td>
+              <td style="padding: 6px 6px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 10px; color: ${isExternaPdf ? '#2563eb; font-weight: 600;' : '#475569;'}; page-break-inside: avoid !important; break-inside: avoid !important;">${modPdf}</td>
+              <td style="padding: 6px 8px; border: 1px solid #cbd5e1; font-weight: 600; color: #0f172a; font-size: 11px; page-break-inside: avoid !important; break-inside: avoid !important;">${d.titulo}</td>
+              <td style="padding: 6px 6px; border: 1px solid #cbd5e1; color: #334155; font-size: 11px; page-break-inside: avoid !important; break-inside: avoid !important;">${limparNomeDev(d.devNome)}</td>
+              <td style="padding: 6px 6px; border: 1px solid #cbd5e1; text-align: center; color: #475569; font-size: 11px; page-break-inside: avoid !important; break-inside: avoid !important;">${dtInsercaoFormatada}</td>
+              <td style="padding: 6px 6px; border: 1px solid #cbd5e1; text-align: center; page-break-inside: avoid !important; break-inside: avoid !important;">
                 <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; color: ${statusBadgeColor}; background-color: ${statusBg}; border: 1px solid ${statusBadgeColor};">
                   ${d.status}
                 </span>
               </td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center; color: #475569; font-size: 11px;">${prazo}</td>
+              <td style="padding: 6px 6px; border: 1px solid #cbd5e1; text-align: center; color: #475569; font-size: 11px; page-break-inside: avoid !important; break-inside: avoid !important;">${prazo}</td>
             </tr>
           `;
         });
@@ -3265,90 +3798,92 @@
       const containerPdf = document.getElementById('corpoVisualizacaoPdf');
       if (containerPdf) {
         containerPdf.innerHTML = `
-          <!-- CABEÇALHO SM -->
-          <div style="display: table; width: 100%; border-bottom: 3px solid #2563eb; padding-bottom: 12px; margin-bottom: 14px;">
-            <div style="display: table-cell; vertical-align: middle;">
-              <div style="display: inline-block; vertical-align: middle;">
-                <span style="background: #2563eb; color: #ffffff; font-weight: 900; font-size: 18px; padding: 4px 10px; border-radius: 4px; margin-right: 8px; letter-spacing: 1px;">SM</span>
-                <span style="font-size: 22px; font-weight: 800; color: #0f172a; vertical-align: middle;">Sys Manager</span>
-              </div>
-              <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Relatório de Demandas da Esteira Ágil (SM)</div>
-            </div>
-            <div style="display: table-cell; vertical-align: middle; text-align: right;">
-              <div style="display: inline-block; background: #2563eb; color: #ffffff; font-weight: bold; font-size: 12px; padding: 4px 12px; border-radius: 12px; margin-bottom: 4px;">
-                ${periodoDesc}
-              </div>
-              ${tagsFiltros.length > 0 ? `<div style="font-size: 10.5px; color: #2563eb; font-weight: 600;">${tagsFiltros.join(' | ')}</div>` : ''}
-              <div style="font-size: 10px; color: #64748b; margin-top: 2px;">
-                Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}
-              </div>
-            </div>
-          </div>
-
-          <!-- 2º RESUMO ACIMA (4 CAIXAS: GERAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) -->
-          <div style="display: table; width: 100%; margin-bottom: 16px; border-collapse: separate; border-spacing: 10px 0;">
-            <div style="display: table-row;">
-              <!-- 1. Geral de Demandas -->
-              <div style="display: table-cell; width: 25%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; text-align: center;">
-                <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Geral de Demandas (${periodoCard})</div>
-                <div style="font-size: 24px; font-weight: 900; color: #0f172a; margin: 3px 0;">${totalDemandas}</div>
-                <div style="font-size: 10px; color: #64748b;">${totalDemandas === 1 ? '1 demanda' : `${totalDemandas} demandas`}</div>
-              </div>
-
-              <!-- 2. Demandas Concluídas -->
-              <div style="display: table-cell; width: 25%; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 10px 12px; text-align: center;">
-                <div style="font-size: 10px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Concluídas</div>
-                <div style="font-size: 24px; font-weight: 900; color: #16a34a; margin: 3px 0;">${concluidas}</div>
-                <div style="font-size: 10px; color: #15803d; font-weight: 600;">
-                  ${totalDemandas > 0 ? Math.round((concluidas / totalDemandas) * 100) : 0}% entregues
+          <div id="documentoPdfRenderizado" style="width: 100%; max-width: 1040px; margin: 0 auto; padding: 0; background: #ffffff; color: #1e293b; box-sizing: border-box;">
+            <!-- CABEÇALHO SM -->
+            <div class="no-split" style="page-break-inside: avoid !important; break-inside: avoid !important; display: table; width: 100%; border-bottom: 3px solid #2563eb; padding-bottom: 8px; margin-bottom: 10px;">
+              <div style="display: table-cell; vertical-align: middle;">
+                <div style="display: inline-block; vertical-align: middle;">
+                  <span style="background: #2563eb; color: #ffffff; font-weight: 900; font-size: 18px; padding: 4px 10px; border-radius: 4px; margin-right: 8px; letter-spacing: 1px;">SM</span>
+                  <span style="font-size: 22px; font-weight: 800; color: #0f172a; vertical-align: middle;">Sys Manager</span>
                 </div>
+                <div style="font-size: 11.5px; color: #64748b; margin-top: 3px;">Relatório de Demandas da Esteira Ágil (SM)</div>
               </div>
-
-              <!-- 3. Demandas Em Andamento -->
-              <div style="display: table-cell; width: 25%; background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 10px 12px; text-align: center;">
-                <div style="font-size: 10px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Em Andamento</div>
-                <div style="font-size: 24px; font-weight: 900; color: #2563eb; margin: 3px 0;">${emAndamento}</div>
-                <div style="font-size: 10px; color: #1d4ed8; font-weight: 600;">em produção ativa</div>
-              </div>
-
-              <!-- 4. Demandas Atrasadas -->
-              <div style="display: table-cell; width: 25%; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 10px 12px; text-align: center;">
-                <div style="font-size: 10px; font-weight: 700; color: #991b1b; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Atrasadas</div>
-                <div style="font-size: 24px; font-weight: 900; color: #dc2626; margin: 3px 0;">${atrasadas}</div>
-                <div style="font-size: 10px; color: #b91c1c;">
-                  ${atrasadas === 0 ? 'Nenhum atraso' : `${atrasadas} fora do prazo`}
+              <div style="display: table-cell; vertical-align: middle; text-align: right;">
+                <div style="display: inline-block; background: #2563eb; color: #ffffff; font-weight: bold; font-size: 12px; padding: 4px 12px; border-radius: 12px; margin-bottom: 3px;">
+                  ${periodoDesc}
+                </div>
+                ${tagsFiltros.length > 0 ? `<div style="font-size: 10.5px; color: #2563eb; font-weight: 600;">${tagsFiltros.join(' | ')}</div>` : ''}
+                <div style="font-size: 10px; color: #64748b; margin-top: 2px;">
+                  Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- TÍTULO DA LISTA DE DEMANDAS -->
-          <div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #1e293b;">
-            Lista de Demandas do Filtro Selecionado:
-          </div>
+            <!-- 2º RESUMO ACIMA (4 CAIXAS: GERAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) -->
+            <div class="no-split" style="page-break-inside: avoid !important; break-inside: avoid !important; display: table; width: 100%; margin-bottom: 12px; border-collapse: separate; border-spacing: 8px 0;">
+              <div style="display: table-row;">
+                <!-- 1. Geral de Demandas -->
+                <div style="display: table-cell; width: 25%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; text-align: center;">
+                  <div style="font-size: 9.5px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Geral de Demandas (${periodoCard})</div>
+                  <div style="font-size: 22px; font-weight: 900; color: #0f172a; margin: 2px 0;">${totalDemandas}</div>
+                  <div style="font-size: 9.5px; color: #64748b;">${totalDemandas === 1 ? '1 demanda' : `${totalDemandas} demandas`}</div>
+                </div>
 
-          <!-- TABELA DE DEMANDAS -->
-          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-            <thead>
-              <tr style="background-color: #0f172a; color: #ffffff;">
-                <th style="padding: 8px 6px; border: 1px solid #334155; width: 30px; text-align: center;">#</th>
-                <th style="padding: 8px 8px; border: 1px solid #334155; width: 135px; text-align: left;">Módulo</th>
-                <th style="padding: 8px 8px; border: 1px solid #334155; text-align: left;">Título da Demanda</th>
-                <th style="padding: 8px 8px; border: 1px solid #334155; width: 125px; text-align: left;">Desenvolvedor</th>
-                <th style="padding: 8px 8px; border: 1px solid #334155; width: 95px; text-align: center;">Data de Inserção</th>
-                <th style="padding: 8px 8px; border: 1px solid #334155; width: 95px; text-align: center;">Status</th>
-                <th style="padding: 8px 8px; border: 1px solid #334155; width: 90px; text-align: center;">Prazo Final</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${linhasTabelaHtml}
-            </tbody>
-          </table>
+                <!-- 2. Demandas Concluídas -->
+                <div style="display: table-cell; width: 25%; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 8px 10px; text-align: center;">
+                  <div style="font-size: 9.5px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Concluídas</div>
+                  <div style="font-size: 22px; font-weight: 900; color: #16a34a; margin: 2px 0;">${concluidas}</div>
+                  <div style="font-size: 9.5px; color: #15803d; font-weight: 600;">
+                    ${totalDemandas > 0 ? Math.round((concluidas / totalDemandas) * 100) : 0}% entregues
+                  </div>
+                </div>
 
-          <!-- RODAPÉ LIMPO -->
-          <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #e2e8f0; display: table; width: 100%; font-size: 10px; color: #94a3b8;">
-            <div style="display: table-cell; text-align: left;">SM - Sys Manager • Gestão de Esteira Ágil</div>
-            <div style="display: table-cell; text-align: right;">Documento de acompanhamento e auditoria</div>
+                <!-- 3. Demandas Em Andamento -->
+                <div style="display: table-cell; width: 25%; background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 8px 10px; text-align: center;">
+                  <div style="font-size: 9.5px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Em Andamento</div>
+                  <div style="font-size: 22px; font-weight: 900; color: #2563eb; margin: 2px 0;">${emAndamento}</div>
+                  <div style="font-size: 9.5px; color: #1d4ed8; font-weight: 600;">em produção ativa</div>
+                </div>
+
+                <!-- 4. Demandas Atrasadas -->
+                <div style="display: table-cell; width: 25%; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 8px 10px; text-align: center;">
+                  <div style="font-size: 9.5px; font-weight: 700; color: #991b1b; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Atrasadas</div>
+                  <div style="font-size: 22px; font-weight: 900; color: #dc2626; margin: 2px 0;">${atrasadas}</div>
+                  <div style="font-size: 9.5px; color: #b91c1c;">
+                    ${atrasadas === 0 ? 'Nenhum atraso' : `${atrasadas} fora do prazo`}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TÍTULO DA LISTA DE DEMANDAS -->
+            <div class="no-split" style="page-break-inside: avoid !important; break-inside: avoid !important; margin-bottom: 6px; font-size: 11.5px; font-weight: 700; color: #1e293b;">
+              Lista de Demandas do Filtro Selecionado:
+            </div>
+
+            <!-- TABELA DE DEMANDAS -->
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; page-break-inside: auto !important;">
+              <thead style="display: table-header-group; page-break-inside: avoid !important; break-inside: avoid !important;">
+                <tr style="background-color: #0f172a; color: #ffffff; page-break-inside: avoid !important; break-inside: avoid !important;">
+                  <th style="padding: 7px 6px; border: 1px solid #334155; width: 30px; text-align: center;">#</th>
+                  <th style="padding: 7px 8px; border: 1px solid #334155; width: 135px; text-align: left;">Módulo</th>
+                  <th style="padding: 7px 8px; border: 1px solid #334155; text-align: left;">Título da Demanda</th>
+                  <th style="padding: 7px 8px; border: 1px solid #334155; width: 125px; text-align: left;">Desenvolvedor</th>
+                  <th style="padding: 7px 8px; border: 1px solid #334155; width: 95px; text-align: center;">Data de Inserção</th>
+                  <th style="padding: 7px 8px; border: 1px solid #334155; width: 95px; text-align: center;">Status</th>
+                  <th style="padding: 7px 8px; border: 1px solid #334155; width: 90px; text-align: center;">Prazo Final</th>
+                </tr>
+              </thead>
+              <tbody style="page-break-inside: auto;">
+                ${linhasTabelaHtml}
+              </tbody>
+            </table>
+
+            <!-- RODAPÉ LIMPO -->
+            <div class="no-split" style="page-break-inside: avoid !important; break-inside: avoid !important; margin-top: 10px; padding-top: 6px; border-top: 1px solid #e2e8f0; display: table; width: 100%; font-size: 9.5px; color: #94a3b8;">
+              <div style="display: table-cell; text-align: left;">SM - Sys Manager • Gestão de Esteira Ágil</div>
+              <div style="display: table-cell; text-align: right;">Documento de acompanhamento e auditoria</div>
+            </div>
           </div>
         `;
       }
@@ -3379,6 +3914,8 @@
       const containerPdf = document.getElementById('corpoVisualizacaoPdf');
       if (!containerPdf) return;
 
+      const elementoParaExportar = document.getElementById('documentoPdfRenderizado') || containerPdf;
+
       const mesSelect = document.getElementById('filtroRelatorioMes');
       const mesTexto = mesSelect ? mesSelect.selectedOptions[0].text : 'Todos_os_Meses';
       const anoTexto = document.getElementById('filtroRelatorioAno').value || new Date().getFullYear();
@@ -3394,13 +3931,14 @@
         margin:       [8, 8, 8, 8],
         filename:     nomeArquivo,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'], avoid: ['tr', 'thead', '.no-split'] }
       };
 
       html2pdf()
         .set(opt)
-        .from(containerPdf)
+        .from(elementoParaExportar)
         .toPdf()
         .get('pdf')
         .then(function(pdfObj) {
@@ -3443,7 +3981,7 @@
      * Imprime ou salva como PDF diretamente pelo navegador
      */
     function imprimirRelatorioDireto() {
-      const conteudo = document.getElementById('corpoVisualizacaoPdf');
+      const conteudo = document.getElementById('documentoPdfRenderizado') || document.getElementById('corpoVisualizacaoPdf');
       if (!conteudo) return;
 
       const mesSelect = document.getElementById('filtroRelatorioMes');
@@ -3461,14 +3999,18 @@
             <title>SM_Relatorio_${slugPeriodo}_${anoTexto}</title>
             <style>
               @page { size: landscape; margin: 8mm; }
-              body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 12px; color: #1e293b; background: #fff; }
+              body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0; color: #1e293b; background: #fff; }
+              table { width: 100%; border-collapse: collapse; page-break-inside: auto !important; }
+              thead { display: table-header-group !important; }
+              tr, td, th { page-break-inside: avoid !important; break-inside: avoid !important; }
+              .no-split { page-break-inside: avoid !important; break-inside: avoid !important; }
               @media print {
                 body { padding: 0; }
               }
             </style>
           </head>
           <body>
-            ${conteudo.innerHTML}
+            ${conteudo.outerHTML}
             <script>
               window.onload = function() {
                 window.focus();
@@ -3486,9 +4028,11 @@
 
     function atualizarSelectsDev() {
       const selectModal = document.getElementById('taskDevSelect');
+      const selectEditModal = document.getElementById('editTaskDevSelect');
       const selectRel = document.getElementById('filtroRelatorioDev');
 
       if (selectModal) selectModal.innerHTML = '';
+      if (selectEditModal) selectEditModal.innerHTML = '';
       if (selectRel) selectRel.innerHTML = '<option value="TODOS">Todos os Desenvolvedores</option>';
 
       if (appState.usuarios.length === 0) {
@@ -3497,6 +4041,13 @@
           optDefault.value = 'USR-1';
           optDefault.innerText = 'Ten Nicolas';
           selectModal.appendChild(optDefault);
+        }
+
+        if (selectEditModal) {
+          const optEditDefault = document.createElement('option');
+          optEditDefault.value = 'USR-1';
+          optEditDefault.innerText = 'Ten Nicolas';
+          selectEditModal.appendChild(optEditDefault);
         }
 
         if (selectRel) {
@@ -3512,6 +4063,13 @@
             opt1.value = u.id;
             opt1.innerText = `${u.nome} (${u.cargo || 'Membro'})`;
             selectModal.appendChild(opt1);
+          }
+
+          if (selectEditModal) {
+            const optEdit = document.createElement('option');
+            optEdit.value = u.id;
+            optEdit.innerText = `${u.nome} (${u.cargo || 'Membro'})`;
+            selectEditModal.appendChild(optEdit);
           }
 
           if (selectRel) {
