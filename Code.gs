@@ -223,7 +223,7 @@ function doPost(e) {
 }
 
 function processarRequisicaoApi(action, data) {
-  var result = { success: false, message: 'Ação não reconhecida' };
+  var result = { success: false, message: 'Ação não reconhecida: ' + action };
 
   try {
     if (action === 'getAppData') {
@@ -241,9 +241,11 @@ function processarRequisicaoApi(action, data) {
     } else if (action === 'darCientePrazo') {
       result = darCientePrazo(data.solicitacaoId, data.gerenteNome || '');
     } else if (action === 'excluirTarefa') {
-      result = excluirTarefa(data.tarefaId);
+      result = excluirTarefa(data.tarefaId || data.id);
     } else if (action === 'trocarOrdemTarefas' || action === 'reordenarTarefas') {
-      result = trocarOrdemTarefas(data.tarefaId1, data.tarefaId2);
+      result = trocarOrdemTarefas(data.tarefaId1 || data.id1, data.tarefaId2 || data.id2);
+    } else if (action === 'atualizarTarefa' || action === 'editarTarefa' || action === 'salvarEdicaoTarefa') {
+      result = atualizarTarefa(data);
     } else if (action === 'cadastrarUsuario') {
       result = cadastrarUsuario(data);
     } else if (action === 'atualizarUsuario') {
@@ -952,6 +954,75 @@ function trocarOrdemTarefas(id1, id2) {
       return { success: true };
     }
     return { success: false, message: 'Linhas não encontradas' };
+  } catch(e) {
+    return { success: false, message: e.message };
+  }
+}
+
+/**
+ * Atualiza dados de uma demanda existente (permite alterar tudo MENOS a Data de Início)
+ */
+function atualizarTarefa(dados) {
+  const check = verificarAutorizacao();
+  if (!check.autorizado) return { success: false, message: 'Não autorizado' };
+
+  try {
+    const ss = getDatabaseSpreadsheet();
+    const sh = ss.getSheetByName(SHEETS.TAREFAS);
+    if (!sh || sh.getLastRow() <= 1) return { success: false, message: 'Nenhuma demanda cadastrada' };
+
+    const lastRow = sh.getLastRow();
+    const lastCol = Math.max(14, sh.getLastColumn());
+    const range = sh.getRange(2, 1, lastRow - 1, lastCol);
+    const rows = range.getValues();
+
+    const tarefaId = (dados.id || dados.tarefaId || '').toString().trim();
+    if (!tarefaId) return { success: false, message: 'ID da demanda não informado' };
+    const idBusca = tarefaId.toUpperCase();
+
+    for (let i = 0; i < rows.length; i++) {
+      const rowId = (rows[i][0] ? rows[i][0].toString().trim() : '').toUpperCase();
+      if (rowId === idBusca) {
+        // Atualizar campos permitidos (todos MENOS rows[i][7] - Data de Início, que é preservada intacta)
+        if (dados.titulo !== undefined && dados.titulo !== null) {
+          rows[i][1] = dados.titulo.toString().trim();
+        }
+        if (dados.descricao !== undefined && dados.descricao !== null) {
+          rows[i][2] = dados.descricao.toString();
+        }
+        if (dados.devId !== undefined && dados.devId) {
+          rows[i][3] = dados.devId.toString().trim();
+        }
+        if (dados.devNome !== undefined && dados.devNome) {
+          rows[i][4] = dados.devNome.toString().trim();
+        }
+        if (dados.diasEstimados !== undefined) {
+          rows[i][5] = parseInt(dados.diasEstimados) || rows[i][5];
+        }
+
+        // rows[i][7] é Data de Início -> NUNCA ALTERAR!
+
+        if (dados.dataPrazo) {
+          const parsedFim = new Date(dados.dataPrazo);
+          if (!isNaN(parsedFim.getTime())) {
+            rows[i][8] = parsedFim;
+          }
+        }
+
+        if (dados.urgencia) {
+          rows[i][11] = dados.urgencia.toString().trim();
+        }
+
+        const isExterna = (dados.demandaExterna === true || dados.demandaExterna === 'true' || dados.modulo === 'Demanda Externa');
+        rows[i][13] = isExterna ? 'Demanda Externa' : (dados.modulo ? dados.modulo.toString().trim() : 'SIOPLEEx');
+
+        range.setValues(rows);
+        SpreadsheetApp.flush();
+        return { success: true, message: 'Demanda atualizada com sucesso na planilha!' };
+      }
+    }
+
+    return { success: false, message: 'Demanda não encontrada: ' + tarefaId };
   } catch(e) {
     return { success: false, message: e.message };
   }
