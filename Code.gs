@@ -1,982 +1,3589 @@
-/**
- * ====================================================================
- * SysManager - Sistema de Gestão Ágil de Tarefas e Esteira de Demandas
- * Backend Google Apps Script com Autenticação Dinâmica por Planilha (Code.gs)
- * ====================================================================
- */
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SM - Sys Manager</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-// 🔒 ADMINISTRADOR: Sempre autorizado por padrão
-const ADMIN_EMAIL = 'nicolasrichardt@gmail.com';
-const ADMIN_MESTRE_EMAIL = ADMIN_EMAIL; // Compatibilidade retroativa
-
-// ⚙️ CONFIGURAÇÃO DA PLANILHA (OPCIONAL):
-// - Se o script foi criado via "Extensões > Apps Script" dentro de uma Planilha Google, deixe vazio ('').
-// - Se o script for do tipo avulso (criado em script.google.com), cole o ID da sua planilha abaixo entre aspas:
-const SPREADSHEET_ID = '';
-
-const SHEETS = {
-  USUARIOS: 'Usuarios',
-  TAREFAS: 'Tarefas',
-  SOLICITACOES: 'SolicitacoesPrazo'
-};
-
-function getDatabaseSpreadsheet() {
-  if (typeof SPREADSHEET_ID !== 'undefined' && SPREADSHEET_ID && SPREADSHEET_ID.trim() !== '') {
-    try {
-      return SpreadsheetApp.openById(SPREADSHEET_ID.trim());
-    } catch(e) {
-      Logger.log('Aviso ao abrir SPREADSHEET_ID: ' + e.message);
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #1d4ed8;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --dark-card: #0f172a;
+      --light-bg: #f8fafc;
     }
-  }
 
-  let ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (ss) return ss;
-
-  // Usa ScriptProperties para ser global e compartilhado entre todos os usuários
-  const props = PropertiesService.getScriptProperties();
-  let sheetId = props.getProperty('SYSMANAGER_SHEET_ID');
-  if (sheetId) {
-    try {
-      return SpreadsheetApp.openById(sheetId);
-    } catch(e) {}
-  }
-
-  ss = SpreadsheetApp.create('SysManager_Database');
-  props.setProperty('SYSMANAGER_SHEET_ID', ss.getId());
-  return ss;
-}
-
-/**
- * Obtém a lista dinâmica de e-mails autorizados diretamente da aba 'Usuarios' da Planilha
- */
-function getEmailsAutorizadosDinamicos() {
-  const emails = [ADMIN_EMAIL.toLowerCase().trim()];
-  try {
-    const ss = getDatabaseSpreadsheet();
-    const shUsuarios = ss.getSheetByName(SHEETS.USUARIOS);
-
-    if (shUsuarios && shUsuarios.getLastRow() > 1) {
-      const rawUsers = shUsuarios.getRange(2, 1, shUsuarios.getLastRow() - 1, Math.max(5, shUsuarios.getLastColumn())).getValues();
-      
-      rawUsers.forEach(r => {
-        for (let c = 1; c < r.length; c++) {
-          const val = (r[c] || '').toString().trim().toLowerCase();
-          if (val.includes('@') && !emails.includes(val)) {
-            emails.push(val);
-          }
-        }
-      });
+    body {
+      background-color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: #1e293b;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
-  } catch (err) {
-    Logger.log('Aviso ao ler e-mails autorizados: ' + err.message);
-  }
 
-  return emails;
-}
+    .navbar-custom {
+      background: linear-gradient(135deg, #090e17 0%, #0f172a 50%, #1e293b 100%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
 
-/**
- * Validação de e-mail para acesso
- */
-function verificarEmailAutorizado(email) {
-  const emailLimpo = (email || '').toLowerCase().trim();
-  if (!emailLimpo) {
-    return { 
-      autorizado: false, 
-      email: '', 
-      message: 'Por favor, informe o seu e-mail @gmail.com.' 
-    };
-  }
+    .brand-logo {
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+    .brand-logo span {
+      color: #38bdf8;
+    }
 
-  // Fast-track para o Administrador: NUNCA bloqueia, resposta em 0ms
-  if (emailLimpo === ADMIN_EMAIL.toLowerCase()) {
-    return {
-      autorizado: true,
-      email: ADMIN_EMAIL,
-      usuario: {
-        id: 'USR-1',
-        nome: 'Ten Nicolas',
-        email: ADMIN_EMAIL,
-        cargo: 'Gerente de Projetos'
+    .nav-tabs {
+      border-bottom: 2px solid #e2e8f0;
+      gap: 6px;
+    }
+    .nav-tabs .nav-link {
+      color: #64748b;
+      font-weight: 600;
+      font-size: 0.92rem;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px 10px 0 0;
+      transition: all 0.15s ease;
+      background: transparent;
+    }
+    .nav-tabs .nav-link:hover:not(.active) {
+      color: #0f172a;
+      background-color: #f1f5f9;
+    }
+    .nav-tabs .nav-link.active {
+      color: var(--primary-color);
+      background-color: #ffffff;
+      border-bottom: 3px solid var(--primary-color);
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.02);
+    }
+
+    .card-custom {
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+      background: #ffffff;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hero-task {
+      border: 1px solid #e2e8f0;
+      border-left: 6px solid var(--primary-color);
+      border-radius: 16px;
+      background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+      box-shadow: 0 4px 16px -2px rgba(37, 99, 235, 0.08);
+      position: relative;
+    }
+    .hero-task.atrasada {
+      border-left: 6px solid var(--danger-color);
+      background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+      box-shadow: 0 4px 16px -2px rgba(239, 68, 68, 0.08);
+    }
+
+    /* Pulse Live Dot */
+    .pulse-live-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #22c55e;
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      animation: pulse-green 1.8s infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes pulse-green {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
       }
-    };
-  }
-
-  try {
-    const autorizados = getEmailsAutorizadosDinamicos();
-    const isAuth = autorizados.includes(emailLimpo);
-
-    if (!isAuth) {
-      return { 
-        autorizado: false, 
-        email: emailLimpo, 
-        message: 'E-mail "' + emailLimpo + '" não está cadastrado na equipe. Solicite ao Administrador Nicolas Richardt o cadastro na aba Equipe.' 
-      };
-    }
-
-    // Busca dados completos do usuário na planilha
-    const ss = getDatabaseSpreadsheet();
-    const shUsuarios = ss.getSheetByName(SHEETS.USUARIOS);
-    let userEncontrado = null;
-
-    if (shUsuarios && shUsuarios.getLastRow() > 1) {
-      const rows = shUsuarios.getRange(2, 1, shUsuarios.getLastRow() - 1, 5).getValues();
-
-      for (let r of rows) {
-        if (!r[0]) continue;
-        const uEmail = (r[2] || '').toString().trim().toLowerCase();
-        if (uEmail === emailLimpo) {
-          let cargoVal = (r[3] || 'Desenvolvedor').toString().trim();
-          if (cargoVal === 'Ambos' || cargoVal === 'Gerente' || cargoVal.toLowerCase().includes('gerente') || cargoVal.toLowerCase().includes('ambos')) {
-            cargoVal = 'Gerente de Projetos';
-          } else {
-            cargoVal = 'Desenvolvedor';
-          }
-          userEncontrado = {
-            id: (r[0] || '').toString().trim(),
-            nome: (r[1] || '').toString().trim(),
-            email: uEmail,
-            cargo: cargoVal
-          };
-          break;
-        }
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
       }
     }
 
-    return {
-      autorizado: true,
-      email: emailLimpo,
-      usuario: userEncontrado || { id: 'USR-DEV', nome: emailLimpo.split('@')[0], email: emailLimpo, cargo: 'Desenvolvedor' }
-    };
-  } catch (err) {
-    Logger.log('Erro ao validar email: ' + err.message);
-    return {
-      autorizado: false,
-      email: emailLimpo,
-      message: 'Erro no servidor ao validar acesso: ' + err.message
-    };
-  }
-}
+    .badge-urgente { background-color: #ef4444; color: white; }
+    .badge-alta { background-color: #f97316; color: white; }
+    .badge-media { background-color: #3b82f6; color: white; }
+    .badge-baixa { background-color: #10b981; color: white; }
 
-/**
- * Endpoint de verificação chamado pela tela de login do cliente
- */
-function verificarEmailLogin(email) {
-  try {
-    return verificarEmailAutorizado(email);
-  } catch(e) {
-    return {
-      autorizado: false,
-      email: email || '',
-      message: 'Erro na autenticação: ' + e.message
-    };
-  }
-}
-
-/**
- * Validação de autorização para ações no backend
- * Retorna true para garantir que ações da interface nunca sejam bloqueadas silenciosamente
- */
-function verificarAutorizacao(emailParam) {
-  return { 
-    autorizado: true, 
-    email: ADMIN_EMAIL 
-  };
-}
-
-/**
- * Ponto de entrada do Web App
- * Renderiza o Index.html e processa requisições de API vindas da Vercel
- */
-function doGet(e) {
-  initDatabaseIfNeeded();
-  
-  if (e && e.parameter && e.parameter.action) {
-    return processarRequisicaoApi(e.parameter.action, e.parameter);
-  }
-
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('SysManager - Gestão Ágil')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-}
-
-function doPost(e) {
-  initDatabaseIfNeeded();
-  var action = '';
-  var payload = {};
-
-  if (e && e.postData && e.postData.contents) {
-    try {
-      var parsed = JSON.parse(e.postData.contents);
-      action = parsed.action || '';
-      payload = parsed.data || {};
-    } catch(err) {
-      action = (e.parameter && e.parameter.action) || '';
-      payload = e.parameter || {};
+    .badge-status-dia {
+      background-color: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
     }
-  } else if (e && e.parameter) {
-    action = e.parameter.action || '';
-    payload = e.parameter || {};
-  }
-
-  return processarRequisicaoApi(action, payload);
-}
-
-function processarRequisicaoApi(action, data) {
-  var result = { success: false, message: 'Ação não reconhecida' };
-
-  try {
-    if (action === 'getAppData') {
-      result = getAppData(data.email || '');
-    } else if (action === 'verificarEmailLogin') {
-      result = verificarEmailLogin(data.email || '');
-    } else if (action === 'cadastrarTarefa') {
-      result = cadastrarTarefa(data);
-    } else if (action === 'selecionarTarefaAtiva') {
-      result = selecionarTarefaAtiva(data.tarefaId, data.devId);
-    } else if (action === 'concluirTarefa' || action === 'finalizarTarefa') {
-      result = concluirTarefa(data.tarefaId, data.devId);
-    } else if (action === 'solicitarNovoPrazo') {
-      result = solicitarNovoPrazo(data);
-    } else if (action === 'darCientePrazo') {
-      result = darCientePrazo(data.solicitacaoId, data.gerenteNome || '');
-    } else if (action === 'excluirTarefa') {
-      result = excluirTarefa(data.tarefaId);
-    } else if (action === 'cadastrarUsuario') {
-      result = cadastrarUsuario(data);
-    } else if (action === 'atualizarUsuario') {
-      result = atualizarUsuario(data);
-    } else if (action === 'excluirUsuario') {
-      result = excluirUsuario(data.usuarioId || data.id || data);
+    .badge-status-atrasada {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
     }
-  } catch(err) {
-    result = { success: false, error: err.message || err.toString() };
-  }
 
-  return ContentService.createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+    .esteira-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .esteira-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
 
-function initDatabaseIfNeeded() {
-  const ss = getDatabaseSpreadsheet();
-  let shUsuarios = ss.getSheetByName(SHEETS.USUARIOS);
-  if (!shUsuarios) {
-    initDatabase();
-  }
-}
+    /* Botões de Reordenação Subir / Descer */
+    .btn-reorder {
+      width: 28px;
+      height: 24px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #64748b;
+      font-size: 0.72rem;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .btn-reorder:hover:not(:disabled) {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+      transform: scale(1.08);
+    }
+    .btn-reorder:disabled {
+      cursor: not-allowed;
+      opacity: 0.25;
+    }
 
-function initDatabase() {
-  const ss = getDatabaseSpreadsheet();
-  
-  // 1. Aba Usuários padronizada com ID, Nome, Email, Cargo, DataCriacao
-  let shUsuarios = ss.getSheetByName(SHEETS.USUARIOS);
-  if (!shUsuarios) {
-    shUsuarios = ss.insertSheet(SHEETS.USUARIOS);
-    shUsuarios.appendRow(['ID', 'Nome', 'Email', 'Cargo', 'DataCriacao']);
-    shUsuarios.appendRow(['USR-1', 'Ten Nicolas', ADMIN_EMAIL, 'Gerente de Projetos', new Date()]);
-    shUsuarios.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-  }
+    .metric-box {
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px 20px;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-height: 98px;
+      transition: all 0.2s ease;
+    }
+    .metric-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.08);
+      border-color: #cbd5e1;
+    }
+    .metric-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
 
-  // 2. Tarefas
-  let shTarefas = ss.getSheetByName(SHEETS.TAREFAS);
-  if (!shTarefas) {
-    shTarefas = ss.insertSheet(SHEETS.TAREFAS);
-    shTarefas.appendRow([
-      'ID', 'Titulo', 'Descricao', 'DevID', 'DevNome', 
-      'DiasEstimados', 'DiasTrabalhados', 'DataInicio', 'DataPrazo', 
-      'Status', 'Ativo', 'Urgencia', 'DataConclusao', 'Modulo'
-    ]);
+    .btn-nova-atividade {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-nova-atividade:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    }
+      border: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      cursor: pointer;
+    }
+    .btn-nova-atividade:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+    }
+
+    /* Notificação flutuante de resposta instantânea (0ms de atraso percebido) */
+    #toastFeedback {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 99999;
+      background: #1e293b;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #areaRelatorioImpressao {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+    }
+
+    /* Formatação Especial para Exportação de PDF Impecável (A4 Landscape) */
+    #areaRelatorioImpressao.modo-impressao-pdf {
+      width: 1040px !important;
+      max-width: 1040px !important;
+      padding: 20px 25px !important;
+      margin: 0 auto !important;
+      box-shadow: none !important;
+      border: 1px solid #e2e8f0 !important;
+      background: #ffffff !important;
+    }
+
+    #areaRelatorioImpressao.modo-impressao-pdf .table-responsive {
+      overflow: visible !important;
+    }
+
+    #areaRelatorioImpressao.modo-impressao-pdf table {
+      width: 100% !important;
+      table-layout: fixed !important;
+    }
+
+    #areaRelatorioImpressao.modo-impressao-pdf th,
+    #areaRelatorioImpressao.modo-impressao-pdf td {
+      white-space: normal !important;
+      word-break: break-word !important;
+    }
+
+    /* Banner de Fundo Profissional do SysManager para Tela de Login */
+    #bannerFundoLogin {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1040;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 35px 45px;
+      background: radial-gradient(circle at 10% 15%, rgba(37, 99, 235, 0.35) 0%, transparent 45%),
+                  radial-gradient(circle at 90% 85%, rgba(6, 182, 212, 0.25) 0%, transparent 50%),
+                  radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.6) 0%, transparent 60%),
+                  linear-gradient(135deg, #020617 0%, #0b1329 45%, #0f172a 100%);
+      background-size: cover;
+      color: #fff;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .banner-grid-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    .banner-watermark {
+      position: absolute;
+      right: -2%;
+      top: 15%;
+      font-size: 26vw;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.02);
+      line-height: 1;
+      user-select: none;
+      pointer-events: none;
+      font-family: system-ui, sans-serif;
+    }
+
+    .banner-tag-pill {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 50px;
+      padding: 9px 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+
+    #modalLoginEquipe {
+      z-index: 1055 !important;
+    }
+    .modal-backdrop.login-backdrop {
+      opacity: 0.25 !important;
+      background-color: #020617 !important;
+    }
+    #modalLoginEquipe .modal-content {
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65), 0 0 40px rgba(37, 99, 235, 0.2);
+      background: #ffffff;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOAST FLUTUANTE DE FEEDBACK INSTANTÂNEO -->
+  <div id="toastFeedback">
+    <i class="fa-solid fa-circle-check text-success fs-5"></i>
+    <span id="toastFeedbackTexto">Ação realizada!</span>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-2 px-3 sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center gap-2 brand-logo" href="#" title="SM - Sys Manager">
+        <span class="badge bg-primary text-white fw-bold px-2 py-1 fs-5 shadow-sm">SM</span>
+        <span class="text-white-50 fw-normal fs-6 ms-1">• Sys Manager</span>
+      </a>
+
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <!-- Perfil Autenticado Direto (Sem alternância manual de perfil) -->
+        <div class="d-flex align-items-center bg-dark bg-opacity-50 border border-secondary border-opacity-25 rounded-pill px-3 py-1 text-white">
+          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+            <i class="fa-solid fa-user small"></i>
+          </div>
+          <div class="lh-sm text-start me-2">
+            <div class="fw-bold small" id="navbarUserNome">Carregando...</div>
+            <div class="text-muted" style="font-size: 0.72rem;" id="navbarUserEmail">autenticando...</div>
+          </div>
+          <span class="badge bg-primary rounded-pill small" id="navbarUserCargo">Dev</span>
+        </div>
+
+        <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" onclick="fazerLogout()" title="Sair ou trocar de conta">
+          <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Sair
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="container-fluid py-4 px-md-4">
     
-    const hoje = new Date();
-    const prazo1 = new Date();
-    prazo1.setDate(hoje.getDate() + 3);
+    <!-- ABAS -->
+    <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" id="tab-esteira-btn" data-bs-toggle="tab" data-bs-target="#tab-esteira" type="button">
+          <i class="fa-solid fa-diagram-project me-2"></i>Minha Esteira Ágil
+        </button>
+      </li>
 
-    shTarefas.appendRow([
-      'TSK-101', 'Criar API de Pagamento', 'Integração com gateway', 
-      'USR-1', 'Ten Nicolas', 4, 1, hoje, prazo1, 
-      'Em Andamento', 'SIM', 'Alta', '', 'SIOPLEEx'
-    ]);
-    shTarefas.getRange(1, 1, 1, 14).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-  }
+      <!-- 1º ABA DO GERENTE: Oculta por padrão para desenvolvedores e só visível para Gerente/Ambos -->
+      <li class="nav-item d-none" id="navItemPainelGerente">
+        <button class="nav-link position-relative" id="tab-gerente-btn" data-bs-toggle="tab" data-bs-target="#tab-gerente" type="button">
+          <i class="fa-solid fa-user-tie me-2"></i>Painel do Gerente (Prazos)
+          <span class="badge bg-danger rounded-pill ms-1 d-none" id="badgeSolicitacoesPendentes">0</span>
+        </button>
+      </li>
 
-  // 3. Solicitações de Prazo
-  let shSolicitacoes = ss.getSheetByName(SHEETS.SOLICITACOES);
-  if (!shSolicitacoes) {
-    shSolicitacoes = ss.insertSheet(SHEETS.SOLICITACOES);
-    shSolicitacoes.appendRow([
-      'ID', 'TarefaID', 'TarefaTitulo', 'DevID', 'DevNome', 
-      'Justificativa', 'NovosDiasSolicitados', 'Status', 
-      'GerenteNome', 'DataSolicitacao', 'DataResposta'
-    ]);
-    shSolicitacoes.getRange(1, 1, 1, 11).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-  }
-}
 
-function calcularDiasExecucao(dataInicioRaw, dataConclusaoRaw, status, ativo) {
-  if (!ativo && status !== 'Concluída') return 0;
-  if (!dataInicioRaw) return 1;
+      <li class="nav-item">
+        <button class="nav-link" id="tab-relatorio-btn" data-bs-toggle="tab" data-bs-target="#tab-relatorio" type="button">
+          <i class="fa-solid fa-file-lines me-2"></i>Relatório Mensal
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="tab-usuarios-btn" data-bs-toggle="tab" data-bs-target="#tab-usuarios" type="button">
+          <i class="fa-solid fa-users me-2"></i>Equipe
+        </button>
+      </li>
+    </ul>
 
-  let dInicio;
-  if (dataInicioRaw instanceof Date) {
-    dInicio = new Date(dataInicioRaw.getFullYear(), dataInicioRaw.getMonth(), dataInicioRaw.getDate());
-  } else {
-    const parts = dataInicioRaw.toString().split('T')[0].split('-');
-    dInicio = parts.length === 3 
-      ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
-      : new Date(dataInicioRaw);
-    dInicio.setHours(0, 0, 0, 0);
-  }
+    <div class="tab-content" id="mainTabsContent">
 
-  let dFim;
-  if (status === 'Concluída' && dataConclusaoRaw) {
-    if (dataConclusaoRaw instanceof Date) {
-      dFim = new Date(dataConclusaoRaw.getFullYear(), dataConclusaoRaw.getMonth(), dataConclusaoRaw.getDate());
-    } else {
-      const parts = dataConclusaoRaw.toString().split('T')[0].split('-');
-      dFim = parts.length === 3 
-        ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
-        : new Date(dataConclusaoRaw);
-      dFim.setHours(0, 0, 0, 0);
+      <!-- ========================================== -->
+      <!-- ABA 1: ESTEIRA ÁGIL                        -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade show active" id="tab-esteira" role="tabpanel">
+        
+        <!-- CARDS RESUMO -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <div class="metric-box">
+              <div class="metric-icon bg-primary-subtle text-primary">
+                <i class="fa-solid fa-play"></i>
+              </div>
+              <div style="min-width: 0; flex: 1;">
+                <div class="text-muted small">Demanda Ativa</div>
+                <h6 class="mb-0 fw-bold text-dark text-truncate" id="metricAtivaTexto" title="Nenhuma demanda ativa">-</h6>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-box">
+              <div class="metric-icon bg-info-subtle text-info">
+                <i class="fa-solid fa-list-ol"></i>
+              </div>
+              <div>
+                <div class="text-muted small">Demandas Futuras</div>
+                <h4 class="mb-0 fw-bold text-dark" id="metricFuturasQtd">0</h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-box">
+              <div class="metric-icon bg-danger-subtle text-danger">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+              </div>
+              <div>
+                <div class="text-muted small">Demandas Atrasadas</div>
+                <h4 class="mb-0 fw-bold text-dark" id="metricAtrasadasQtd">0</h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="metric-box">
+              <div class="metric-icon bg-success-subtle text-success">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <div>
+                <div class="text-muted small">Concluídas</div>
+                <h4 class="mb-0 fw-bold text-dark" id="metricConcluidasQtd">0</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEMANDA ATUAL EM PRODUÇÃO -->
+        <div class="card card-custom hero-task mb-4 p-4" id="cardDemandaAtual">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <span class="badge bg-dark text-white px-3 py-2 rounded-pill shadow-xs d-inline-flex align-items-center">
+                <span class="pulse-live-dot"></span>
+                <span class="fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">PRODUÇÃO ATIVA</span>
+              </span>
+              <span class="badge bg-secondary-subtle text-secondary border font-monospace px-2 py-1" id="badgeModuloAtual">SIOPLEEx</span>
+              <span id="badgeStatusAtual" class="badge-status-dia">Em Dia</span>
+              <span id="badgeUrgenciaAtual" class="badge badge-media">Média</span>
+            </div>
+            <div class="text-muted small mt-2 mt-sm-0 d-flex align-items-center bg-white px-3 py-1 rounded-pill border shadow-2xs">
+              <i class="fa-solid fa-user-circle me-2 text-primary fs-6"></i> Responsável: <strong id="devNomeAtual" class="text-dark ms-1">-</strong>
+            </div>
+          </div>
+
+          <div id="conteudoDemandaAtual">
+            <h3 class="fw-bold mb-2 text-dark" id="tituloDemandaAtual">Nenhuma demanda ativa no momento</h3>
+            <p class="text-muted mb-3" id="descDemandaAtual">Selecione uma demanda nas Demandas Futuras ou cadastre uma nova para começar.</p>
+
+            <div class="row g-3 py-3 border-top border-bottom my-3 bg-white bg-opacity-75 rounded-3 px-2">
+              <div class="col-6 col-md-3">
+                <span class="text-muted small d-block"><i class="fa-regular fa-clock me-1 text-primary"></i>Prazo Estimado:</span>
+                <strong class="fs-5 text-primary" id="tempoEstimadoAtual">0 dias</strong>
+              </div>
+              <div class="col-6 col-md-3">
+                <span class="text-muted small d-block"><i class="fa-solid fa-stopwatch me-1 text-primary"></i>Em Produção:</span>
+                <div class="d-flex align-items-center gap-1">
+                  <strong class="fs-5 text-dark" id="tempoDemandadoAtual">1 dia</strong>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle small ms-1">
+                    <i class="fa-solid fa-calendar-day me-1"></i>Ativa
+                  </span>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <span class="text-muted small d-block"><i class="fa-regular fa-calendar-plus me-1 text-secondary"></i>Início na Esteira:</span>
+                <strong class="fs-6 text-secondary" id="dataInicioAtual">-</strong>
+              </div>
+              <div class="col-6 col-md-3">
+                <span class="text-muted small d-block"><i class="fa-regular fa-calendar-check me-1 text-danger"></i>Prazo Final:</span>
+                <strong class="fs-6 text-danger" id="dataPrazoAtual">-</strong>
+              </div>
+            </div>
+
+            <!-- ALERTA DE ATRASO COM SOLICITAÇÃO DE NOVO PRAZO -->
+            <div class="alert alert-danger d-none align-items-center justify-content-between p-3 rounded-3" id="alertaAtrasoAtual">
+              <div class="d-flex align-items-center gap-3">
+                <i class="fa-solid fa-triangle-exclamation fs-3 text-danger"></i>
+                <div>
+                  <h6 class="mb-1 fw-bold">Atenção: Esta demanda excedeu o prazo previsto!</h6>
+                  <small>Solicite um novo prazo ao Gerente do Projeto para dar continuidade na esteira.</small>
+                </div>
+              </div>
+              <button type="button" class="btn btn-danger btn-sm px-3 mt-2 mt-md-0 fw-semibold" onclick="abrirModalSolicitarPrazo()">
+                <i class="fa-solid fa-calendar-plus me-1"></i> Solicitar Novo Prazo
+              </button>
+            </div>
+
+            <!-- AÇÃO DA DEMANDA ATUAL -->
+            <div class="d-flex flex-wrap align-items-center gap-3 mt-3" id="botoesAcaoAtual">
+              <button type="button" class="btn btn-success px-4 py-2 fw-semibold rounded-pill shadow-sm" onclick="finalizarDemandaAtual()">
+                <i class="fa-solid fa-circle-check me-2"></i> Concluir Demanda
+              </button>
+              <button type="button" class="btn btn-outline-danger px-3 py-2 fw-semibold rounded-pill shadow-sm" id="btnExcluirDemandaAtual" onclick="excluirDemandaAtualConfirm()">
+                <i class="fa-solid fa-trash-can me-1"></i> Excluir Demanda
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DIVISÃO DE TELA: DEMANDAS FUTURAS & DEMANDAS CONCLUÍDAS -->
+        <div class="row g-4">
+          
+          <!-- COLUNA ESQUERDA: DEMANDAS FUTURAS -->
+          <div class="col-lg-6">
+            <div class="card card-custom p-4 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h5 class="fw-bold mb-1 d-flex align-items-center">
+                    <i class="fa-solid fa-bars-staggered me-2 text-primary"></i>Demandas Futuras
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2 font-monospace" id="badgeQtdFuturasAba">0</span>
+                  </h5>
+                  <p class="text-muted small mb-0">Suba ou desça as demandas para definir a prioridade de execução na fila.</p>
+                </div>
+                <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3" onclick="abrirModalNovaDemanda()">
+                  <i class="fa-solid fa-plus me-1"></i> Nova Demanda
+                </button>
+              </div>
+
+              <div id="listaFuturasDemandas" style="max-height: 480px; overflow-y: auto;">
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUNA DIREITA: DEMANDAS CONCLUÍDAS -->
+          <div class="col-lg-6">
+            <div class="card card-custom p-4 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h5 class="fw-bold mb-1">
+                    <i class="fa-solid fa-circle-check me-2 text-success"></i>Demandas Concluídas
+                    <span class="badge bg-success-subtle text-success rounded-pill ms-1" id="badgeQtdConcluidasAba">0</span>
+                  </h5>
+                  <p class="text-muted small mb-0">Histórico de entregas finalizadas na esteira.</p>
+                </div>
+                <span class="badge bg-light text-muted border px-2 py-1 small">
+                  <i class="fa-solid fa-clock-rotate-left me-1"></i> Finalizadas
+                </span>
+              </div>
+
+              <div id="listaConcluidasDemandas" style="max-height: 480px; overflow-y: auto;">
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- ABA 2: PAINEL DO GERENTE (CIENTE E ESTEIRA)-->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-gerente" role="tabpanel">
+        <div class="card card-custom p-4 mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h5 class="fw-bold text-dark mb-1">
+                <i class="fa-solid fa-clipboard-check me-2 text-primary"></i>Solicitações de Novo Prazo
+              </h5>
+              <p class="text-muted small mb-0">O Gerente dá "Ciente" no novo prazo solicitado e a atividade retorna imediatamente para a esteira.</p>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Tarefa</th>
+                  <th>Desenvolvedor</th>
+                  <th>Novo Prazo Solicitado</th>
+                  <th>Data Registro</th>
+                  <th>Status</th>
+                  <th class="text-end">Ação do Gerente</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaAprovacoesGerente">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- ========================================== -->
+      <!-- ABA 4: RELATÓRIO MENSAL                    -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-relatorio" role="tabpanel">
+        
+        <div class="card card-custom p-3 mb-4">
+          <div class="row g-2 align-items-end">
+            <div class="col-xl-2 col-md-4 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar me-1 text-primary"></i>Mês de Referência:</label>
+              <select class="form-select form-select-sm" id="filtroRelatorioMes" onchange="aoMudarMesOuAnoRelatorio()">
+                <option value="TODOS" selected>Todos os Meses</option>
+                <option value="0">Janeiro</option>
+                <option value="1">Fevereiro</option>
+                <option value="2">Março</option>
+                <option value="3">Abril</option>
+                <option value="4">Maio</option>
+                <option value="5">Junho</option>
+                <option value="6">Julho</option>
+                <option value="7">Agosto</option>
+                <option value="8">Setembro</option>
+                <option value="9">Outubro</option>
+                <option value="10">Novembro</option>
+                <option value="11">Dezembro</option>
+              </select>
+            </div>
+            <div class="col-xl-1 col-md-2 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar-days me-1 text-primary"></i>Ano:</label>
+              <input type="number" class="form-control form-control-sm" id="filtroRelatorioAno" value="2026" onchange="aoMudarMesOuAnoRelatorio()">
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-calendar-week me-1 text-primary"></i>Intervalo / Semana:</label>
+              <select class="form-select form-select-sm" id="filtroRelatorioIntervalo" onchange="aoMudarIntervaloRelatorio()">
+                <option value="TODOS" selected>Mês Completo</option>
+                <option value="SEM_1">1ª Semana (Dias 1 a 7)</option>
+                <option value="SEM_2">2ª Semana (Dias 8 a 14)</option>
+                <option value="SEM_3">3ª Semana (Dias 15 a 21)</option>
+                <option value="SEM_4">4ª Semana (Dias 22 a 28)</option>
+                <option value="SEM_5">5ª Semana (Dias 29 ao fim)</option>
+                <option value="ESTA_SEMANA">Semana Atual (Seg a Dom)</option>
+                <option value="ULT_7">Últimos 7 dias</option>
+                <option value="ULT_15">Últimos 15 dias</option>
+                <option value="CUSTOM">📅 Personalizado (De / Até)...</option>
+              </select>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-user me-1 text-primary"></i>Desenvolvedor:</label>
+              <select class="form-select form-select-sm" id="filtroRelatorioDev" onchange="atualizarRelatorioMensal()">
+                <option value="TODOS">Todos os Desenvolvedores</option>
+              </select>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-cube me-1 text-primary"></i>Módulo:</label>
+              <select class="form-select form-select-sm" id="filtroRelatorioModulo" onchange="atualizarRelatorioMensal()">
+                <option value="TODOS" selected>Todos os Módulos</option>
+              </select>
+            </div>
+            <div class="col-xl-1 col-md-4 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-list-check me-1 text-primary"></i>Status:</label>
+              <select class="form-select form-select-sm" id="filtroRelatorioStatus" onchange="atualizarRelatorioMensal()">
+                <option value="TODOS" selected>Todos</option>
+                <option value="Em Andamento">Em Andamento</option>
+                <option value="Atrasada">Atrasada</option>
+                <option value="Concluída">Concluída</option>
+              </select>
+            </div>
+            <div class="col-xl-2 col-md-4 col-sm-12 d-flex gap-2">
+              <button type="button" class="btn btn-primary btn-sm flex-fill fw-semibold py-1" onclick="atualizarRelatorioMensalComFeedback()">
+                <i class="fa-solid fa-filter me-1"></i> Filtrar
+              </button>
+              <button type="button" class="btn btn-success btn-sm flex-fill fw-semibold py-1" onclick="baixarRelatorioPDF()">
+                <i class="fa-solid fa-file-pdf me-1"></i> Baixar PDF
+              </button>
+            </div>
+          </div>
+          <!-- Linha extra para Datas Personalizadas caso selecionado CUSTOM -->
+          <div class="row g-2 mt-2 pt-2 border-top d-none" id="linhaDatasPersonalizadas">
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar-plus me-1 text-primary"></i>Data Inicial:</label>
+              <input type="date" class="form-control form-control-sm" id="filtroRelatorioDataInicio" onchange="atualizarRelatorioMensal()">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar-check me-1 text-primary"></i>Data Final:</label>
+              <input type="date" class="form-control form-control-sm" id="filtroRelatorioDataFim" onchange="atualizarRelatorioMensal()">
+            </div>
+            <div class="col-md-6 col-sm-12 d-flex align-items-end">
+              <small class="text-muted mb-1"><i class="fa-solid fa-circle-info text-primary me-1"></i>Filtrando tarefas com atividade ou criação entre as duas datas selecionadas.</small>
+            </div>
+          </div>
+        </div>
+
+        <div id="areaRelatorioImpressao" class="border shadow-sm">
+          <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-4">
+            <div>
+              <h3 class="fw-bold text-dark mb-1"><span class="badge bg-primary text-white fw-bold me-1 px-2 py-1 fs-5">SM</span> Sys Manager</h3>
+              <p class="text-muted mb-0">Relatório de Gestão Ágil e Esteira de Demandas (SM)</p>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-primary fs-6 mb-1" id="lblPeriodoRelatorio">Período Geral (2026)</span>
+              <div class="small text-muted" id="lblEmissaoRelatorio">Emitido em: 01/10/2026</div>
+            </div>
+          </div>
+
+          <!-- DASHBOARD DO RELATÓRIO: 4 CARDS (TOTAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) -->
+          <div class="row g-3 mb-4 text-center">
+            <!-- 1. Total de Demandas -->
+            <div class="col-md-3 col-6">
+              <div class="p-3 bg-light rounded border h-100 d-flex flex-column justify-content-center shadow-sm">
+                <div class="text-muted small fw-semibold text-uppercase mb-1">
+                  <i class="fa-solid fa-list-check text-primary me-1"></i> Total de Demandas
+                </div>
+                <h3 class="fw-bold mb-0 text-dark" id="relTotalDemandas">0</h3>
+                <small class="text-secondary">demandas registradas</small>
+              </div>
+            </div>
+
+            <!-- 2. Demandas Concluídas -->
+            <div class="col-md-3 col-6">
+              <div class="p-3 bg-success-subtle border border-success-subtle rounded h-100 d-flex flex-column justify-content-center shadow-sm">
+                <div class="text-success small fw-semibold text-uppercase mb-1">
+                  <i class="fa-solid fa-circle-check me-1"></i> Demandas Concluídas
+                </div>
+                <h3 class="fw-bold mb-0 text-success" id="relConcluidas">0</h3>
+                <small class="text-success-emphasis" id="relConcluidasPercent">0% entregues no período</small>
+              </div>
+            </div>
+
+            <!-- 3. Demandas Em Andamento -->
+            <div class="col-md-3 col-6">
+              <div class="p-3 bg-primary-subtle border border-primary-subtle rounded h-100 d-flex flex-column justify-content-center shadow-sm">
+                <div class="text-primary small fw-semibold text-uppercase mb-1">
+                  <i class="fa-solid fa-bars-progress me-1"></i> Demandas Em Andamento
+                </div>
+                <h3 class="fw-bold mb-0 text-primary" id="relEmAndamento">0</h3>
+                <small class="text-primary-emphasis" id="relEmAndamentoDesc">em produção ativa</small>
+              </div>
+            </div>
+
+            <!-- 4. Demandas Atrasadas -->
+            <div class="col-md-3 col-6">
+              <div class="p-3 bg-danger-subtle border border-danger-subtle rounded h-100 d-flex flex-column justify-content-center shadow-sm">
+                <div class="text-danger small fw-semibold text-uppercase mb-1">
+                  <i class="fa-solid fa-triangle-exclamation me-1"></i> Demandas Atrasadas
+                </div>
+                <h3 class="fw-bold mb-0 text-danger" id="relAtrasadas">0</h3>
+                <small class="text-danger-emphasis" id="relAtrasadasDesc">fora do prazo</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- DETALHAMENTO COM NUMERAÇÃO, MÓDULO E REORDENAÇÃO DE TODAS AS COLUNAS -->
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-dark">
+              <i class="fa-solid fa-table-list text-primary me-2"></i>Detalhamento das Demandas do Período
+            </h5>
+            <div class="small text-muted" data-html2canvas-ignore="true">
+              <i class="fa-solid fa-arrow-down-up-across-line me-1 text-primary"></i> Clique no título de qualquer coluna para reordenar
+            </div>
+          </div>
+
+          <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm text-center align-middle" id="tabelaRelatorioDoc" style="table-layout: fixed; width: 100%;">
+              <thead class="table-dark">
+                <tr>
+                  <th style="width: 3%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('num')" title="Ordenar por número">
+                    # <i class="fa-solid fa-sort ms-1 small" id="sortIcon_num"></i>
+                  </th>
+                  <th style="width: 16%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('modulo')" title="Ordenar por Módulo">
+                    Módulo <i class="fa-solid fa-sort ms-1 small" id="sortIcon_modulo"></i>
+                  </th>
+                  <th class="text-start" style="width: 22%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('titulo')" title="Ordenar por Título da Demanda">
+                    Título da Demanda <i class="fa-solid fa-sort ms-1 small" id="sortIcon_titulo"></i>
+                  </th>
+                  <th style="width: 12%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('devNome')" title="Ordenar por Desenvolvedor">
+                    Desenvolvedor <i class="fa-solid fa-sort ms-1 small" id="sortIcon_devNome"></i>
+                  </th>
+                  <th style="width: 8%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('dataInsercao')" title="Ordenar por Data de Inserção">
+                    Data de Inserção <i class="fa-solid fa-sort ms-1 small" id="sortIcon_dataInsercao"></i>
+                  </th>
+                  <th style="width: 7%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('urgencia')" title="Ordenar por Urgência">
+                    Urgência <i class="fa-solid fa-sort ms-1 small" id="sortIcon_urgencia"></i>
+                  </th>
+                  <th style="width: 6%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('diasEstimados')" title="Ordenar por Prazo Estimado">
+                    Estimado <i class="fa-solid fa-sort ms-1 small" id="sortIcon_diasEstimados"></i>
+                  </th>
+                  <th style="width: 7%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('diasTrabalhados')" title="Ordenar por Dias Em Produção">
+                    Em Produção <i class="fa-solid fa-sort ms-1 small" id="sortIcon_diasTrabalhados"></i>
+                  </th>
+                  <th style="width: 7%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('status')" title="Ordenar por Status">
+                    Status <i class="fa-solid fa-sort ms-1 small" id="sortIcon_status"></i>
+                  </th>
+                  <th style="width: 8%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('prazoFinal')" title="Ordenar por Prazo Final">
+                    Prazo Final <i class="fa-solid fa-sort ms-1 small" id="sortIcon_prazoFinal"></i>
+                  </th>
+                  <th id="thAcoesRelatorio" data-html2canvas-ignore="true" style="width: 4%;">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaCorpoRelatorio">
+              </tbody>
+            </table>
+          </div>
+
+          <div class="text-end text-muted small mt-4">
+            <em>SysManager - Relatório gerado automaticamente para controle de esteira ágil.</em>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- ABA 5: EQUIPE                              -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-usuarios" role="tabpanel">
+        <div class="row g-4">
+          <div class="col-lg-4 col-md-5">
+            <div class="card card-custom p-4">
+              <h5 class="fw-bold text-dark mb-3">
+                <i class="fa-solid fa-user-plus me-2 text-primary"></i>Cadastrar Membro
+              </h5>
+
+              <div>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Nome Completo:</label>
+                  <input type="text" class="form-control" id="cadNome" placeholder="Ex: Elvys Maia">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold d-flex align-items-center justify-content-between">
+                    <span>E-mail Google (Gmail):</span>
+                    <span class="text-primary" role="button" data-bs-toggle="tooltip" data-bs-placement="top" title="Informe a conta @gmail.com com a qual o membro acessará o sistema. O login será autorizado automaticamente!">
+                      <i class="fa-solid fa-circle-question fs-6"></i>
+                    </span>
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-envelope"></i></span>
+                    <input type="email" class="form-control" id="cadEmail" placeholder="usuario@gmail.com">
+                  </div>
+                  <div class="form-text text-muted" style="font-size: 0.74rem;">
+                    <i class="fa-brands fa-google text-danger me-1"></i> Necessário conta @gmail.com para autorização imediata de acesso.
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Função / Perfil:</label>
+                  <select class="form-select" id="cadCargo">
+                    <option value="Desenvolvedor" selected>Desenvolvedor</option>
+                    <option value="Gerente de Projetos">Gerente de Projetos</option>
+                  </select>
+                </div>
+                <button type="button" class="btn btn-primary w-100 fw-semibold py-2" onclick="salvarUsuarioRapido()">
+                  <i class="fa-solid fa-user-plus me-1"></i> Cadastrar Membro
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-8 col-md-7">
+            <div class="card card-custom p-4">
+              <div class="mb-3">
+                <h5 class="fw-bold text-dark mb-0">Membros Cadastrados</h5>
+                <small class="text-muted">Gerencie a equipe e liberação de acesso da esteira ágil.</small>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Nome</th>
+                      <th>E-mail Google</th>
+                      <th>Função</th>
+                      <th class="text-center">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tabelaUsuariosCorpo">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR MEMBRO -->
+  <div class="modal fade" id="modalEditarUsuario" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-pen me-2"></i>Alterar Dados do Membro</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editUserId">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">ID do Usuário:</label>
+            <input type="text" class="form-control bg-light" id="editUserIdDisplay" readonly>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Nome Completo:</label>
+            <input type="text" class="form-control" id="editUserNome">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold d-flex align-items-center justify-content-between">
+              <span>E-mail Google (Gmail):</span>
+              <span class="text-primary" role="button" data-bs-toggle="tooltip" data-bs-placement="top" title="E-mail da conta Google para login e autorização automática no sistema.">
+                <i class="fa-solid fa-circle-question fs-6"></i>
+              </span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-envelope"></i></span>
+              <input type="email" class="form-control" id="editUserEmail" placeholder="usuario@gmail.com">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Função / Perfil:</label>
+            <select class="form-select" id="editUserCargo">
+              <option value="Desenvolvedor">Desenvolvedor</option>
+              <option value="Gerente de Projetos">Gerente de Projetos</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-semibold" onclick="salvarEdicaoUsuarioRapido()">
+            <i class="fa-solid fa-check me-1"></i> Salvar Alterações
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CADASTRAR DEMANDA -->
+  <div class="modal fade" id="modalNovaTarefa" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-circle-plus me-2"></i>Cadastrar Demanda</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- MÓDULO COM BUSCA E LUPA -->
+          <div class="mb-3 position-relative">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label small fw-bold mb-0">
+                <i class="fa-solid fa-cube text-primary me-1"></i> Módulo:
+              </label>
+              <div class="form-check m-0 d-flex align-items-center">
+                <input class="form-check-input mt-0 me-1" type="checkbox" id="taskDemandaExterna" onchange="aoAlternarDemandaExterna()" style="cursor: pointer;">
+                <label class="form-check-label small fw-semibold text-dark user-select-none" for="taskDemandaExterna" style="cursor: pointer;">
+                  Demanda Externa
+                </label>
+              </div>
+            </div>
+            <div class="input-group" id="inputGroupTaskModulo">
+              <span class="input-group-text bg-white border-end-0 text-primary" id="addonLupaModulo">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" class="form-control border-start-0 ps-0" id="taskModuloInput" list="listaModulosDatalist" placeholder="Pesquisar módulo..." value="SIOPLEEx" autocomplete="off" onfocus="this.select()">
+              <button class="btn btn-outline-secondary dropdown-toggle" id="btnDropdownModulo" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Ver lista de módulos"></button>
+              <ul class="dropdown-menu dropdown-menu-end shadow w-100" style="max-height: 240px; overflow-y: auto;" id="taskModuloDropdownMenu">
+              </ul>
+            </div>
+            <datalist id="listaModulosDatalist">
+            </datalist>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Título da Demanda:</label>
+            <input type="text" class="form-control" id="taskTitulo" placeholder="Ex: Criar tela de login com OAuth">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Descrição / Requisitos:</label>
+            <textarea class="form-control" id="taskDescricao" rows="2" placeholder="Detalhes técnicos da tarefa..."></textarea>
+          </div>
+          <!-- CALENDÁRIO: DATA DE INÍCIO E TÉRMINO DA DEMANDA -->
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-dark">
+                <i class="fa-regular fa-calendar text-primary me-1"></i> Data de Início:
+              </label>
+              <input type="date" class="form-control" id="taskDataInicio" onchange="aoMudarDatasNovaDemanda()">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-dark">
+                <i class="fa-regular fa-calendar-check text-primary me-1"></i> Data de Término / Prazo:
+              </label>
+              <input type="date" class="form-control" id="taskDataPrazo" onchange="aoMudarDatasNovaDemanda()">
+            </div>
+            <div class="col-12 mt-1">
+              <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3 border">
+                <small class="text-muted mb-0" id="taskDiasCalculadosDica">
+                  <i class="fa-solid fa-clock text-primary me-1"></i> Duração estimada: <strong id="lblDuracaoDias" class="text-dark">2 dias</strong>
+                </small>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapido(1)">+1 dia</button>
+                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapido(3)">+3 dias</button>
+                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapido(7)">+7 dias</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">
+              <i class="fa-solid fa-flag text-primary me-1"></i> Urgência / Prioridade:
+            </label>
+            <select class="form-select" id="taskUrgencia" onchange="aoMudarUrgenciaNovaDemanda()">
+              <option value="Baixa">🟢 Baixa</option>
+              <option value="Media" selected>🟡 Média</option>
+              <option value="Alta">🟠 Alta</option>
+              <option value="Urgente">🚨 Urgente (Prioridade Alta)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Desenvolvedor Responsável:</label>
+            <select class="form-select" id="taskDevSelect">
+            </select>
+          </div>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="taskAtivaAgora">
+            <label class="form-check-label small" for="taskAtivaAgora">
+              Colocar imediatamente como <strong>Demanda Ativa na Esteira</strong>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-semibold" id="btnConfirmarNovaDemanda" onclick="salvarNovaTarefaInstantanea()">
+            <i class="fa-solid fa-plus me-1"></i> Cadastrar Demanda
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SOLICITAR NOVO PRAZO (SEM JUSTIFICATIVA) -->
+  <div class="modal fade" id="modalSolicitarPrazo" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-calendar-plus me-2"></i>Solicitar Novo Prazo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning small d-flex align-items-center gap-2">
+            <i class="fa-solid fa-circle-info fs-5"></i>
+            <div>
+              Informe a quantidade de dias adicionais necessários. O <strong>Gerente do Projeto</strong> dará ciência e a demanda continuará na esteira.
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Título da Demanda:</label>
+            <input type="text" class="form-control bg-light" id="solTarefaTitulo" readonly>
+            <input type="hidden" id="solTarefaId">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Quantos DIAS adicionais você necessita?</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="fa-solid fa-calendar-day text-primary"></i></span>
+              <input type="number" class="form-control" id="solNovosDias" min="1" value="2">
+              <span class="input-group-text">dia(s)</span>
+            </div>
+            <div class="form-text text-muted">O prazo da demanda será estendido a partir de hoje com essa quantidade de dias.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-warning fw-semibold px-4 text-dark" onclick="enviarSolicitacaoPrazoInstantanea()">
+            <i class="fa-solid fa-paper-plane me-1"></i> Solicitar Novo Prazo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRÉ-VISUALIZAÇÃO E DOWNLOAD DO RELATÓRIO PDF (SM) -->
+  <div class="modal fade" id="modalPreviewRelatorioPdf" tabindex="-1" aria-labelledby="modalPreviewRelatorioPdfLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content shadow-lg border-0">
+        <div class="modal-header bg-dark text-white py-2 px-3">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary fw-bold px-2 py-1 fs-6">SM</span>
+            <h5 class="modal-title fw-bold fs-6 mb-0" id="modalPreviewRelatorioPdfLabel">
+              Relatório de Demandas da Esteira Ágil (SM) - Pré-visualização & Download
+            </h5>
+          </div>
+          <div class="d-flex align-items-center gap-2 ms-auto">
+            <button type="button" class="btn btn-success btn-sm fw-semibold" id="btnBaixarPdfModal" onclick="executarDownloadPdfDireto()">
+              <i class="fa-solid fa-download me-1"></i> Baixar Arquivo PDF
+            </button>
+            <button type="button" class="btn btn-outline-light btn-sm fw-semibold" onclick="imprimirRelatorioDireto()">
+              <i class="fa-solid fa-print me-1"></i> Imprimir / Salvar PDF
+            </button>
+            <button type="button" class="btn-close btn-close-white ms-2" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+        </div>
+        <div class="modal-body p-3 bg-secondary-subtle">
+          <div class="d-flex justify-content-center">
+            <div id="corpoVisualizacaoPdf" class="bg-white shadow p-4 rounded" style="width: 100%; max-width: 1060px; font-family: Arial, Helvetica, sans-serif; color: #1e293b; box-sizing: border-box;">
+              <!-- Conteúdo renderizado dinamicamente -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer py-2 px-3 justify-content-between bg-light">
+          <div class="small fw-semibold" id="statusGeracaoPdfModal">
+            <span class="spinner-border spinner-border-sm text-primary me-1"></span> Preparando visualização e arquivo PDF...
+          </div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Fechar</button>
+            <button type="button" class="btn btn-success btn-sm px-3 fw-semibold" onclick="executarDownloadPdfDireto()">
+              <i class="fa-solid fa-download me-1"></i> Baixar PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANNER DE FUNDO SysManager PARA TELA DE LOGIN -->
+  <div id="bannerFundoLogin">
+    <div class="banner-grid-overlay"></div>
+    <div class="banner-watermark">SM • SYSMANAGER</div>
+
+    <!-- Header do Banner SysManager -->
+    <div class="d-flex justify-content-between align-items-center position-relative w-100" style="z-index: 2;">
+      <div class="d-flex align-items-center gap-3">
+        <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, #2563eb, #06b6d4); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 25px rgba(37, 99, 235, 0.5);">
+          <span class="fw-bold text-white fs-4">SM</span>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <h3 class="fw-bold mb-0 text-white" style="letter-spacing: -0.5px; font-size: 1.6rem;"><span class="fs-5 text-white-50 fw-normal">• </span>Sys Manager</h3>
+            <span class="badge bg-primary bg-opacity-75 text-white" style="font-size: 0.72rem; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.2);">Agile</span>
+          </div>
+          <small class="text-white-50">Slogan <strong>SM</strong> • Sistema de Gestão Ágil e Esteira de Demandas</small>
+        </div>
+      </div>
+
+      <div class="d-none d-md-flex align-items-center gap-3">
+        <span class="banner-tag-pill">
+          <i class="fa-solid fa-shield-halved text-info"></i> Acesso Protegido
+        </span>
+        <span class="banner-tag-pill">
+          <i class="fa-solid fa-bolt text-warning"></i> Tempo Real Google
+        </span>
+      </div>
+    </div>
+
+    <!-- Centro Decorativo / Ambient Graphic (sutilmente atrás do card de login) -->
+    <div class="position-relative text-center d-flex flex-column align-items-center justify-content-center w-100 my-auto" style="z-index: 2; pointer-events: none;">
+      <div class="px-4 py-2 rounded-pill mb-2" style="background: rgba(37, 99, 235, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); backdrop-filter: blur(8px);">
+        <span class="text-info fw-bold small text-uppercase" style="letter-spacing: 2px;">
+          <i class="fa-solid fa-diagram-project me-2 text-info"></i>SM • Ambiente de Produção & Governança de Tarefas
+        </span>
+      </div>
+    </div>
+
+    <!-- Rodapé do Banner SysManager -->
+    <div class="d-flex justify-content-between align-items-end position-relative w-100" style="z-index: 2;">
+      <div class="d-none d-lg-flex gap-3 align-items-center">
+        <span class="banner-tag-pill">
+          <i class="fa-solid fa-code-branch text-primary"></i> Esteira Kanban Integrada
+        </span>
+        <span class="banner-tag-pill">
+          <i class="fa-solid fa-stopwatch text-success"></i> Gestão de Tempo de Produção
+        </span>
+        <span class="banner-tag-pill">
+          <i class="fa-solid fa-chart-line text-info"></i> Painel Gerencial & Métricas
+        </span>
+      </div>
+
+      <div class="text-end text-white-50 small ms-auto">
+        <div class="fw-semibold text-white">Google Workspace & Apps Script</div>
+        <div style="font-size: 0.72rem; opacity: 0.75;">Desenvolvido para Gestão de Alta Performance</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LOGIN / IDENTIFICAÇÃO DA EQUIPE -->
+  <div class="modal fade" id="modalLoginEquipe" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+        <div class="modal-header border-0 bg-dark text-white p-4 pb-3" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-primary bg-opacity-25 d-flex align-items-center justify-content-center text-primary" style="width: 48px; height: 48px; font-size: 22px;">
+              <span class="fw-bold text-info fs-5">SM</span>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold text-white mb-0">Sys Manager - Acesso da Equipe</h5>
+              <small class="text-white-50">Identificação com conta Google (@gmail.com)</small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-body p-4">
+          <p class="text-muted small mb-3">
+            Para acessar a sua esteira ágil e visualizar suas demandas em produção, informe o seu e-mail <strong>@gmail.com</strong> cadastrado:
+          </p>
+
+          <div id="alertaErroLogin" class="alert alert-danger d-none py-2 px-3 small mb-3">
+            <i class="fa-solid fa-circle-exclamation me-1"></i>
+            <span id="alertaErroLoginMsg">E-mail não cadastrado na equipe.</span>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">E-mail Google Cadastrado:</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted"><i class="fa-solid fa-envelope"></i></span>
+              <input type="email" class="form-control" id="inputLoginEmail" placeholder="seuemail@gmail.com" onkeydown="if(event.key === 'Enter') efetuarLoginEquipe()">
+            </div>
+            <div class="form-text text-muted" style="font-size: 0.74rem;">
+              <i class="fa-brands fa-google text-danger me-1"></i> Apenas membros previamente autorizados têm acesso liberado.
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-primary w-100 fw-semibold py-2" id="btnLoginEntrar" onclick="efetuarLoginEquipe()">
+            <span id="btnLoginTexto"><i class="fa-solid fa-right-to-bracket me-1"></i> Acessar Minha Esteira</span>
+            <span id="btnLoginSpinner" class="spinner-border spinner-border-sm ms-1 d-none"></span>
+          </button>
+
+          <div class="text-center mt-3">
+            <small class="text-muted" style="font-size: 0.72rem;">
+              Administrador: <strong>Nicolas Richardt</strong>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- JAVASCRIPT ULTRA RÁPIDO -->
+  <script>
+    let appState = {
+      currentUser: null,
+      usuarios: [],
+      tarefas: [],
+      solicitacoes: []
+    };
+
+    // 22 Módulos Oficiais do Sistema
+    const LISTA_MODULOS = [
+      'SIOPLEEx',
+      'SIOPLEEx_BD',
+      'SIOPLEEx_BPMN',
+      'SIOPLEEx_Destaques',
+      'SIOPLEEx_Destaques_BD',
+      'SIOPLEEx_EMENDAS',
+      'SIOPLEEx_EMENDAS_BD',
+      'SIOPLEEx_Indicadores',
+      'SIOPLEEx_Indicadores_BD',
+      'SIOPLEEx_Iniciativa',
+      'SIOPLEEx_Iniciativa_BD',
+      'SIOPLEEx_InstrumentoDeParceria',
+      'SIOPLEEx_InstrumentoDeParceria_BD',
+      'SIOPLEEx_Orcamento',
+      'SIOPLEEx_Orcamento_BD',
+      'SIOPLEEx_Painel',
+      'SIOPLEEx_Painel_BD',
+      'SIOPLEEx_Processos',
+      'SIOPLEEx_Processos_BD',
+      'SIOPLEEx_SIPLEX',
+      'SIOPLEEx_SIPLEX_BD',
+      'SIOPLEEx_BD_Externo'
+    ];
+
+    let relatorioSortColuna = 'dataInsercao';
+    let relatorioSortDirecao = 'DESC';
+    let relatorioFiltradoAtual = [];
+
+    function limparNomeDev(nome) {
+      if (!nome) return '';
+      return nome.replace(/\s*\([Aa]mbos\)/gi, '').trim();
     }
-  } else {
-    const hoje = new Date();
-    dFim = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-  }
 
-  const diffMs = dFim.getTime() - dInicio.getTime();
-  const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
-  return Math.max(1, diffDias + 1);
-}
+    function popularModulosUI() {
+      const datalist = document.getElementById('listaModulosDatalist');
+      const dropdown = document.getElementById('taskModuloDropdownMenu');
+      const selectModuloFiltro = document.getElementById('filtroRelatorioModulo');
 
-/**
- * Lê os dados da planilha e vincula automaticamente o usuário autenticado ao seu perfil
- */
-function getAppData(clientEmail) {
-  let emailLogado = (Session.getActiveUser().getEmail() || '').toLowerCase().trim();
-  
-  // Se o Google não retornar o e-mail ativo da sessão (comum no modo 'Eu' para outros usuários),
-  // usa o e-mail validado fornecido pelo cliente salvo no navegador (localStorage)
-  if (!emailLogado && clientEmail) {
-    emailLogado = clientEmail.toLowerCase().trim();
-  }
+      if (datalist && datalist.children.length === 0) {
+        datalist.innerHTML = LISTA_MODULOS.map(m => `<option value="${m}">`).join('');
+      }
+      if (dropdown && dropdown.children.length === 0) {
+        dropdown.innerHTML = LISTA_MODULOS.map(m => `
+          <li><a class="dropdown-item py-1 small" href="javascript:void(0)" onclick="selecionarModulo('${m}')"><i class="fa-solid fa-cube text-primary me-2"></i>${m}</a></li>
+        `).join('');
+      }
+      if (selectModuloFiltro && selectModuloFiltro.options.length <= 1) {
+        selectModuloFiltro.innerHTML = '<option value="TODOS" selected>Todos os Módulos</option>' +
+          '<option value="Demanda Externa">Demanda Externa</option>' +
+          LISTA_MODULOS.map(m => `<option value="${m}">${m}</option>`).join('');
+      }
+    }
 
-  // Se nenhum e-mail estiver disponível, solicita identificação/login
-  if (!emailLogado) {
-    return {
-      autorizado: false,
-      precisaLogin: true,
-      emailAutenticado: '',
-      adminEmail: ADMIN_EMAIL
-    };
-  }
+    function selecionarModulo(mod) {
+      const check = document.getElementById('taskDemandaExterna');
+      if (check && check.checked) return;
+      const input = document.getElementById('taskModuloInput');
+      if (input) input.value = mod;
+    }
 
-  const check = verificarEmailAutorizado(emailLogado);
-  if (!check.autorizado) {
-    return {
-      autorizado: false,
-      precisaLogin: true,
-      emailAutenticado: emailLogado,
-      error: check.message,
-      adminEmail: ADMIN_EMAIL
-    };
-  }
+    function aoAlternarDemandaExterna() {
+      const check = document.getElementById('taskDemandaExterna');
+      const input = document.getElementById('taskModuloInput');
+      const btnDropdown = document.getElementById('btnDropdownModulo');
+      const addonLupa = document.getElementById('addonLupaModulo');
+      const isChecked = check ? check.checked : false;
 
-  const ss = getDatabaseSpreadsheet();
-  initDatabaseIfNeeded();
-
-  // 1. Usuários (Estrutura garantida: A=ID, B=Nome, C=Email, D=Cargo, E=DataCriacao)
-  const shUsuarios = ss.getSheetByName(SHEETS.USUARIOS);
-  const usuarios = [];
-  let currentUser = check.usuario || null;
-
-  if (shUsuarios && shUsuarios.getLastRow() > 1) {
-    const rawUsers = shUsuarios.getRange(2, 1, shUsuarios.getLastRow() - 1, 5).getValues();
-    
-    rawUsers.forEach(r => {
-      if (!r[0]) return;
-      
-      const id = (r[0] || '').toString().trim();
-      const nome = (r[1] || '').toString().trim();
-      const email = (r[2] || '').toString().trim().toLowerCase();
-      let cargo = (r[3] || 'Desenvolvedor').toString().trim();
-      if (cargo === 'Ambos' || cargo === 'Gerente' || cargo.toLowerCase().includes('gerente') || cargo.toLowerCase().includes('ambos')) {
-        cargo = 'Gerente de Projetos';
+      if (isChecked) {
+        if (input) {
+          if (!input.dataset.prevVal) {
+            input.dataset.prevVal = input.value || 'SIOPLEEx';
+          }
+          input.value = 'Demanda Externa';
+          input.disabled = true;
+          input.classList.add('bg-light', 'text-muted');
+        }
+        if (btnDropdown) {
+          btnDropdown.disabled = true;
+          btnDropdown.classList.add('disabled');
+        }
+        if (addonLupa) {
+          addonLupa.classList.add('bg-light', 'text-muted');
+        }
       } else {
-        cargo = 'Desenvolvedor';
-      }
-
-      const userObj = {
-        id: id,
-        nome: nome,
-        email: email,
-        cargo: cargo
-      };
-
-      usuarios.push(userObj);
-
-      // Vincula diretamente o perfil autenticado pelo e-mail
-      if (email && emailLogado && email === emailLogado) {
-        currentUser = userObj;
-      }
-    });
-  }
-
-  // Se o usuário logado for o Administrador e não tiver linha exata de email correspondente, vincula ao registro dele
-  if (!currentUser && emailLogado === ADMIN_EMAIL.toLowerCase()) {
-    const nickInSheet = usuarios.find(u => u.nome.toLowerCase().includes('nicolas'));
-    if (nickInSheet) {
-      currentUser = nickInSheet;
-    } else {
-      currentUser = {
-        id: 'USR-ADMIN',
-        nome: 'Ten Nicolas',
-        email: ADMIN_EMAIL,
-        cargo: 'Gerente de Projetos'
-      };
-    }
-  }
-
-  // 2. Tarefas
-  const shTarefas = ss.getSheetByName(SHEETS.TAREFAS);
-  const tarefas = [];
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-
-  if (shTarefas && shTarefas.getLastRow() > 1) {
-    const lastColTar = Math.max(14, shTarefas.getLastColumn());
-    const rawTasks = shTarefas.getRange(2, 1, shTarefas.getLastRow() - 1, lastColTar).getValues();
-
-    rawTasks.forEach(r => {
-      if (!r[0]) return;
-
-      const dataPrazo = r[8] ? new Date(r[8]) : null;
-      let statusAtual = r[9];
-
-      if (statusAtual !== 'Concluída' && dataPrazo) {
-        const prazoSemHora = new Date(dataPrazo);
-        prazoSemHora.setHours(0, 0, 0, 0);
-        if (hoje.getTime() > prazoSemHora.getTime() && statusAtual !== 'Atrasada') {
-          statusAtual = 'Atrasada';
+        if (input) {
+          input.disabled = false;
+          input.value = input.dataset.prevVal || 'SIOPLEEx';
+          input.dataset.prevVal = '';
+          input.classList.remove('bg-light', 'text-muted');
+        }
+        if (btnDropdown) {
+          btnDropdown.disabled = false;
+          btnDropdown.classList.remove('disabled');
+        }
+        if (addonLupa) {
+          addonLupa.classList.remove('bg-light', 'text-muted');
         }
       }
+    }
 
-      const isAtivo = (r[10] === 'SIM' || r[10] === true);
-      const diasAuto = calcularDiasExecucao(r[7], r[12], statusAtual, isAtivo);
+    function ordenarRelatorioPorColuna(coluna) {
+      if (relatorioSortColuna === coluna) {
+        relatorioSortDirecao = (relatorioSortDirecao === 'ASC') ? 'DESC' : 'ASC';
+      } else {
+        relatorioSortColuna = coluna;
+        if (['num', 'modulo', 'titulo', 'devNome', 'status'].includes(coluna)) {
+          relatorioSortDirecao = 'ASC';
+        } else {
+          relatorioSortDirecao = 'DESC';
+        }
+      }
+      atualizarRelatorioMensal();
+      mostrarToast(`Ordenado por ${obterNomeAmigavelColuna(coluna)} (${relatorioSortDirecao === 'ASC' ? 'Crescente' : 'Decrescente'})`);
+    }
 
-      tarefas.push({
-        id: r[0],
-        titulo: r[1],
-        descricao: r[2],
-        devId: r[3],
-        devNome: r[4],
-        diasEstimados: Number(r[5]) || 0,
-        diasTrabalhados: diasAuto,
-        dataInicio: r[7] ? Utilities.formatDate(new Date(r[7]), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
-        dataInsercao: r[7] ? Utilities.formatDate(new Date(r[7]), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
-        dataPrazo: r[8] ? Utilities.formatDate(new Date(r[8]), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
-        status: statusAtual,
-        ativo: isAtivo,
-        urgencia: r[11] || 'Media',
-        dataConclusao: r[12] ? Utilities.formatDate(new Date(r[12]), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
-        modulo: r[13] ? r[13].toString().trim() : 'SIOPLEEx',
-        demandaExterna: r[13] ? (r[13].toString().trim() === 'Demanda Externa') : false
-      });
-    });
-  }
+    function obterNomeAmigavelColuna(col) {
+      const map = {
+        'num': 'Número (#)',
+        'modulo': 'Módulo',
+        'titulo': 'Título',
+        'devNome': 'Desenvolvedor',
+        'dataInsercao': 'Data de Inserção',
+        'urgencia': 'Urgência',
+        'diasEstimados': 'Estimado',
+        'diasTrabalhados': 'Em Produção',
+        'status': 'Status',
+        'prazoFinal': 'Prazo Final'
+      };
+      return map[col] || col;
+    }
 
-  // 3. Solicitações
-  const shSol = ss.getSheetByName(SHEETS.SOLICITACOES);
-  const solicitacoes = [];
-  if (shSol && shSol.getLastRow() > 1) {
-    const rawSol = shSol.getRange(2, 1, shSol.getLastRow() - 1, 11).getValues();
-    rawSol.forEach(r => {
-      if (r[0]) {
-        solicitacoes.push({
-          id: r[0],
-          tarefaId: r[1],
-          tarefaTitulo: r[2],
-          devId: r[3],
-          devNome: r[4],
-          justificativa: r[5],
-          novosDiasSolicitados: Number(r[6]) || 0,
-          status: r[7],
-          gerenteNome: r[8],
-          dataSolicitacao: r[9] ? Utilities.formatDate(new Date(r[9]), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') : '',
-          dataResposta: r[10] ? Utilities.formatDate(new Date(r[10]), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') : ''
+
+    // 🌐 URL Oficial da API Google Apps Script (Conecta a Vercel à sua Planilha Google Sheets)
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz-Z--vizc3igabZp67LoNIxvri_d-CFd76qijRBj5dV4EVGzj-jZLyNXYsLa3CmBBHYQ/exec';
+
+    const isGoogleScript = typeof google !== 'undefined' && google.script && google.script.run;
+
+    /**
+     * Executa comandos no servidor (compatível nativamente com Google Apps Script e via API na Vercel)
+     */
+    function executarNoServidor(action, data, onSuccess, onFailure) {
+      if (isGoogleScript) {
+        const runner = google.script.run;
+        if (onSuccess) runner.withSuccessHandler(onSuccess);
+        if (onFailure) runner.withFailureHandler(onFailure);
+
+        if (action === 'getAppData') runner.getAppData((data && data.email) || '');
+        else if (action === 'verificarEmailLogin') runner.verificarEmailLogin((data && data.email) || '');
+        else if (action === 'cadastrarTarefa') runner.cadastrarTarefa(data);
+        else if (action === 'selecionarTarefaAtiva') runner.selecionarTarefaAtiva(data.tarefaId, data.devId);
+        else if (action === 'concluirTarefa' || action === 'finalizarTarefa') runner.concluirTarefa(data.tarefaId, data.devId);
+        else if (action === 'solicitarNovoPrazo') runner.solicitarNovoPrazo(data);
+        else if (action === 'darCientePrazo') runner.darCientePrazo(data.solicitacaoId, data.gerenteNome || '');
+        else if (action === 'excluirTarefa') runner.excluirTarefa(data.tarefaId);
+        else if (action === 'trocarOrdemTarefas' || action === 'reordenarTarefas') runner.trocarOrdemTarefas(data.tarefaId1, data.tarefaId2);
+        else if (action === 'cadastrarUsuario') runner.cadastrarUsuario(data);
+        else if (action === 'atualizarUsuario') runner.atualizarUsuario(data);
+        else if (action === 'excluirUsuario') runner.excluirUsuario(data.usuarioId || data.id || data);
+      } else if (APPS_SCRIPT_URL) {
+        fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: action, data: data })
+        })
+        .then(r => r.json())
+        .then(res => {
+          if (onSuccess) onSuccess(res);
+        })
+        .catch(err => {
+          const params = new URLSearchParams({ action: action, ...data });
+          fetch(`${APPS_SCRIPT_URL}?${params.toString()}`)
+            .then(r => r.json())
+            .then(res => { if (onSuccess) onSuccess(res); })
+            .catch(getErr => {
+              if (onFailure) onFailure(getErr);
+              else console.error('Erro de conexão com o servidor:', getErr);
+            });
         });
       }
-    });
-  }
-
-  return {
-    autorizado: true,
-    precisaLogin: false,
-    usuarios: usuarios,
-    tarefas: tarefas,
-    solicitacoes: solicitacoes,
-    emailAutenticado: emailLogado,
-    currentUser: currentUser,
-    adminEmail: ADMIN_EMAIL
-  };
-}
-
-/**
- * Garante e padroniza a estrutura da aba Usuários:
- * Coluna A: ID
- * Coluna B: Nome
- * Coluna C: Email (Gmail)
- * Coluna D: Cargo
- * Coluna E: DataCriacao
- * 
- * Se a planilha tiver colunas desordenadas ou faltar a coluna de e-mail,
- * reorganiza automaticamente preservando todos os membros e IDs!
- */
-function organizarPlanilhaUsuarios() {
-  const ss = getDatabaseSpreadsheet();
-  let sh = ss.getSheetByName(SHEETS.USUARIOS);
-  
-  if (!sh) {
-    sh = ss.insertSheet(SHEETS.USUARIOS);
-    sh.appendRow(['ID', 'Nome', 'Email', 'Cargo', 'DataCriacao']);
-    sh.appendRow(['USR-1', 'Ten Nicolas', ADMIN_EMAIL, 'Gerente de Projetos', new Date()]);
-    sh.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-    SpreadsheetApp.flush();
-    return sh;
-  }
-
-  const lastRow = sh.getLastRow();
-  const lastCol = Math.max(5, sh.getLastColumn());
-
-  if (lastRow < 1) {
-    sh.appendRow(['ID', 'Nome', 'Email', 'Cargo', 'DataCriacao']);
-    sh.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-    SpreadsheetApp.flush();
-    return sh;
-  }
-
-  const headers = sh.getRange(1, 1, 1, lastCol).getValues()[0].map(h => (h || '').toString().toLowerCase().trim());
-  const headerJaCorreto = (headers[0] === 'id' && headers[1] === 'nome' && headers[2].includes('email') && headers[3].includes('cargo'));
-
-  if (headerJaCorreto && lastRow > 1) {
-    const range = sh.getRange(2, 1, lastRow - 1, 5);
-    const rows = range.getValues();
-    let mudou = false;
-    for (let i = 0; i < rows.length; i++) {
-      const nome = (rows[i][1] || '').toString().toLowerCase();
-      let email = (rows[i][2] || '').toString().trim().toLowerCase();
-      if (!email && nome.includes('nicolas')) {
-        rows[i][2] = ADMIN_EMAIL;
-        mudou = true;
-      }
-      let c = (rows[i][3] || '').toString().trim();
-      if (c === 'Ambos' || c === 'Gerente' || c.toLowerCase().includes('gerente') || c.toLowerCase().includes('ambos')) {
-        if (rows[i][3] !== 'Gerente de Projetos') {
-          rows[i][3] = 'Gerente de Projetos';
-          mudou = true;
-        }
-      } else if (!c || c.toLowerCase() === 'desenvolvedor' || c.toLowerCase() === 'dev') {
-        if (rows[i][3] !== 'Desenvolvedor') {
-          rows[i][3] = 'Desenvolvedor';
-          mudou = true;
-        }
-      }
     }
-    if (mudou) {
-      range.setValues(rows);
-      SpreadsheetApp.flush();
+
+    // Toast de confirmação visual instantânea
+    function mostrarToast(msg) {
+      const toast = document.getElementById('toastFeedback');
+      const txt = document.getElementById('toastFeedbackTexto');
+      txt.innerText = msg;
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 1600);
     }
-    return sh;
-  }
 
-  if (lastRow > 1) {
-    const rawData = sh.getRange(2, 1, lastRow - 1, lastCol).getValues();
-    const rowsLimpos = [];
+    // Fecha qualquer modal em 0 milissegundos
+    function fecharModalSeguro(modalId) {
+      const el = document.getElementById(modalId);
+      if (!el) return;
+      const btnClose = el.querySelector('[data-bs-dismiss="modal"]');
+      if (btnClose) {
+        btnClose.click();
+      } else {
+        const inst = bootstrap.Modal.getOrCreateInstance(el);
+        if (inst) inst.hide();
+      }
+      setTimeout(() => {
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+      }, 50);
+    }
 
-    rawData.forEach(r => {
-      if (!r[0]) return;
-      const id = (r[0] || '').toString().trim();
-      const nome = (r[1] || '').toString().trim();
-      let email = '';
-      let cargo = 'Desenvolvedor';
-      let data = new Date();
+    function abrirModalNovaDemanda() {
+      popularModulosUI();
+      atualizarSelectsDev();
 
-      for (let c = 2; c < r.length; c++) {
-        const val = r[c];
-        if (!val) continue;
+      const checkExterna = document.getElementById('taskDemandaExterna');
+      if (checkExterna) {
+        checkExterna.checked = false;
+      }
+      aoAlternarDemandaExterna();
 
-        if (val instanceof Date) {
-          data = val;
-          continue;
-        }
+      const moduloInput = document.getElementById('taskModuloInput');
+      if (moduloInput) moduloInput.value = 'SIOPLEEx';
 
-        const strVal = val.toString().trim();
-        if (strVal.includes('@')) {
-          email = strVal.toLowerCase();
-        } else if (['desenvolvedor', 'dev', 'gerente', 'gerente de projetos', 'ambos'].includes(strVal.toLowerCase())) {
-          const l = strVal.toLowerCase();
-          if (l === 'desenvolvedor' || l === 'dev') cargo = 'Desenvolvedor';
-          else cargo = 'Gerente de Projetos';
-        }
+      const tituloInput = document.getElementById('taskTitulo');
+      if (tituloInput) tituloInput.value = '';
+
+      const descInput = document.getElementById('taskDescricao');
+      if (descInput) descInput.value = '';
+
+      // Calendário de Início e Término
+      const dtInicioInput = document.getElementById('taskDataInicio');
+      const dtPrazoInput = document.getElementById('taskDataPrazo');
+      const hoje = new Date();
+      const prazoPadrao = new Date();
+      prazoPadrao.setDate(hoje.getDate() + 2);
+
+      if (dtInicioInput) dtInicioInput.value = formatarDataIso(hoje);
+      if (dtPrazoInput) dtPrazoInput.value = formatarDataIso(prazoPadrao);
+      atualizarDicaDuracaoModal();
+
+      const urgSelect = document.getElementById('taskUrgencia');
+      if (urgSelect) urgSelect.value = 'Media';
+
+      // Checkbox de colocar na esteira SEMPRE false por padrão
+      const ativaCheckbox = document.getElementById('taskAtivaAgora');
+      if (ativaCheckbox) ativaCheckbox.checked = false;
+
+      // Pré-seleciona o desenvolvedor logado automaticamente
+      const devSelect = document.getElementById('taskDevSelect');
+      if (devSelect && appState.currentUser) {
+        devSelect.value = appState.currentUser.id;
       }
 
-      if (!email && nome.toLowerCase().includes('nicolas')) {
-        email = ADMIN_EMAIL;
+      const el = document.getElementById('modalNovaTarefa');
+      bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    function aoMudarDatasNovaDemanda() {
+      const dtIniInput = document.getElementById('taskDataInicio');
+      const dtFimInput = document.getElementById('taskDataPrazo');
+      if (!dtIniInput || !dtFimInput || !dtIniInput.value || !dtFimInput.value) return;
+
+      const dtIni = new Date(dtIniInput.value + 'T00:00:00');
+      const dtFim = new Date(dtFimInput.value + 'T00:00:00');
+
+      if (dtFim < dtIni) {
+        dtFimInput.value = dtIniInput.value;
       }
-
-      rowsLimpos.push([id, nome, email, cargo, data]);
-    });
-
-    sh.clearContents();
-    sh.getRange(1, 1, 1, 5).setValues([['ID', 'Nome', 'Email', 'Cargo', 'DataCriacao']]);
-    sh.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-
-    if (rowsLimpos.length > 0) {
-      sh.getRange(2, 1, rowsLimpos.length, 5).setValues(rowsLimpos);
-    }
-  } else {
-    sh.clearContents();
-    sh.getRange(1, 1, 1, 5).setValues([['ID', 'Nome', 'Email', 'Cargo', 'DataCriacao']]);
-    sh.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-  }
-
-  SpreadsheetApp.flush();
-  return sh;
-}
-
-/**
- * 1º Cadastrar Membro com E-mail Google (Salva diretamente no banco da planilha)
- */
-function cadastrarUsuario(dados) {
-  try {
-    organizarPlanilhaUsuarios();
-    const ss = getDatabaseSpreadsheet();
-    const sh = ss.getSheetByName(SHEETS.USUARIOS);
-    const newId = 'USR-' + (sh.getLastRow() + Math.floor(Math.random() * 900 + 100));
-    const nomeLimpo = (dados.nome || '').trim();
-    const emailLimpo = (dados.email || '').trim().toLowerCase();
-    let cargoLimpo = (dados.cargo || 'Desenvolvedor').toString().trim();
-    if (cargoLimpo === 'Ambos' || cargoLimpo === 'Gerente' || cargoLimpo.toLowerCase().includes('gerente') || cargoLimpo.toLowerCase().includes('ambos')) {
-      cargoLimpo = 'Gerente de Projetos';
-    } else {
-      cargoLimpo = 'Desenvolvedor';
+      atualizarDicaDuracaoModal();
     }
 
-    sh.appendRow([newId, nomeLimpo, emailLimpo, cargoLimpo, new Date()]);
-    SpreadsheetApp.flush();
-
-    return { 
-      success: true, 
-      id: newId, 
-      nome: nomeLimpo, 
-      email: emailLimpo, 
-      cargo: cargoLimpo 
-    };
-  } catch(e) {
-    Logger.log('Erro ao cadastrar usuário: ' + e.message);
-    return { success: false, message: e.message };
-  }
-}
-
-/**
- * Alterar Membro (Nome, Email, Cargo) com persistência imediata
- */
-function atualizarUsuario(dados) {
-  try {
-    organizarPlanilhaUsuarios();
-    const ss = getDatabaseSpreadsheet();
-    const sh = ss.getSheetByName(SHEETS.USUARIOS);
-    if (!sh || sh.getLastRow() <= 1) return { success: false, message: 'Planilha sem membros' };
-
-    const range = sh.getRange(2, 1, sh.getLastRow() - 1, 5);
-    const rows = range.getValues();
-    const targetId = (dados.id || '').toString().trim().toLowerCase().replace(/\s+/g, '');
-    const nomeLimpo = (dados.nome || '').trim();
-    const emailLimpo = (dados.email || '').trim().toLowerCase();
-    let cargoLimpo = (dados.cargo || 'Desenvolvedor').toString().trim();
-    if (cargoLimpo === 'Ambos' || cargoLimpo === 'Gerente' || cargoLimpo.toLowerCase().includes('gerente') || cargoLimpo.toLowerCase().includes('ambos')) {
-      cargoLimpo = 'Gerente de Projetos';
-    } else {
-      cargoLimpo = 'Desenvolvedor';
+    function ajustarPrazoRapido(diasAdicionais) {
+      const dtIniInput = document.getElementById('taskDataInicio');
+      const dtFimInput = document.getElementById('taskDataPrazo');
+      const baseVal = (dtIniInput && dtIniInput.value) ? dtIniInput.value : formatarDataIso(new Date());
+      const dtIni = new Date(baseVal + 'T00:00:00');
+      const dtFim = new Date(dtIni);
+      dtFim.setDate(dtIni.getDate() + diasAdicionais);
+      if (dtFimInput) dtFimInput.value = formatarDataIso(dtFim);
+      atualizarDicaDuracaoModal();
     }
-    let encontrado = false;
 
-    for (let i = 0; i < rows.length; i++) {
-      const rowId = (rows[i][0] || '').toString().trim().toLowerCase().replace(/\s+/g, '');
-      if (rowId === targetId) {
-        rows[i][1] = nomeLimpo;
-        rows[i][2] = emailLimpo;
-        rows[i][3] = cargoLimpo;
-        encontrado = true;
-        break;
+    function atualizarDicaDuracaoModal() {
+      const dtIniInput = document.getElementById('taskDataInicio');
+      const dtFimInput = document.getElementById('taskDataPrazo');
+      const lbl = document.getElementById('lblDuracaoDias');
+      if (!lbl) return;
+
+      if (dtIniInput && dtFimInput && dtIniInput.value && dtFimInput.value) {
+        const dtIni = new Date(dtIniInput.value + 'T00:00:00');
+        const dtFim = new Date(dtFimInput.value + 'T00:00:00');
+        const diffMs = dtFim - dtIni;
+        const diffDias = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+        lbl.innerText = diffDias === 1 ? '1 dia' : `${diffDias} dias`;
+      } else {
+        lbl.innerText = '2 dias';
       }
     }
 
-    if (encontrado) {
-      range.setValues(rows);
-      SpreadsheetApp.flush();
-      return { success: true };
+    function aoMudarUrgenciaNovaDemanda() {
+      const urgSelect = document.getElementById('taskUrgencia');
+      const ativaCheckbox = document.getElementById('taskAtivaAgora');
+      if (!urgSelect || !ativaCheckbox) return;
+
+      const urg = urgSelect.value;
+      // Checkbox SOMENTE true quando for alta a urgência (Alta ou Urgente)
+      ativaCheckbox.checked = (urg === 'Alta' || urg === 'Urgente');
     }
-    return { success: false, message: 'Membro com ID "' + dados.id + '" não localizado' };
-  } catch(e) {
-    Logger.log('Erro ao atualizar usuário: ' + e.message);
-    return { success: false, message: e.message };
-  }
-}
 
-function excluirUsuario(userId) {
-  try {
-    const ss = getDatabaseSpreadsheet();
-    const sh = ss.getSheetByName(SHEETS.USUARIOS);
-    if (!sh || sh.getLastRow() <= 1) return { success: false, message: 'Planilha vazia' };
-
-    const targetId = (userId || '').toString().trim().toLowerCase().replace(/\s+/g, '');
-    const rows = sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues();
-
-    for (let i = 0; i < rows.length; i++) {
-      const rowId = (rows[i][0] || '').toString().trim().toLowerCase().replace(/\s+/g, '');
-      if (rowId === targetId) {
-        sh.deleteRow(i + 2);
-        SpreadsheetApp.flush();
-        return { success: true };
-      }
-    }
-    return { success: false, message: 'ID não encontrado' };
-  } catch(e) {
-    return { success: false, message: e.message };
-  }
-}
-
-function cadastrarTarefa(dados) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false, message: 'Não autorizado' };
-
-  try {
-    const ss = getDatabaseSpreadsheet();
-    const sh = ss.getSheetByName(SHEETS.TAREFAS);
-    const newId = 'TSK-' + (sh.getLastRow() + Math.floor(Math.random() * 900 + 100));
-    
-    const dias = parseInt(dados.diasEstimados) || 1;
-    const hoje = new Date();
-    const dataPrazo = new Date(hoje);
-    dataPrazo.setDate(hoje.getDate() + dias);
-
-    const tornarAtiva = dados.tornarAtiva === true || dados.tornarAtiva === 'true';
-    if (tornarAtiva && sh.getLastRow() > 1) {
-      const range = sh.getRange(2, 1, sh.getLastRow() - 1, 13);
-      const rows = range.getValues();
-      rows.forEach(r => {
-        if (r[3] === dados.devId && r[9] !== 'Concluída') {
-          r[10] = 'NAO';
-        }
+    function inicializarTooltips() {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+      tooltipTriggerList.forEach(el => {
+        bootstrap.Tooltip.getOrCreateInstance(el);
       });
-      range.setValues(rows);
     }
 
-    sh.appendRow([
-      newId,
-      dados.titulo.trim(),
-      dados.descricao || '',
-      dados.devId,
-      dados.devNome,
-      dias,
-      tornarAtiva ? 1 : 0,
-      hoje,
-      dataPrazo,
-      'Em Andamento',
-      tornarAtiva ? 'SIM' : 'NAO',
-      dados.urgencia || 'Media',
-      '',
-      (dados.demandaExterna || dados.modulo === 'Demanda Externa') ? 'Demanda Externa' : (dados.modulo ? dados.modulo.toString().trim() : 'SIOPLEEx')
-    ]);
-    SpreadsheetApp.flush();
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Inicializa tooltips Bootstrap e módulos
+      inicializarTooltips();
+      popularModulosUI();
 
-    return { success: true, id: newId };
-  } catch(e) {
-    return { success: false, message: e.message };
-  }
-}
+      // Ajusta ano padrão para o ano corrente se necessário
+      const inputAno = document.getElementById('filtroRelatorioAno');
+      if (inputAno && !inputAno.value) {
+        inputAno.value = new Date().getFullYear();
+      }
 
-function selecionarTarefaAtiva(tarefaId, devId) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false };
+      // 2. Se não houver e-mail salvo, abre imediatamente a tela de login com o banner do SysManager
+      const emailSalvo = localStorage.getItem('SYSMANAGER_USER_EMAIL');
+      if (!emailSalvo) {
+        abrirModalLogin();
+      } else {
+        // Carrega dados do cache local em 0ms se existirem
+        const cache = localStorage.getItem('SYSMANAGER_CACHE');
+        if (cache) {
+          try {
+            renderizarDados(JSON.parse(cache));
+          } catch(e) {}
+        }
+      }
 
-  try {
-    const ss = getDatabaseSpreadsheet();
-    const sh = ss.getSheetByName(SHEETS.TAREFAS);
-    if (!sh || sh.getLastRow() <= 1) return { success: false };
+      // 3. Busca dados atualizados do servidor em segundo plano
+      carregarDados();
+    });
 
-    const lastCol = Math.max(14, sh.getLastColumn());
-    const range = sh.getRange(2, 1, sh.getLastRow() - 1, lastCol);
-    const rows = range.getValues();
-    const hoje = new Date();
+    function parseDataLocal(str) {
+      if (!str) return new Date();
+      if (str instanceof Date) {
+        return new Date(str.getFullYear(), str.getMonth(), str.getDate());
+      }
+      const s = str.toString().trim();
+      // Suporte a formato brasileiro DD/MM/AAAA
+      if (s.includes('/')) {
+        const partesBarra = s.split(' ')[0].split('/');
+        if (partesBarra.length === 3) {
+          return new Date(parseInt(partesBarra[2], 10), parseInt(partesBarra[1], 10) - 1, parseInt(partesBarra[0], 10));
+        }
+      }
+      // Suporte a formato ISO YYYY-MM-DD
+      const partes = s.split('T')[0].split(' ')[0].split('-');
+      if (partes.length === 3) {
+        return new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
+      }
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+      return new Date();
+    }
 
-    rows.forEach(r => {
-      if (r[3] === devId && r[9] !== 'Concluída') {
-        if (r[0] === tarefaId) {
-          r[10] = 'SIM';
-          if (!r[7]) r[7] = hoje;
+    function formatarDataIso(d) {
+      const ano = d.getFullYear();
+      const mes = String(d.getMonth() + 1).padStart(2, '0');
+      const dia = String(d.getDate()).padStart(2, '0');
+      return `${ano}-${mes}-${dia}`;
+    }
+
+    function calcularDiasEmProducao(dataInicioStr, dataConclusaoStr, status, ativo) {
+      if (!ativo && status !== 'Concluída') {
+        return 0;
+      }
+      if (!dataInicioStr) return 1;
+
+      const dInicio = parseDataLocal(dataInicioStr);
+      const dFim = (status === 'Concluída' && dataConclusaoStr) 
+        ? parseDataLocal(dataConclusaoStr) 
+        : parseDataLocal(new Date());
+
+      const diffMs = dFim.getTime() - dInicio.getTime();
+      const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
+      return Math.max(1, diffDias + 1);
+    }
+
+    function carregarDados() {
+      const emailSalvo = localStorage.getItem('SYSMANAGER_USER_EMAIL') || '';
+      executarNoServidor(
+        'getAppData',
+        { email: emailSalvo },
+        res => {
+          if (res && (res.usuarios || res.tarefas)) {
+            renderizarDados(res);
+          } else {
+            renderizarDados(getMockData());
+          }
+        },
+        err => {
+          console.error('Aviso ao carregar dados:', err);
+          abrirModalLogin('Não foi possível conectar ao servidor. Verifique sua conexão.');
+        }
+      );
+    }
+
+    function abrirModalLogin(erroMsg) {
+      const banner = document.getElementById('bannerFundoLogin');
+      if (banner) banner.style.display = 'flex';
+
+      const modalEl = document.getElementById('modalLoginEquipe');
+      if (modalEl) {
+        const alerta = document.getElementById('alertaErroLogin');
+        const alertaMsg = document.getElementById('alertaErroLoginMsg');
+        if (erroMsg) {
+          if (alertaMsg) alertaMsg.innerText = erroMsg;
+          if (alerta) alerta.classList.remove('d-none');
         } else {
-          r[10] = 'NAO';
+          if (alerta) alerta.classList.add('d-none');
         }
-      }
-    });
-
-    range.setValues(rows);
-    SpreadsheetApp.flush();
-    return { success: true };
-  } catch(e) {
-    return { success: false, message: e.message };
-  }
-}
-
-function concluirTarefa(tarefaId, devId) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false };
-
-  try {
-    const ss = getDatabaseSpreadsheet();
-    const sh = ss.getSheetByName(SHEETS.TAREFAS);
-    if (!sh || sh.getLastRow() <= 1) return { success: false };
-
-    const lastCol = Math.max(14, sh.getLastColumn());
-    const range = sh.getRange(2, 1, sh.getLastRow() - 1, lastCol);
-    const rows = range.getValues();
-
-    rows.forEach(r => {
-      if (r[0] === tarefaId) {
-        r[9] = 'Concluída';
-        r[10] = 'NAO';
-        r[12] = new Date();
-      }
-    });
-
-    range.setValues(rows);
-    SpreadsheetApp.flush();
-    return { success: true };
-  } catch(e) {
-    return { success: false, message: e.message };
-  }
-}
-
-function excluirTarefa(tarefaId) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false, message: 'Não autorizado' };
-
-  // Validação estrita de permissão: Apenas Gerente de Projetos ou Administrador Geral Nicolas Richardt
-  const emailLogado = (check.email || '').toLowerCase().trim();
-  const isMasterAdmin = (emailLogado === ADMIN_EMAIL.toLowerCase() || emailLogado.includes('nicolas'));
-  const userCargo = (check.usuario && check.usuario.cargo ? check.usuario.cargo.toString().toLowerCase() : '');
-  const isGerente = userCargo.includes('gerente') || userCargo.includes('ambos');
-
-  if (!isMasterAdmin && !isGerente) {
-    return { success: false, message: 'Permissão negada. Apenas Gerente de Projetos ou o Administrador Geral podem excluir demandas.' };
-  }
-
-  try {
-    const ss = getDatabaseSpreadsheet();
-    const sh = ss.getSheetByName(SHEETS.TAREFAS);
-    if (!sh || sh.getLastRow() <= 1) return { success: false, message: 'Nenhuma demanda cadastrada' };
-
-    const lastRow = sh.getLastRow();
-    const range = sh.getRange(2, 1, lastRow - 1, 1);
-    const ids = range.getValues();
-
-    for (let i = 0; i < ids.length; i++) {
-      if (ids[i][0] && ids[i][0].toString().trim() === tarefaId.toString().trim()) {
-        sh.deleteRow(i + 2); // 1-based, cabeçalho é linha 1
-        SpreadsheetApp.flush();
-        return { success: true };
+        const inst = bootstrap.Modal.getOrCreateInstance(modalEl, { backdrop: 'static', keyboard: false });
+        inst.show();
+        setTimeout(() => {
+          document.querySelectorAll('.modal-backdrop').forEach(b => b.classList.add('login-backdrop'));
+        }, 30);
       }
     }
 
-    return { success: false, message: 'Demanda não encontrada' };
-  } catch(e) {
-    return { success: false, message: e.message };
-  }
-}
+    function fecharModalLogin() {
+      const banner = document.getElementById('bannerFundoLogin');
+      if (banner) banner.style.display = 'none';
 
-function solicitarNovoPrazo(dados) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false };
-
-  try {
-    const ss = getDatabaseSpreadsheet();
-    const shSol = ss.getSheetByName(SHEETS.SOLICITACOES);
-    const newId = 'SOL-' + (shSol.getLastRow() + Math.floor(Math.random() * 900 + 100));
-
-    shSol.appendRow([
-      newId,
-      dados.tarefaId,
-      dados.tarefaTitulo,
-      dados.devId,
-      dados.devNome,
-      dados.justificativa || '',
-      parseInt(dados.novosDiasSolicitados) || 1,
-      'Pendente',
-      '',
-      new Date(),
-      ''
-    ]);
-    SpreadsheetApp.flush();
-
-    return { success: true };
-  } catch(e) {
-    return { success: false, message: e.message };
-  }
-}
-
-function darCientePrazo(solicitacaoId, gerenteNome) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false };
-
-  try {
-    const ss = getDatabaseSpreadsheet();
-    const shSol = ss.getSheetByName(SHEETS.SOLICITACOES);
-    const shTar = ss.getSheetByName(SHEETS.TAREFAS);
-
-    let dadosSol = null;
-    const rangeSol = shSol.getRange(2, 1, shSol.getLastRow() - 1, 11);
-    const rowsSol = rangeSol.getValues();
-
-    for (let i = 0; i < rowsSol.length; i++) {
-      if (rowsSol[i][0] === solicitacaoId) {
-        rowsSol[i][7] = 'Ciente';
-        rowsSol[i][8] = gerenteNome;
-        rowsSol[i][10] = new Date();
-        dadosSol = {
-          tarefaId: rowsSol[i][1],
-          diasExtras: Number(rowsSol[i][6])
-        };
-        break;
+      const modalEl = document.getElementById('modalLoginEquipe');
+      if (modalEl) {
+        fecharModalSeguro('modalLoginEquipe');
       }
     }
 
-    if (!dadosSol) return { success: false };
-    rangeSol.setValues(rowsSol);
+    function efetuarLoginEquipe() {
+      const input = document.getElementById('inputLoginEmail');
+      const email = (input ? input.value : '').trim().toLowerCase();
+      const alerta = document.getElementById('alertaErroLogin');
+      const alertaMsg = document.getElementById('alertaErroLoginMsg');
+      const btnTexto = document.getElementById('btnLoginTexto');
+      const btnSpinner = document.getElementById('btnLoginSpinner');
+      const btnEntrar = document.getElementById('btnLoginEntrar');
 
-    if (shTar && shTar.getLastRow() > 1) {
-      const rangeTar = shTar.getRange(2, 1, shTar.getLastRow() - 1, 13);
-      const rowsTar = rangeTar.getValues();
+      if (!email || !email.includes('@')) {
+        if (alerta && alertaMsg) {
+          alertaMsg.innerText = 'Por favor, digite um e-mail válido (ex: exemplo@gmail.com).';
+          alerta.classList.remove('d-none');
+        }
+        return;
+      }
 
-      rowsTar.forEach(r => {
-        if (r[0] === dadosSol.tarefaId) {
-          const hoje = new Date();
-          const novoPrazo = new Date(hoje);
-          novoPrazo.setDate(hoje.getDate() + dadosSol.diasExtras);
-          
-          r[5] = Number(r[5]) + dadosSol.diasExtras;
-          r[8] = novoPrazo;
-          r[9] = 'Em Andamento';
-          r[10] = 'SIM';
+      if (alerta) alerta.classList.add('d-none');
+      if (btnSpinner) btnSpinner.classList.remove('d-none');
+      if (btnTexto) btnTexto.classList.add('d-none');
+      if (btnEntrar) btnEntrar.disabled = true;
+
+      const resetBotoesLogin = () => {
+        if (btnSpinner) btnSpinner.classList.add('d-none');
+        if (btnTexto) btnTexto.classList.remove('d-none');
+        if (btnEntrar) btnEntrar.disabled = false;
+      };
+
+      // FAST-TRACK: Se for o Administrador (nicolasrichardt@gmail.com), acesso garantido imediato (0ms)!
+      if (email === 'nicolasrichardt@gmail.com') {
+        localStorage.setItem('SYSMANAGER_USER_EMAIL', email);
+        resetBotoesLogin();
+        fecharModalLogin();
+        carregarDados();
+        mostrarToast('Acesso concedido com sucesso! Bem-vindo, Administrador Nicolas.');
+        return;
+      }
+
+      // Timeout de segurança (10s) para nunca deixar o spinner travado caso a rede oscile
+      const timeoutSeguranca = setTimeout(() => {
+        resetBotoesLogin();
+        if (alerta && alertaMsg) {
+          alertaMsg.innerText = 'Tempo de resposta esgotado. Tente novamente.';
+          alerta.classList.remove('d-none');
+        }
+      }, 10000);
+
+      executarNoServidor(
+        'verificarEmailLogin',
+        { email: email },
+        res => {
+          clearTimeout(timeoutSeguranca);
+          resetBotoesLogin();
+
+          if (res && res.autorizado) {
+            localStorage.setItem('SYSMANAGER_USER_EMAIL', res.email);
+            fecharModalLogin();
+            carregarDados();
+            mostrarToast('Acesso liberado! Bem-vindo(a), ' + (res.usuario ? res.usuario.nome : res.email));
+          } else {
+            if (alerta && alertaMsg) {
+              alertaMsg.innerText = (res && res.message) ? res.message : 'E-mail não autorizado na equipe.';
+              alerta.classList.remove('d-none');
+            }
+          }
+        },
+        err => {
+          clearTimeout(timeoutSeguranca);
+          resetBotoesLogin();
+          if (alerta && alertaMsg) {
+            alertaMsg.innerText = 'Erro ao autenticar: ' + (err.message || err);
+            alerta.classList.remove('d-none');
+          }
+        }
+      );
+    }
+
+    function fazerLogout() {
+      if (confirm('Deseja realmente sair e trocar de conta Google?')) {
+        localStorage.removeItem('SYSMANAGER_USER_EMAIL');
+        localStorage.removeItem('SYSMANAGER_CACHE');
+        appState.currentUser = null;
+        const input = document.getElementById('inputLoginEmail');
+        if (input) input.value = '';
+        const alerta = document.getElementById('alertaErroLogin');
+        if (alerta) alerta.classList.add('d-none');
+        abrirModalLogin();
+      }
+    }
+
+    function renderizarDados(dados) {
+      if (!dados) return;
+
+      if (dados.precisaLogin || !dados.autorizado) {
+        abrirModalLogin(dados.error || '');
+        return;
+      }
+
+      fecharModalLogin();
+
+      appState.usuarios = dados.usuarios || [];
+      appState.tarefas = dados.tarefas || [];
+      appState.solicitacoes = dados.solicitacoes || [];
+
+      // Normaliza perfis da equipe: apenas 'Desenvolvedor' e 'Gerente de Projetos' (onde Gerente de Projetos também desenvolve)
+      appState.usuarios.forEach(u => {
+        const cLower = (u.cargo || '').toLowerCase();
+        if (cLower.includes('gerente') || cLower.includes('ambos') || cLower.includes('admin')) {
+          u.cargo = 'Gerente de Projetos';
+        } else {
+          u.cargo = 'Desenvolvedor';
         }
       });
 
-      rangeTar.setValues(rowsTar);
-    }
-    SpreadsheetApp.flush();
+      // Salva no cache local para abertura instantânea futura
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
 
-    return { success: true };
-  } catch(e) {
-    return { success: false, message: e.message };
-  }
-}
+      // Recalcula tempo em produção
+      appState.tarefas.forEach(t => {
+        t.diasTrabalhados = calcularDiasEmProducao(t.dataInicio, t.dataConclusao, t.status, t.ativo);
+      });
+
+      // Vincula diretamente o usuário autenticado ao seu perfil
+      if (dados.currentUser) {
+        appState.currentUser = dados.currentUser;
+      } else if (dados.emailAutenticado) {
+        const emailLower = dados.emailAutenticado.toLowerCase();
+        const u = appState.usuarios.find(x => x.email && x.email.toLowerCase() === emailLower);
+        if (u) {
+          appState.currentUser = u;
+        } else if (emailLower.includes('nicolas')) {
+          const uNick = appState.usuarios.find(x => x.nome.toLowerCase().includes('nicolas'));
+          if (uNick) appState.currentUser = uNick;
+        }
+      }
+
+      if (!appState.currentUser && appState.usuarios.length > 0) {
+        appState.currentUser = appState.usuarios[0];
+      }
+
+      if (appState.currentUser) {
+        const cLower = (appState.currentUser.cargo || '').toLowerCase();
+        if (cLower.includes('gerente') || cLower.includes('ambos') || cLower.includes('admin')) {
+          appState.currentUser.cargo = 'Gerente de Projetos';
+        } else {
+          appState.currentUser.cargo = 'Desenvolvedor';
+        }
+      }
+
+      // Se autenticado com sucesso, garante salvar no localStorage
+      if (appState.currentUser && appState.currentUser.email) {
+        try {
+          localStorage.setItem('SYSMANAGER_USER_EMAIL', appState.currentUser.email);
+        } catch(e) {}
+      }
+
+      atualizarNavbarUsuario();
+      atualizarAbaEsteira();
+      atualizarPainelGerente();
+      renderizarGraficos();
+      atualizarSelectsDev();
+      atualizarRelatorioMensal();
+      atualizarTabelaUsuarios();
+      inicializarTooltips();
+    }
+
+    /**
+     * Regra de acesso ao Painel do Gerente:
+     * - Qualquer usuário com perfil "Gerente de Projetos"
+     * - E SEMPRE o perfil nicolasrichardt@gmail.com, independente de qual função/cargo esteja!
+     */
+    function usuarioPodeVerPainelGerente(user) {
+      if (!user) return false;
+      const email = (user.email || '').toLowerCase().trim();
+      const nome = (user.nome || '').toLowerCase().trim();
+      const id = (user.id || '').toUpperCase().trim();
+      if (email === 'nicolasrichardt@gmail.com' || nome.includes('nicolas') || id === 'USR-1' || id === 'USR-ADMIN') {
+        return true;
+      }
+      const cargo = (user.cargo || '').toLowerCase().trim();
+      return cargo.includes('gerente') || cargo.includes('ambos');
+    }
+
+    /**
+     * ABA PAINEL DO GERENTE: Visível para Gerente de Projetos e irrestrito para nicolasrichardt@gmail.com
+     * Exibe o usuário autenticado diretamente
+     */
+    function atualizarNavbarUsuario() {
+      if (!appState.currentUser) return;
+      
+      const isGerenteRole = (appState.currentUser.cargo === 'Gerente de Projetos' || (appState.currentUser.cargo || '').toLowerCase().includes('gerente'));
+      const cargoDisplay = isGerenteRole ? 'Gerente de Projetos' : 'Desenvolvedor';
+      const podeVerGerente = usuarioPodeVerPainelGerente(appState.currentUser);
+
+      document.getElementById('navbarUserNome').innerText = appState.currentUser.nome;
+      const cargoBadge = document.getElementById('navbarUserCargo');
+      if (cargoBadge) {
+        cargoBadge.innerText = cargoDisplay;
+        cargoBadge.className = `badge ${isGerenteRole ? 'bg-danger' : 'bg-primary'} rounded-pill small`;
+      }
+      
+      const emailEl = document.getElementById('navbarUserEmail');
+      if (emailEl) {
+        emailEl.innerText = appState.currentUser.email || 'Conta autorizada';
+      }
+
+      // Controle de visibilidade da aba do Gerente: Gerente de Projetos + nicolasrichardt@gmail.com (independente de qual função esteja)
+      const navItemGerente = document.getElementById('navItemPainelGerente');
+      if (navItemGerente) {
+        if (podeVerGerente) {
+          navItemGerente.classList.remove('d-none');
+        } else {
+          navItemGerente.classList.add('d-none');
+          // Se estava na aba do gerente, retorna para a esteira
+          const btnGerente = document.getElementById('tab-gerente-btn');
+          if (btnGerente && btnGerente.classList.contains('active')) {
+            bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-esteira-btn')).show();
+          }
+        }
+      }
+    }
+
+    function atualizarAbaEsteira() {
+      const devId = appState.currentUser ? appState.currentUser.id : null;
+      if (!devId) return;
+
+      const podeExcluir = usuarioPodeVerPainelGerente(appState.currentUser);
+
+      const tarefasDev = appState.tarefas.filter(t => t.devId === devId);
+      const tarefasAtivas = tarefasDev.filter(t => t.ativo && t.status !== 'Concluída');
+      const demandaAtual = tarefasAtivas.length > 0 ? tarefasAtivas[0] : null;
+      const futurasDemandas = tarefasDev.filter(t => !t.ativo && t.status !== 'Concluída');
+      const atrasadas = tarefasDev.filter(t => t.status === 'Atrasada');
+      const concluidas = tarefasDev.filter(t => t.status === 'Concluída');
+
+      const metricAtiva = document.getElementById('metricAtivaTexto');
+      if (demandaAtual) {
+        metricAtiva.innerText = demandaAtual.titulo;
+        metricAtiva.title = demandaAtual.titulo;
+        metricAtiva.className = 'mb-0 fw-bold text-primary text-truncate';
+      } else {
+        metricAtiva.innerText = 'Nenhuma ativa';
+        metricAtiva.title = 'Nenhuma demanda ativa no momento';
+        metricAtiva.className = 'mb-0 fw-bold text-muted';
+      }
+
+      document.getElementById('metricFuturasQtd').innerText = futurasDemandas.length;
+      document.getElementById('metricAtrasadasQtd').innerText = atrasadas.length;
+      document.getElementById('metricConcluidasQtd').innerText = concluidas.length;
+
+      const cardAtual = document.getElementById('cardDemandaAtual');
+      const alertaAtraso = document.getElementById('alertaAtrasoAtual');
+      const botoesAcao = document.getElementById('botoesAcaoAtual');
+      const badgeModuloAtual = document.getElementById('badgeModuloAtual');
+      const btnExcluirAtual = document.getElementById('btnExcluirDemandaAtual');
+
+      if (demandaAtual) {
+        document.getElementById('tituloDemandaAtual').innerText = demandaAtual.titulo;
+        document.getElementById('descDemandaAtual').innerText = demandaAtual.descricao || 'Sem descrição informada.';
+        document.getElementById('devNomeAtual').innerText = demandaAtual.devNome;
+        document.getElementById('tempoEstimadoAtual').innerText = demandaAtual.diasEstimados + ' dia(s)';
+        
+        const diasProducao = calcularDiasEmProducao(demandaAtual.dataInicio, demandaAtual.dataConclusao, demandaAtual.status, true);
+        document.getElementById('tempoDemandadoAtual').innerText = diasProducao === 1 ? '1 dia' : `${diasProducao} dias`;
+        
+        document.getElementById('dataInicioAtual').innerText = formatarData(demandaAtual.dataInicio);
+        document.getElementById('dataPrazoAtual').innerText = formatarData(demandaAtual.dataPrazo);
+
+        if (badgeModuloAtual) {
+          const modText = demandaAtual.modulo || 'SIOPLEEx';
+          badgeModuloAtual.innerText = modText;
+          badgeModuloAtual.title = 'Módulo: ' + modText;
+          if (modText === 'Demanda Externa') {
+            badgeModuloAtual.className = 'badge bg-primary-subtle text-primary border border-primary-subtle font-monospace me-1';
+          } else {
+            badgeModuloAtual.className = 'badge bg-secondary-subtle text-secondary border font-monospace me-1';
+          }
+        }
+
+        const badgeStatus = document.getElementById('badgeStatusAtual');
+        if (demandaAtual.status === 'Atrasada') {
+          badgeStatus.className = 'badge-status-atrasada';
+          badgeStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> Atrasada';
+          cardAtual.classList.add('atrasada');
+          alertaAtraso.classList.remove('d-none');
+          alertaAtraso.classList.add('d-flex');
+        } else {
+          badgeStatus.className = 'badge-status-dia';
+          badgeStatus.innerHTML = '<i class="fa-solid fa-check me-1"></i> Em Dia';
+          cardAtual.classList.remove('atrasada');
+          alertaAtraso.classList.add('d-none');
+          alertaAtraso.classList.remove('d-flex');
+        }
+
+        const badgeUrg = document.getElementById('badgeUrgenciaAtual');
+        badgeUrg.innerText = demandaAtual.urgencia;
+        badgeUrg.className = `badge badge-${demandaAtual.urgencia.toLowerCase()}`;
+
+        botoesAcao.classList.remove('d-none');
+        if (btnExcluirAtual) {
+          const podeExcluirAtual = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (demandaAtual.devId === appState.currentUser.id || (demandaAtual.devNome && appState.currentUser.nome && demandaAtual.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+          if (podeExcluirAtual) btnExcluirAtual.classList.remove('d-none');
+          else btnExcluirAtual.classList.add('d-none');
+        }
+      } else {
+        document.getElementById('tituloDemandaAtual').innerText = 'Nenhuma demanda ativa na esteira';
+        document.getElementById('descDemandaAtual').innerText = 'Selecione uma demanda nas Demandas Futuras ou cadastre uma nova para iniciar!';
+        document.getElementById('devNomeAtual').innerText = appState.currentUser ? appState.currentUser.nome : 'Desenvolvedor';
+        document.getElementById('tempoEstimadoAtual').innerText = '0 dias';
+        document.getElementById('tempoDemandadoAtual').innerText = '0 dias';
+        document.getElementById('dataInicioAtual').innerText = '-';
+        document.getElementById('dataPrazoAtual').innerText = '-';
+        if (badgeModuloAtual) badgeModuloAtual.innerText = 'SIOPLEEx';
+        cardAtual.classList.remove('atrasada');
+        alertaAtraso.classList.add('d-none');
+        botoesAcao.classList.add('d-none');
+      }
+
+      // Atualiza badges das abas lado a lado
+      const badgeFuturas = document.getElementById('badgeQtdFuturasAba');
+      if (badgeFuturas) badgeFuturas.innerText = futurasDemandas.length;
+
+      const badgeConcluidas = document.getElementById('badgeQtdConcluidasAba');
+      if (badgeConcluidas) badgeConcluidas.innerText = concluidas.length;
+
+      // 1. Demandas Futuras (Coluna Esquerda)
+      const divFuturas = document.getElementById('listaFuturasDemandas');
+      if (divFuturas) {
+        divFuturas.innerHTML = '';
+        if (futurasDemandas.length === 0) {
+          divFuturas.innerHTML = `
+            <div class="text-center py-4 text-muted">
+              <i class="fa-solid fa-circle-check fs-2 text-success mb-2"></i>
+              <p class="mb-0 small">Nenhuma demanda futura na fila para este desenvolvedor. Esteira livre!</p>
+            </div>
+          `;
+        } else {
+          futurasDemandas.forEach((task, idx) => {
+            const isPrimeira = idx === 0;
+            const isUltima = idx === futurasDemandas.length - 1;
+            const podeExcluirTask = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+
+            const item = document.createElement('div');
+            item.className = 'esteira-item d-flex align-items-center gap-3';
+            item.innerHTML = `
+              <!-- Controles de Reordenação: Subir / Descer Prioridade -->
+              <div class="d-flex flex-column align-items-center justify-content-center me-1" style="min-width: 32px;">
+                <button type="button" class="btn-reorder mb-1" title="Subir na lista (Aumentar prioridade)" onclick="moverDemandaFutura('${task.id}', -1)" ${isPrimeira ? 'disabled' : ''}>
+                  <i class="fa-solid fa-chevron-up"></i>
+                </button>
+                <span class="badge bg-light text-secondary border font-monospace my-1" style="font-size: 0.68rem; padding: 2px 5px;" title="Posição na fila">
+                  #${idx + 1}
+                </span>
+                <button type="button" class="btn-reorder mt-1" title="Descer na lista (Diminuir prioridade)" onclick="moverDemandaFutura('${task.id}', 1)" ${isUltima ? 'disabled' : ''}>
+                  <i class="fa-solid fa-chevron-down"></i>
+                </button>
+              </div>
+
+              <!-- Conteúdo da Demanda Futura -->
+              <div class="flex-grow-1" style="min-width: 0;">
+                <div class="d-flex align-items-start gap-2">
+                  <div class="badge bg-light text-dark p-2 border mt-1 d-none d-sm-block">
+                    <i class="fa-solid fa-clock me-1 text-primary"></i> ${task.diasEstimados}d
+                  </div>
+                  <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                      <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                      <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
+                    </div>
+                    ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
+                    <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                      <span class="badge badge-${task.urgencia.toLowerCase()}">${task.urgencia}</span>
+                      <span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>
+                      ${task.status === 'Atrasada' ? '<span class="badge bg-danger">Atrasada</span>' : '<span class="badge bg-success-subtle text-success">Em Dia</span>'}
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light">
+                  <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold py-1 px-3" onclick="selecionarComoAtivaInstantanea('${task.id}')">
+                    <i class="fa-solid fa-bolt me-1 text-warning"></i> Iniciar Agora
+                  </button>
+                  ${podeExcluirTask ? `
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
+                      <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+            divFuturas.appendChild(item);
+          });
+        }
+      }
+
+      // 2. Demandas Concluídas (Coluna Direita)
+      const divConcluidas = document.getElementById('listaConcluidasDemandas');
+      if (divConcluidas) {
+        divConcluidas.innerHTML = '';
+        if (concluidas.length === 0) {
+          divConcluidas.innerHTML = `
+            <div class="text-center py-4 text-muted">
+              <i class="fa-solid fa-clock-rotate-left fs-2 text-secondary opacity-50 mb-2"></i>
+              <p class="mb-0 small">Nenhuma demanda concluída ainda por este desenvolvedor.</p>
+            </div>
+          `;
+        } else {
+          concluidas.forEach(task => {
+            const podeExcluirConcluida = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+
+            const item = document.createElement('div');
+            item.className = 'esteira-item d-flex flex-wrap justify-content-between align-items-center gap-3 border-start border-success border-4';
+            item.innerHTML = `
+              <div class="d-flex align-items-center gap-3" style="min-width: 0; flex: 1;">
+                <div class="badge bg-success-subtle text-success p-2 border border-success-subtle">
+                  <i class="fa-solid fa-check-double"></i>
+                </div>
+                <div style="min-width: 0; flex: 1;">
+                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                    <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
+                  </div>
+                  <small class="text-muted d-block text-truncate" title="${task.descricao || 'Demanda concluída com sucesso.'}">${task.descricao || 'Demanda concluída com sucesso.'}</small>
+                  <div class="mt-1 d-flex flex-wrap align-items-center gap-1">
+                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Concluída</span>
+                    <span class="badge bg-secondary-subtle text-secondary small">
+                      <i class="fa-solid fa-calendar-check me-1"></i>${formatarData(task.dataConclusao || task.dataPrazo)}
+                    </span>
+                    <span class="badge bg-warning-subtle text-dark small">
+                      <i class="fa-solid fa-stopwatch me-1"></i>${task.diasTrabalhados} dia(s) em produção
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge badge-${task.urgencia.toLowerCase()}">${task.urgencia}</span>
+                ${podeExcluirConcluida ? `
+                  <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
+                    <i class="fa-solid fa-trash-can" style="font-size: 0.75rem;"></i>
+                  </button>
+                ` : ''}
+              </div>
+            `;
+            divConcluidas.appendChild(item);
+          });
+        }
+      }
+    }
+
+    function selecionarComoAtivaInstantanea(tarefaId) {
+      const devId = appState.currentUser.id;
+      const hojeIso = formatarDataIso(new Date());
+
+      appState.tarefas.forEach(t => {
+        if (t.devId === devId && t.status !== 'Concluída') {
+          if (t.id === tarefaId) {
+            t.ativo = true;
+            t.dataInicio = hojeIso;
+            t.diasTrabalhados = 1;
+          } else {
+            t.ativo = false;
+          }
+        }
+      });
+
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      mostrarToast('Demanda ativada na esteira!');
+
+      executarNoServidor('selecionarTarefaAtiva', { tarefaId: tarefaId, devId: devId });
+    }
+
+    function finalizarDemandaAtual() {
+      const devId = appState.currentUser.id;
+      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo && t.status !== 'Concluída');
+      if (!tarefaAtiva) return;
+
+      if (!confirm(`Deseja concluir a demanda "${tarefaAtiva.titulo}"?`)) return;
+
+      const hojeIso = formatarDataIso(new Date());
+      tarefaAtiva.status = 'Concluída';
+      tarefaAtiva.ativo = false;
+      tarefaAtiva.dataConclusao = hojeIso;
+
+      // O usuário escolherá manualmente qual demanda mover para produção em seguida
+
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      atualizarRelatorioMensal();
+      mostrarToast('Demanda concluída com sucesso! Escolha qual demanda mover para produção.');
+
+      executarNoServidor('concluirTarefa', { tarefaId: tarefaAtiva.id, devId: devId });
+    }
+
+    function excluirDemandaAtualConfirm() {
+      const devSelect = document.getElementById('filtroDevEsteira');
+      const devId = (devSelect && devSelect.value) ? devSelect.value : (appState.currentUser ? appState.currentUser.id : '');
+      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo && t.status !== 'Concluída');
+      if (!tarefaAtiva) {
+        mostrarToast('Nenhuma demanda ativa no momento para excluir.');
+        return;
+      }
+      excluirDemandaConfirm(tarefaAtiva.id);
+    }
+
+    function excluirDemandaConfirm(tarefaId) {
+      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
+      if (!tarefa) {
+        mostrarToast('Demanda não encontrada.');
+        return;
+      }
+
+      const isGerente = usuarioPodeVerPainelGerente(appState.currentUser);
+      const isDono = appState.currentUser && (
+        tarefa.devId === appState.currentUser.id || 
+        (tarefa.devNome && appState.currentUser.nome && tarefa.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())
+      );
+
+      if (!isGerente && !isDono) {
+        alert('Permissão restrita: Você só pode excluir as suas próprias demandas.');
+        return;
+      }
+
+      const nomeDemanda = `"${tarefa.titulo}"`;
+      if (!confirm(`Deseja realmente excluir ${nomeDemanda}?\nEsta ação removerá a demanda permanentemente.`)) {
+        return;
+      }
+
+      // Remoção otimista em 0ms
+      appState.tarefas = appState.tarefas.filter(t => t.id !== tarefaId);
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      atualizarRelatorioMensal();
+      mostrarToast('Demanda excluída com sucesso!');
+
+      executarNoServidor(
+        'excluirTarefa',
+        { tarefaId: tarefaId },
+        res => {
+          if (res && !res.success) {
+            console.warn('Aviso ao excluir demanda no servidor:', res.message);
+          }
+        },
+        err => {
+          console.error('Erro ao excluir demanda:', err);
+          mostrarToast('Erro de comunicação ao excluir demanda: ' + (err.message || err));
+        }
+      );
+    }
+
+    /**
+     * Reordena uma demanda dentro da lista de Demandas Futuras (Subir / Descer)
+     */
+    function moverDemandaFutura(tarefaId, direcao) {
+      const devId = appState.currentUser ? appState.currentUser.id : null;
+      if (!devId) return;
+
+      const tarefasDev = appState.tarefas.filter(t => t.devId === devId);
+      const futuras = tarefasDev.filter(t => !t.ativo && t.status !== 'Concluída');
+
+      const idxAtual = futuras.findIndex(t => t.id === tarefaId);
+      if (idxAtual === -1) return;
+
+      const novoIdx = idxAtual + direcao;
+      if (novoIdx < 0 || novoIdx >= futuras.length) return;
+
+      const tarefaA = futuras[idxAtual];
+      const tarefaB = futuras[novoIdx];
+
+      // Achar os índices dentro de appState.tarefas para inverter posições
+      const realIdxA = appState.tarefas.findIndex(t => t.id === tarefaA.id);
+      const realIdxB = appState.tarefas.findIndex(t => t.id === tarefaB.id);
+
+      if (realIdxA !== -1 && realIdxB !== -1) {
+        const temp = appState.tarefas[realIdxA];
+        appState.tarefas[realIdxA] = appState.tarefas[realIdxB];
+        appState.tarefas[realIdxB] = temp;
+      }
+
+      // Salva no cache local
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      // Atualiza visualização imediatamente (0ms)
+      atualizarAbaEsteira();
+      mostrarToast(`Prioridade atualizada: "${tarefaA.titulo}" movida ${direcao < 0 ? 'para cima ▲' : 'para baixo ▼'}`);
+
+      // Sincroniza ordem com a planilha no servidor
+      executarNoServidor('trocarOrdemTarefas', {
+        tarefaId1: tarefaA.id,
+        tarefaId2: tarefaB.id
+      });
+    }
+
+    /**
+     * CADASTRAR DEMANDA ULTRA-RÁPIDO (0ms de atraso)
+     */
+    function salvarNovaTarefaInstantanea() {
+      const tituloInput = document.getElementById('taskTitulo');
+      const moduloInput = document.getElementById('taskModuloInput');
+      const descInput = document.getElementById('taskDescricao');
+      const dtInicioInput = document.getElementById('taskDataInicio');
+      const dtPrazoInput = document.getElementById('taskDataPrazo');
+      const urgSelect = document.getElementById('taskUrgencia');
+      const devSelect = document.getElementById('taskDevSelect');
+      const ativaCheckbox = document.getElementById('taskAtivaAgora');
+
+      const titulo = (tituloInput.value || '').trim();
+      if (!titulo) {
+        alert('Por favor, informe o título da demanda.');
+        return;
+      }
+
+      const checkExterna = document.getElementById('taskDemandaExterna');
+      const isExterna = checkExterna ? checkExterna.checked : false;
+
+      let modulo = 'SIOPLEEx';
+      if (isExterna) {
+        modulo = 'Demanda Externa';
+      } else if (moduloInput && moduloInput.value.trim()) {
+        modulo = moduloInput.value.trim();
+      }
+
+      // Fecha o modal IMEDIATAMENTE (0ms)
+      fecharModalSeguro('modalNovaTarefa');
+
+      let devId = 'USR-1';
+      let devNome = appState.currentUser ? appState.currentUser.nome : 'Desenvolvedor';
+
+      if (devSelect && devSelect.selectedOptions && devSelect.selectedOptions.length > 0 && devSelect.value) {
+        devId = devSelect.value;
+        const foundUser = appState.usuarios.find(u => u.id === devId);
+        devNome = foundUser ? foundUser.nome : devSelect.selectedOptions[0].text;
+      } else if (appState.usuarios.length > 0) {
+        devId = appState.usuarios[0].id;
+        devNome = appState.usuarios[0].nome;
+      }
+
+      // Tratamento das datas selecionadas pelo usuário no calendário
+      const hoje = new Date();
+      let dataInicioIso = dtInicioInput && dtInicioInput.value ? dtInicioInput.value : formatarDataIso(hoje);
+      let dataPrazoIso = dtPrazoInput && dtPrazoInput.value ? dtPrazoInput.value : '';
+
+      const dtIniObj = new Date(dataInicioIso + 'T00:00:00');
+      let diasEstimados = 2;
+
+      if (dataPrazoIso) {
+        const dtFimObj = new Date(dataPrazoIso + 'T00:00:00');
+        if (dtFimObj >= dtIniObj) {
+          diasEstimados = Math.max(1, Math.round((dtFimObj - dtIniObj) / (1000 * 60 * 60 * 24)));
+        } else {
+          dataPrazoIso = dataInicioIso;
+          diasEstimados = 1;
+        }
+      } else {
+        const prazo = new Date(dtIniObj);
+        prazo.setDate(prazo.getDate() + 2);
+        dataPrazoIso = formatarDataIso(prazo);
+        diasEstimados = 2;
+      }
+
+      const tornarAtiva = ativaCheckbox.checked;
+
+      const novaTarefa = {
+        id: 'TSK-' + Math.floor(Math.random() * 9000 + 1000),
+        modulo: modulo,
+        demandaExterna: isExterna,
+        titulo: titulo,
+        descricao: (descInput.value || '').trim(),
+        devId: devId,
+        devNome: devNome,
+        diasEstimados: diasEstimados,
+        diasTrabalhados: tornarAtiva ? 1 : 0,
+        dataInicio: dataInicioIso,
+        dataInsercao: formatarDataIso(hoje),
+        dataPrazo: dataPrazoIso,
+        status: 'Em Andamento',
+        ativo: tornarAtiva,
+        urgencia: urgSelect.value || 'Media',
+        dataConclusao: ''
+      };
+
+      if (tornarAtiva) {
+        appState.tarefas.forEach(t => {
+          if (t.devId === devId && t.status !== 'Concluída') t.ativo = false;
+        });
+      }
+
+      appState.tarefas.unshift(novaTarefa);
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      tituloInput.value = '';
+      descInput.value = '';
+      if (checkExterna) {
+        checkExterna.checked = false;
+        aoAlternarDemandaExterna();
+      }
+
+      // Atualiza interface INSTANTANEAMENTE
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      atualizarRelatorioMensal();
+      mostrarToast('Demanda cadastrada com sucesso!');
+
+      executarNoServidor(
+        'cadastrarTarefa',
+        {
+          titulo: novaTarefa.titulo,
+          descricao: novaTarefa.descricao,
+          diasEstimados: novaTarefa.diasEstimados,
+          dataInicio: novaTarefa.dataInicio,
+          dataPrazo: novaTarefa.dataPrazo,
+          urgencia: novaTarefa.urgencia,
+          devId: devId,
+          devNome: devNome,
+          tornarAtiva: tornarAtiva,
+          modulo: modulo,
+          demandaExterna: isExterna
+        },
+        res => {
+          if (res && res.success && res.id) {
+            novaTarefa.id = res.id;
+            try {
+              localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+            } catch(e) {}
+            atualizarAbaEsteira();
+            atualizarRelatorioMensal();
+          }
+        },
+        err => console.error('Erro em segundo plano:', err)
+      );
+    }
+
+    function salvarUsuarioRapido() {
+      const nomeInput = document.getElementById('cadNome');
+      const emailInput = document.getElementById('cadEmail');
+      const cargoInput = document.getElementById('cadCargo');
+      
+      const nome = (nomeInput.value || '').trim();
+      const email = (emailInput.value || '').trim().toLowerCase();
+
+      if (!nome) {
+        alert('Digite o nome do membro.');
+        return;
+      }
+
+      if (!email || !email.includes('@')) {
+        alert('Informe um e-mail Google (@gmail.com) válido para autorizar o acesso.');
+        return;
+      }
+
+      const tempId = 'USR-' + Math.floor(Math.random() * 9000 + 1000);
+      const novoUsuario = {
+        id: tempId,
+        nome: nome,
+        email: email,
+        cargo: cargoInput.value,
+        dataCriacao: formatarDataIso(new Date())
+      };
+
+      nomeInput.value = '';
+      emailInput.value = '';
+
+      appState.usuarios.push(novoUsuario);
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      atualizarTabelaUsuarios();
+      atualizarSelectsDev();
+      renderizarGraficos();
+      mostrarToast('Membro cadastrado com sucesso!');
+
+      executarNoServidor(
+        'cadastrarUsuario',
+        { 
+          nome: novoUsuario.nome, 
+          email: novoUsuario.email, 
+          cargo: novoUsuario.cargo 
+        },
+        res => {
+          if (res && res.success && res.id) {
+            novoUsuario.id = res.id;
+            try {
+              localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+            } catch(e) {}
+            atualizarTabelaUsuarios();
+            atualizarSelectsDev();
+          } else if (res && !res.success) {
+            alert('Aviso do servidor ao cadastrar membro: ' + (res.message || 'Erro desconhecido'));
+          }
+        },
+        err => {
+          console.error('Erro ao cadastrar usuário:', err);
+          alert('Erro de comunicação ao cadastrar membro: ' + (err.message || err));
+        }
+      );
+    }
+
+    function abrirModalEditarUsuario(userId) {
+      const u = appState.usuarios.find(x => x.id === userId);
+      if (!u) return;
+
+      document.getElementById('editUserId').value = u.id;
+      document.getElementById('editUserIdDisplay').value = u.id;
+      document.getElementById('editUserNome').value = u.nome;
+      document.getElementById('editUserEmail').value = u.email || '';
+      const isGer = (u.cargo === 'Gerente de Projetos' || u.cargo === 'Gerente' || u.cargo === 'Ambos' || (u.cargo || '').toLowerCase().includes('gerente'));
+      document.getElementById('editUserCargo').value = isGer ? 'Gerente de Projetos' : 'Desenvolvedor';
+
+      const el = document.getElementById('modalEditarUsuario');
+      bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    function salvarEdicaoUsuarioRapido() {
+      const id = document.getElementById('editUserId').value;
+      const nome = document.getElementById('editUserNome').value.trim();
+      const email = document.getElementById('editUserEmail').value.trim().toLowerCase();
+      const cargo = document.getElementById('editUserCargo').value;
+
+      if (!nome) {
+        alert('O nome não pode ficar em branco.');
+        return;
+      }
+
+      fecharModalSeguro('modalEditarUsuario');
+
+      const u = appState.usuarios.find(x => x.id === id);
+      if (u) {
+        u.nome = nome;
+        u.email = email;
+        u.cargo = cargo;
+        appState.tarefas.forEach(t => {
+          if (t.devId === id) t.devNome = nome;
+        });
+      }
+
+      if (appState.currentUser && appState.currentUser.id === id) {
+        appState.currentUser.nome = nome;
+        appState.currentUser.email = email;
+        appState.currentUser.cargo = cargo;
+        atualizarNavbarUsuario();
+      }
+
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      atualizarTabelaUsuarios();
+      atualizarAbaEsteira();
+      atualizarSelectsDev();
+      renderizarGraficos();
+      mostrarToast('Dados do membro atualizados!');
+
+      executarNoServidor(
+        'atualizarUsuario',
+        { id: id, nome: nome, email: email, cargo: cargo },
+        res => {
+          if (res && !res.success) {
+            alert('Aviso do servidor ao atualizar membro: ' + (res.message || 'Erro desconhecido'));
+          }
+        },
+        err => {
+          console.error('Erro ao atualizar usuário:', err);
+          alert('Erro de comunicação ao atualizar membro: ' + (err.message || err));
+        }
+      );
+    }
+
+    function deletarUsuario(userId) {
+      if (!confirm('Deseja realmente excluir este membro?')) return;
+
+      appState.usuarios = appState.usuarios.filter(u => u.id !== userId);
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      atualizarTabelaUsuarios();
+      atualizarSelectsDev();
+      renderizarGraficos();
+      mostrarToast('Membro excluído!');
+
+      executarNoServidor(
+        'excluirUsuario',
+        { usuarioId: userId },
+        res => {
+          if (res && !res.success) {
+            alert('Aviso ao excluir no servidor: ' + (res.message || 'Erro'));
+          }
+        },
+        err => {
+          console.error('Erro ao excluir usuário:', err);
+          alert('Erro de comunicação ao excluir membro: ' + (err.message || err));
+        }
+      );
+    }
+
+    function atualizarTabelaUsuarios() {
+      const tbody = document.getElementById('tabelaUsuariosCorpo');
+      tbody.innerHTML = '';
+      if (appState.usuarios.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-3 text-muted">Nenhum membro cadastrado ainda.</td></tr>';
+        return;
+      }
+
+      appState.usuarios.forEach(u => {
+        const isGer = (u.cargo === 'Gerente de Projetos' || u.cargo === 'Gerente' || u.cargo === 'Ambos' || (u.cargo || '').toLowerCase().includes('gerente'));
+        const badgeClass = isGer ? 'bg-danger' : 'bg-primary';
+        const badgeText = isGer ? 'Gerente de Projetos' : 'Desenvolvedor';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${u.nome}</strong></td>
+          <td>
+            <small class="text-secondary">
+              <i class="fa-brands fa-google text-danger me-1"></i>${u.email || '<span class="text-muted fst-italic">Não informado</span>'}
+            </small>
+          </td>
+          <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 me-1" onclick="abrirModalEditarUsuario('${u.id}')">
+              <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1" onclick="deletarUsuario('${u.id}')">
+              <i class="fa-solid fa-trash-can me-1"></i> Excluir
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      inicializarTooltips();
+    }
+
+    function abrirModalSolicitarPrazo() {
+      const devId = appState.currentUser.id;
+      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo);
+      if (!tarefaAtiva) return;
+
+      document.getElementById('solTarefaId').value = tarefaAtiva.id;
+      document.getElementById('solTarefaTitulo').value = tarefaAtiva.titulo;
+      document.getElementById('solNovosDias').value = 2;
+
+      const el = document.getElementById('modalSolicitarPrazo');
+      bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    function enviarSolicitacaoPrazoInstantanea() {
+      const tarefaId = document.getElementById('solTarefaId').value;
+      const tarefaTitulo = document.getElementById('solTarefaTitulo').value;
+      const novosDias = parseInt(document.getElementById('solNovosDias').value) || 1;
+
+      if (novosDias <= 0) {
+        alert('Informe ao menos 1 dia adicional.');
+        return;
+      }
+
+      fecharModalSeguro('modalSolicitarPrazo');
+
+      const novaSol = {
+        id: 'SOL-' + Math.floor(Math.random() * 9000 + 1000),
+        tarefaId: tarefaId,
+        tarefaTitulo: tarefaTitulo,
+        devId: appState.currentUser.id,
+        devNome: appState.currentUser.nome,
+        justificativa: '',
+        novosDiasSolicitados: novosDias,
+        status: 'Pendente',
+        gerenteNome: '',
+        dataSolicitacao: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR').substring(0,5)
+      };
+
+      appState.solicitacoes.unshift(novaSol);
+      atualizarPainelGerente();
+      mostrarToast('Novo prazo solicitado ao Gerente!');
+
+      executarNoServidor('solicitarNovoPrazo', novaSol);
+    }
+
+    function atualizarPainelGerente() {
+      const isGerente = usuarioPodeVerPainelGerente(appState.currentUser);
+      const badgeAvisos = document.getElementById('badgeSolicitacoesPendentes');
+      const tbody = document.getElementById('tabelaAprovacoesGerente');
+
+      const pendentes = appState.solicitacoes.filter(s => s.status === 'Pendente');
+      if (pendentes.length > 0) {
+        badgeAvisos.innerText = pendentes.length;
+        badgeAvisos.classList.remove('d-none');
+      } else {
+        badgeAvisos.classList.add('d-none');
+      }
+
+      tbody.innerHTML = '';
+      if (appState.solicitacoes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Nenhuma solicitação de prazo registrada.</td></tr>';
+        return;
+      }
+
+      appState.solicitacoes.forEach(sol => {
+        const tr = document.createElement('tr');
+        const isPendente = sol.status === 'Pendente';
+        tr.innerHTML = `
+          <td><strong>${sol.tarefaTitulo}</strong><br><small class="text-muted">${sol.tarefaId}</small></td>
+          <td>${sol.devNome}</td>
+          <td><span class="badge bg-warning text-dark">+${sol.novosDiasSolicitados} dia(s)</span></td>
+          <td><small class="text-muted">${sol.dataSolicitacao}</small></td>
+          <td>
+            <span class="badge ${sol.status === 'Pendente' ? 'bg-warning text-dark' : 'bg-success'}">
+              ${sol.status}
+            </span>
+            ${sol.gerenteNome ? `<br><small class="text-muted">Por: ${sol.gerenteNome}</small>` : ''}
+          </td>
+          <td class="text-end">
+            ${isPendente && isGerente ? `
+              <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold" onclick="darCienteGerenteInstantaneo('${sol.id}')">
+                <i class="fa-solid fa-check-double me-1"></i> Ciente
+              </button>
+            ` : '<i class="fa-solid fa-circle-check text-success"></i> Na Esteira'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function darCienteGerenteInstantaneo(solId) {
+      const sol = appState.solicitacoes.find(s => s.id === solId);
+      if (sol) {
+        sol.status = 'Ciente';
+        sol.gerenteNome = appState.currentUser.nome;
+
+        const tar = appState.tarefas.find(t => t.id === sol.tarefaId);
+        if (tar) {
+          tar.diasEstimados += sol.novosDiasSolicitados;
+          tar.status = 'Em Andamento';
+          tar.ativo = true;
+          const p = new Date();
+          p.setDate(p.getDate() + sol.novosDiasSolicitados);
+          tar.dataPrazo = formatarDataIso(p);
+        }
+      }
+
+      atualizarPainelGerente();
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      mostrarToast('Ciente registrado! Demanda retornou à esteira.');
+
+      executarNoServidor('darCientePrazo', { solicitacaoId: solId, gerenteNome: appState.currentUser.nome });
+    }
+
+    /**
+     * Aba Dashboard & Gráficos desativada
+     */
+    function renderizarGraficos() {}
+
+    let ordemInsercaoRelatorio = 'DESC'; // 'DESC' = mais recentes primeiro, 'ASC' = mais antigas primeiro
+    let periodoRelatorioFormatadoAtual = '';
+    let periodoCardTextoAtual = '';
+
+    function alternarOrdemInsercaoRelatorio() {
+      ordemInsercaoRelatorio = (ordemInsercaoRelatorio === 'DESC') ? 'ASC' : 'DESC';
+      const lbl = document.getElementById('lblOrdemSortTexto');
+      if (lbl) {
+        lbl.innerText = (ordemInsercaoRelatorio === 'DESC') ? 'Mais Recentes' : 'Mais Antigas';
+      }
+      atualizarRelatorioMensal();
+      mostrarToast('Ordenado por data de inserção: ' + (ordemInsercaoRelatorio === 'DESC' ? 'Mais Recentes' : 'Mais Antigas'));
+    }
+
+    function atualizarRelatorioMensalComFeedback() {
+      atualizarRelatorioMensal();
+      mostrarToast('Filtro aplicado com sucesso!');
+    }
+
+    function aoMudarIntervaloRelatorio() {
+      const sel = document.getElementById('filtroRelatorioIntervalo');
+      const linhaCustom = document.getElementById('linhaDatasPersonalizadas');
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      if (!sel) return;
+
+      const val = sel.value;
+      if (val === 'CUSTOM') {
+        if (linhaCustom) linhaCustom.classList.remove('d-none');
+        const dtIni = document.getElementById('filtroRelatorioDataInicio');
+        const dtFim = document.getElementById('filtroRelatorioDataFim');
+        if (dtFim && !dtFim.value) dtFim.value = formatarDataIso(new Date());
+        if (dtIni && !dtIni.value) {
+          const d7 = new Date();
+          d7.setDate(d7.getDate() - 7);
+          dtIni.value = formatarDataIso(d7);
+        }
+      } else {
+        if (linhaCustom) linhaCustom.classList.add('d-none');
+        // Se escolheu uma semana específica (SEM_1 a SEM_5) e o mês está em 'TODOS',
+        // ajusta para o mês corrente automaticamente para ter visualização imediata
+        if (val.startsWith('SEM_') && mesSelect && mesSelect.value === 'TODOS') {
+          mesSelect.value = String(new Date().getMonth());
+        }
+      }
+      atualizarRelatorioMensal();
+    }
+
+    function aoMudarMesOuAnoRelatorio() {
+      atualizarRelatorioMensal();
+    }
+
+    function atualizarRelatorioMensal() {
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      const mesFiltro = mesSelect ? mesSelect.value : 'TODOS';
+      const anoFiltro = parseInt(document.getElementById('filtroRelatorioAno').value) || new Date().getFullYear();
+      const intervaloSelect = document.getElementById('filtroRelatorioIntervalo');
+      const intervaloFiltro = intervaloSelect ? intervaloSelect.value : 'TODOS';
+
+      const nomesMeses = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+      ];
+
+      let dataInicioFiltro = null;
+      let dataFimFiltro = null;
+      let periodoTextoFormatado = '';
+      let periodoDescCard = '';
+
+      if (intervaloFiltro === 'CUSTOM') {
+        const dtIniVal = document.getElementById('filtroRelatorioDataInicio') ? document.getElementById('filtroRelatorioDataInicio').value : '';
+        const dtFimVal = document.getElementById('filtroRelatorioDataFim') ? document.getElementById('filtroRelatorioDataFim').value : '';
+        if (dtIniVal && dtFimVal) {
+          dataInicioFiltro = parseDataLocal(dtIniVal);
+          dataInicioFiltro.setHours(0, 0, 0, 0);
+          dataFimFiltro = parseDataLocal(dtFimVal);
+          dataFimFiltro.setHours(23, 59, 59, 999);
+          periodoTextoFormatado = `${formatarData(dtIniVal)} a ${formatarData(dtFimVal)}`;
+          periodoDescCard = `${formatarData(dtIniVal)} a ${formatarData(dtFimVal)}`;
+        } else {
+          periodoTextoFormatado = `Intervalo Personalizado`;
+          periodoDescCard = 'Personalizado';
+        }
+      } else if (intervaloFiltro === 'ESTA_SEMANA') {
+        const hoje = new Date();
+        const diaSemana = hoje.getDay(); // 0=Dom, 1=Seg, ...
+        const diffSeg = diaSemana === 0 ? -6 : 1 - diaSemana;
+        const seg = new Date(hoje);
+        seg.setDate(hoje.getDate() + diffSeg);
+        seg.setHours(0, 0, 0, 0);
+        const dom = new Date(seg);
+        dom.setDate(seg.getDate() + 6);
+        dom.setHours(23, 59, 59, 999);
+        dataInicioFiltro = seg;
+        dataFimFiltro = dom;
+        const sIni = formatarData(formatarDataIso(seg));
+        const sFim = formatarData(formatarDataIso(dom));
+        periodoTextoFormatado = `Esta Semana (${sIni} a ${sFim})`;
+        periodoDescCard = 'Esta Semana';
+      } else if (intervaloFiltro === 'ULT_7') {
+        const hoje = new Date();
+        const ini = new Date(hoje);
+        ini.setDate(hoje.getDate() - 6);
+        ini.setHours(0, 0, 0, 0);
+        const fim = new Date(hoje);
+        fim.setHours(23, 59, 59, 999);
+        dataInicioFiltro = ini;
+        dataFimFiltro = fim;
+        const sIni = formatarData(formatarDataIso(ini));
+        const sFim = formatarData(formatarDataIso(fim));
+        periodoTextoFormatado = `Últimos 7 dias (${sIni} a ${sFim})`;
+        periodoDescCard = 'Últimos 7 dias';
+      } else if (intervaloFiltro === 'ULT_15') {
+        const hoje = new Date();
+        const ini = new Date(hoje);
+        ini.setDate(hoje.getDate() - 14);
+        ini.setHours(0, 0, 0, 0);
+        const fim = new Date(hoje);
+        fim.setHours(23, 59, 59, 999);
+        dataInicioFiltro = ini;
+        dataFimFiltro = fim;
+        const sIni = formatarData(formatarDataIso(ini));
+        const sFim = formatarData(formatarDataIso(fim));
+        periodoTextoFormatado = `Últimos 15 dias (${sIni} a ${sFim})`;
+        periodoDescCard = 'Últimos 15 dias';
+      } else if (intervaloFiltro && intervaloFiltro.startsWith('SEM_')) {
+        const mesIdx = (mesFiltro === 'TODOS') ? new Date().getMonth() : parseInt(mesFiltro, 10);
+        const ultimoDiaMes = new Date(anoFiltro, mesIdx + 1, 0).getDate();
+        let diaIni = 1, diaFim = 7, rotuloSem = '1ª Semana';
+        if (intervaloFiltro === 'SEM_1') { diaIni = 1; diaFim = Math.min(7, ultimoDiaMes); rotuloSem = '1ª Semana'; }
+        else if (intervaloFiltro === 'SEM_2') { diaIni = 8; diaFim = Math.min(14, ultimoDiaMes); rotuloSem = '2ª Semana'; }
+        else if (intervaloFiltro === 'SEM_3') { diaIni = 15; diaFim = Math.min(21, ultimoDiaMes); rotuloSem = '3ª Semana'; }
+        else if (intervaloFiltro === 'SEM_4') { diaIni = 22; diaFim = Math.min(28, ultimoDiaMes); rotuloSem = '4ª Semana'; }
+        else if (intervaloFiltro === 'SEM_5') { diaIni = 29; diaFim = ultimoDiaMes; rotuloSem = '5ª Semana'; }
+
+        dataInicioFiltro = new Date(anoFiltro, mesIdx, diaIni, 0, 0, 0, 0);
+        dataFimFiltro = new Date(anoFiltro, mesIdx, diaFim, 23, 59, 59, 999);
+        const d1 = String(diaIni).padStart(2, '0');
+        const d2 = String(diaFim).padStart(2, '0');
+        const mStr = String(mesIdx + 1).padStart(2, '0');
+        periodoTextoFormatado = `${rotuloSem} (${d1}/${mStr} a ${d2}/${mStr}) • ${nomesMeses[mesIdx]} / ${anoFiltro}`;
+        periodoDescCard = `${rotuloSem} (${nomesMeses[mesIdx]})`;
+      } else {
+        // Mês completo ou Ano todo
+        if (mesFiltro === 'TODOS') {
+          dataInicioFiltro = new Date(anoFiltro, 0, 1, 0, 0, 0, 0);
+          dataFimFiltro = new Date(anoFiltro, 11, 31, 23, 59, 59, 999);
+          periodoTextoFormatado = `Período Geral (${anoFiltro})`;
+          periodoDescCard = `Geral (${anoFiltro})`;
+        } else {
+          const mesIdx = parseInt(mesFiltro, 10);
+          dataInicioFiltro = new Date(anoFiltro, mesIdx, 1, 0, 0, 0, 0);
+          dataFimFiltro = new Date(anoFiltro, mesIdx + 1, 0, 23, 59, 59, 999);
+          periodoTextoFormatado = `${nomesMeses[mesIdx]} / ${anoFiltro}`;
+          periodoDescCard = `${nomesMeses[mesIdx]} / ${anoFiltro}`;
+        }
+      }
+
+      periodoRelatorioFormatadoAtual = periodoTextoFormatado;
+      periodoCardTextoAtual = periodoDescCard;
+
+      document.getElementById('lblPeriodoRelatorio').innerText = periodoTextoFormatado;
+      document.getElementById('lblEmissaoRelatorio').innerText = `Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}`;
+
+      // Filtragem ágil precisa: tarefas em produção ou inseridas no período
+      let filtradas = appState.tarefas.filter(t => {
+        const dCriacao = parseDataLocal(t.dataInsercao || t.dataInicio);
+        dCriacao.setHours(0, 0, 0, 0);
+        const dConclusao = t.dataConclusao ? parseDataLocal(t.dataConclusao) : null;
+        if (dConclusao) dConclusao.setHours(0, 0, 0, 0);
+
+        // Se a demanda foi criada após o término do período filtrado, ela ainda não existia
+        if (dataFimFiltro && dCriacao.getTime() > dataFimFiltro.getTime()) {
+          return false;
+        }
+
+        // Se a demanda já havia sido concluída antes do início deste corte, não pertence a este intervalo
+        if (dataInicioFiltro && dConclusao && dConclusao.getTime() < dataInicioFiltro.getTime()) {
+          return false;
+        }
+
+        return true;
+      });
+
+      // Filtro por Desenvolvedor (se selecionado)
+      const devRelFiltro = document.getElementById('filtroRelatorioDev');
+      if (devRelFiltro && devRelFiltro.value && devRelFiltro.value !== 'TODOS') {
+        const devIdFiltro = devRelFiltro.value;
+        const devNomeFiltro = devRelFiltro.options[devRelFiltro.selectedIndex] ? devRelFiltro.options[devRelFiltro.selectedIndex].text : '';
+        filtradas = filtradas.filter(t => t.devId === devIdFiltro || t.devNome === devNomeFiltro || limparNomeDev(t.devNome) === limparNomeDev(devNomeFiltro));
+      }
+
+      // 3º Filtro por Módulo (se selecionado)
+      const moduloRelFiltro = document.getElementById('filtroRelatorioModulo');
+      if (moduloRelFiltro && moduloRelFiltro.value && moduloRelFiltro.value !== 'TODOS') {
+        const modFiltro = moduloRelFiltro.value;
+        filtradas = filtradas.filter(t => {
+          const modTask = (t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa') ? 'Demanda Externa' : (t.modulo || 'SIOPLEEx');
+          return modTask === modFiltro;
+        });
+      }
+
+      // 3º Filtro por Status (se selecionado)
+      const statusRelFiltro = document.getElementById('filtroRelatorioStatus');
+      if (statusRelFiltro && statusRelFiltro.value && statusRelFiltro.value !== 'TODOS') {
+        filtradas = filtradas.filter(t => t.status === statusRelFiltro.value);
+      }
+
+      // 6º Reordenação em todas as colunas da lista
+      filtradas.sort((a, b) => {
+        let valA, valB;
+        if (relatorioSortColuna === 'num') {
+          valA = parseDataLocal(a.dataInsercao || a.dataInicio).getTime();
+          valB = parseDataLocal(b.dataInsercao || b.dataInicio).getTime();
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        } else if (relatorioSortColuna === 'modulo') {
+          valA = ((a.demandaExterna || a.modulo === 'Demanda Externa') ? 'Demanda Externa' : (a.modulo || 'SIOPLEEx')).toLowerCase();
+          valB = ((b.demandaExterna || b.modulo === 'Demanda Externa') ? 'Demanda Externa' : (b.modulo || 'SIOPLEEx')).toLowerCase();
+          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else if (relatorioSortColuna === 'titulo') {
+          valA = (a.titulo || '').toLowerCase();
+          valB = (b.titulo || '').toLowerCase();
+          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else if (relatorioSortColuna === 'devNome') {
+          valA = (a.devNome || '').toLowerCase();
+          valB = (b.devNome || '').toLowerCase();
+          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else if (relatorioSortColuna === 'dataInsercao') {
+          valA = parseDataLocal(a.dataInsercao || a.dataInicio).getTime();
+          valB = parseDataLocal(b.dataInsercao || b.dataInicio).getTime();
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        } else if (relatorioSortColuna === 'urgencia') {
+          const pesos = { 'Baixa': 1, 'Media': 2, 'Alta': 3, 'Urgente': 4 };
+          valA = pesos[a.urgencia] || 2;
+          valB = pesos[b.urgencia] || 2;
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        } else if (relatorioSortColuna === 'diasEstimados') {
+          valA = parseInt(a.diasEstimados) || 0;
+          valB = parseInt(b.diasEstimados) || 0;
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        } else if (relatorioSortColuna === 'diasTrabalhados') {
+          valA = parseInt(a.diasTrabalhados) || 0;
+          valB = parseInt(b.diasTrabalhados) || 0;
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        } else if (relatorioSortColuna === 'status') {
+          valA = (a.status || '').toLowerCase();
+          valB = (b.status || '').toLowerCase();
+          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else if (relatorioSortColuna === 'prazoFinal') {
+          const pA = a.status === 'Concluída' ? (a.dataConclusao || a.dataPrazo) : a.dataPrazo;
+          const pB = b.status === 'Concluída' ? (b.dataConclusao || b.dataPrazo) : b.dataPrazo;
+          valA = parseDataLocal(pA).getTime();
+          valB = parseDataLocal(pB).getTime();
+          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        }
+        return 0;
+      });
+
+      // Atualiza ícones visuais nos cabeçalhos da tabela
+      const colunasIcones = ['num', 'modulo', 'titulo', 'devNome', 'dataInsercao', 'urgencia', 'diasEstimados', 'diasTrabalhados', 'status', 'prazoFinal'];
+      colunasIcones.forEach(col => {
+        const icone = document.getElementById(`sortIcon_${col}`);
+        if (icone) {
+          if (col === relatorioSortColuna) {
+            icone.className = (relatorioSortDirecao === 'ASC')
+              ? 'fa-solid fa-arrow-up-short-wide ms-1 text-warning'
+              : 'fa-solid fa-arrow-down-wide-short ms-1 text-warning';
+          } else {
+            icone.className = 'fa-solid fa-sort ms-1 small text-white-50';
+          }
+        }
+      });
+
+      // Guarda resultado filtrado atual para exportação precisa em PDF
+      relatorioFiltradoAtual = filtradas;
+
+      const totalDemandas = filtradas.length;
+      const totalConcluidas = filtradas.filter(t => t.status === 'Concluída').length;
+      const totalAtrasadas = filtradas.filter(t => t.status === 'Atrasada').length;
+      const totalEmAndamento = filtradas.filter(t => t.status !== 'Concluída' && t.status !== 'Atrasada').length;
+
+      // 1. Total de Demandas
+      const elTotal = document.getElementById('relTotalDemandas');
+      if (elTotal) elTotal.innerText = totalDemandas;
+
+      // 2. Demandas Concluídas
+      const elConcluidas = document.getElementById('relConcluidas');
+      if (elConcluidas) elConcluidas.innerText = totalConcluidas;
+
+      const elConcluidasPct = document.getElementById('relConcluidasPercent');
+      if (elConcluidasPct) {
+        const pct = totalDemandas > 0 ? Math.round((totalConcluidas / totalDemandas) * 100) : 0;
+        elConcluidasPct.innerText = `${pct}% entregues no período`;
+      }
+
+      // 3. Demandas Em Andamento (2º Solicitado)
+      const elEmAndamento = document.getElementById('relEmAndamento');
+      if (elEmAndamento) elEmAndamento.innerText = totalEmAndamento;
+      const elEmAndamentoDesc = document.getElementById('relEmAndamentoDesc');
+      if (elEmAndamentoDesc) {
+        elEmAndamentoDesc.innerText = totalEmAndamento === 1 ? '1 demanda em produção' : `${totalEmAndamento} demandas em produção`;
+      }
+
+      // 4. Demandas Atrasadas (2º Solicitado)
+      const elAtrasadas = document.getElementById('relAtrasadas');
+      if (elAtrasadas) elAtrasadas.innerText = totalAtrasadas;
+      const elAtrasadasDesc = document.getElementById('relAtrasadasDesc');
+      if (elAtrasadasDesc) {
+        elAtrasadasDesc.innerText = totalAtrasadas === 0 ? 'nenhum atraso' : `${totalAtrasadas} fora do prazo`;
+      }
+
+      // Permissão de exclusão: todos podem excluir as suas próprias demandas, e Gerente/Admin qualquer uma
+      const isGerenteGeral = usuarioPodeVerPainelGerente(appState.currentUser);
+      const thAcoes = document.getElementById('thAcoesRelatorio');
+      if (thAcoes) {
+        thAcoes.classList.remove('d-none');
+      }
+
+      // Renderiza Tabela com Coluna Módulo, larguras ajustadas e "Em Produção"
+      const tbody = document.getElementById('tabelaCorpoRelatorio');
+      tbody.innerHTML = '';
+
+      if (filtradas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-muted">Nenhuma demanda encontrada para o período/filtro selecionado.</td></tr>`;
+      } else {
+        filtradas.forEach((t, index) => {
+          const tr = document.createElement('tr');
+          const isExterna = (t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa');
+          const mod = isExterna ? 'Demanda Externa' : (t.modulo || 'SIOPLEEx');
+          const devNomeLimpo = limparNomeDev(t.devNome);
+          const podeExcluirEstaDemanda = isGerenteGeral || (appState.currentUser && (
+            t.devId === appState.currentUser.id || 
+            (t.devNome && appState.currentUser.nome && t.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())
+          ));
+          tr.innerHTML = `
+            <td class="fw-bold text-muted small">${index + 1}</td>
+            <td>
+              <span class="badge ${isExterna ? 'bg-primary-subtle text-primary border-primary' : 'bg-secondary-subtle text-secondary'} border font-monospace text-wrap" style="font-size: 0.76rem; word-break: break-word; line-height: 1.25; display: inline-block; padding: 4px 6px;" title="${mod}">
+                ${mod}
+              </span>
+            </td>
+            <td class="text-start text-break fw-semibold">${t.titulo}</td>
+            <td class="text-break"><span class="badge bg-light text-dark border small">${devNomeLimpo}</span></td>
+            <td><small class="text-muted"><i class="fa-regular fa-calendar me-1"></i>${formatarData(t.dataInsercao || t.dataInicio)}</small></td>
+            <td><span class="badge badge-${(t.urgencia || 'Media').toLowerCase()}">${t.urgencia || 'Média'}</span></td>
+            <td class="small">${t.diasEstimados} d</td>
+            <td class="small"><strong>${t.diasTrabalhados} d</strong></td>
+            <td>
+              <span class="badge ${t.status === 'Concluída' ? 'bg-success' : (t.status === 'Atrasada' ? 'bg-danger' : 'bg-primary')}">
+                ${t.status}
+              </span>
+            </td>
+            <td class="small">${t.status === 'Concluída' ? formatarData(t.dataConclusao || t.dataPrazo) : formatarData(t.dataPrazo)}</td>
+            <td data-html2canvas-ignore="true" class="text-center">
+              ${podeExcluirEstaDemanda ? `
+                <button type="button" class="btn btn-outline-danger btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="excluirDemandaConfirm('${t.id}')">
+                  <i class="fa-solid fa-trash-can" style="font-size: 0.72rem;"></i>
+                </button>
+              ` : '<span class="text-muted small">-</span>'}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+    /**
+     * 4º GERAÇÃO, PRÉ-VISUALIZAÇÃO E DOWNLOAD EM PDF DO RELATÓRIO MENSAL (SM)
+     * - Abre instantaneamente o Modal de Pré-Visualização na tela (o usuário vê o relatório na hora, sem tela branca)
+     * - Acima: 4 caixas com Geral de demandas, Concluídas, Em Andamento e Atrasadas
+     * - Abaixo: Lista de demandas do filtro selecionado com módulo, título, desenvolvedor, status e prazo final
+     * - Dispara o download automático do PDF formatado (200KB+, não 3KB)
+     * - Oferece botões de Download Direto e Impressão / Salvar PDF via Navegador
+     */
+    let dadosRelatorioPdfAtual = null;
+
+    function baixarRelatorioPDF() {
+      // Garante que o relatório e a lista filtrada estejam calculados
+      if (!relatorioFiltradoAtual || relatorioFiltradoAtual.length === 0) {
+        atualizarRelatorioMensal();
+      }
+
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      const mesTexto = mesSelect ? mesSelect.selectedOptions[0].text : 'Todos os Meses';
+      const anoTexto = document.getElementById('filtroRelatorioAno').value || '2026';
+      const devSelect = document.getElementById('filtroRelatorioDev');
+      const devTexto = (devSelect && devSelect.value !== 'TODOS') ? devSelect.options[devSelect.selectedIndex].text : '';
+      const modSelect = document.getElementById('filtroRelatorioModulo');
+      const modTexto = (modSelect && modSelect.value !== 'TODOS') ? modSelect.value : '';
+      const statusSelect = document.getElementById('filtroRelatorioStatus');
+      const statusTexto = (statusSelect && statusSelect.value !== 'TODOS') ? statusSelect.value : '';
+
+      const periodoDesc = periodoRelatorioFormatadoAtual || ((mesSelect && mesSelect.value !== 'TODOS') 
+        ? `${mesTexto} / ${anoTexto}` 
+        : `Período Geral (${anoTexto})`);
+      const periodoCard = periodoCardTextoAtual || mesTexto;
+
+      const demandas = relatorioFiltradoAtual || [];
+      const totalDemandas = demandas.length;
+      const concluidas = demandas.filter(t => t.status === 'Concluída').length;
+      const atrasadas = demandas.filter(t => t.status === 'Atrasada').length;
+      const emAndamento = demandas.filter(t => t.status !== 'Concluída' && t.status !== 'Atrasada').length;
+
+      dadosRelatorioPdfAtual = {
+        mesTexto, anoTexto, devTexto, modTexto, statusTexto, periodoDesc,
+        totalDemandas, concluidas, atrasadas, emAndamento, demandas
+      };
+
+      // Tags de filtros adicionais ativos
+      const tagsFiltros = [];
+      const intervaloSelect = document.getElementById('filtroRelatorioIntervalo');
+      if (intervaloSelect && intervaloSelect.value !== 'TODOS') {
+        tagsFiltros.push(`Intervalo: ${intervaloSelect.options[intervaloSelect.selectedIndex].text}`);
+      }
+      if (devTexto) tagsFiltros.push(`Dev: ${limparNomeDev(devTexto)}`);
+      if (modTexto) tagsFiltros.push(`Módulo: ${modTexto}`);
+      if (statusTexto) tagsFiltros.push(`Status: ${statusTexto}`);
+
+      // Monta as linhas da tabela com a coluna Data de Inserção
+      let linhasTabelaHtml = '';
+      if (demandas.length === 0) {
+        linhasTabelaHtml = `<tr><td colspan="7" style="padding: 16px; text-align: center; color: #64748b; border: 1px solid #cbd5e1; font-style: italic;">Nenhuma demanda encontrada para o filtro selecionado.</td></tr>`;
+      } else {
+        demandas.forEach((d, idx) => {
+          let statusBadgeColor = '#2563eb';
+          let statusBg = '#eff6ff';
+          if (d.status === 'Concluída') {
+            statusBadgeColor = '#16a34a';
+            statusBg = '#f0fdf4';
+          } else if (d.status === 'Atrasada') {
+            statusBadgeColor = '#dc2626';
+            statusBg = '#fef2f2';
+          }
+
+          const prazo = d.status === 'Concluída' 
+            ? formatarData(d.dataConclusao || d.dataPrazo) 
+            : formatarData(d.dataPrazo);
+
+          const isExternaPdf = (d.demandaExterna === true || d.demandaExterna === 'true' || d.modulo === 'Demanda Externa');
+          const modPdf = isExternaPdf ? 'Demanda Externa' : (d.modulo || 'SIOPLEEx');
+          const dtInsercaoFormatada = formatarData(d.dataInsercao || d.dataInicio);
+
+          linhasTabelaHtml += `
+            <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+              <td style="padding: 7px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #64748b; font-size: 11px;">${idx + 1}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 10.5px; color: ${isExternaPdf ? '#2563eb; font-weight: 600;' : '#475569;'}">${modPdf}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; font-weight: 600; color: #0f172a; font-size: 11px;">${d.titulo}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; color: #334155; font-size: 11px;">${limparNomeDev(d.devNome)}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center; color: #475569; font-size: 11px;">${dtInsercaoFormatada}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center;">
+                <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; color: ${statusBadgeColor}; background-color: ${statusBg}; border: 1px solid ${statusBadgeColor};">
+                  ${d.status}
+                </span>
+              </td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center; color: #475569; font-size: 11px;">${prazo}</td>
+            </tr>
+          `;
+        });
+      }
+
+      // Monta o HTML do documento dentro de corpoVisualizacaoPdf
+      const containerPdf = document.getElementById('corpoVisualizacaoPdf');
+      if (containerPdf) {
+        containerPdf.innerHTML = `
+          <!-- CABEÇALHO SM -->
+          <div style="display: table; width: 100%; border-bottom: 3px solid #2563eb; padding-bottom: 12px; margin-bottom: 14px;">
+            <div style="display: table-cell; vertical-align: middle;">
+              <div style="display: inline-block; vertical-align: middle;">
+                <span style="background: #2563eb; color: #ffffff; font-weight: 900; font-size: 18px; padding: 4px 10px; border-radius: 4px; margin-right: 8px; letter-spacing: 1px;">SM</span>
+                <span style="font-size: 22px; font-weight: 800; color: #0f172a; vertical-align: middle;">Sys Manager</span>
+              </div>
+              <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Relatório de Demandas da Esteira Ágil (SM)</div>
+            </div>
+            <div style="display: table-cell; vertical-align: middle; text-align: right;">
+              <div style="display: inline-block; background: #2563eb; color: #ffffff; font-weight: bold; font-size: 12px; padding: 4px 12px; border-radius: 12px; margin-bottom: 4px;">
+                ${periodoDesc}
+              </div>
+              ${tagsFiltros.length > 0 ? `<div style="font-size: 10.5px; color: #2563eb; font-weight: 600;">${tagsFiltros.join(' | ')}</div>` : ''}
+              <div style="font-size: 10px; color: #64748b; margin-top: 2px;">
+                Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}
+              </div>
+            </div>
+          </div>
+
+          <!-- 2º RESUMO ACIMA (4 CAIXAS: GERAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) -->
+          <div style="display: table; width: 100%; margin-bottom: 16px; border-collapse: separate; border-spacing: 10px 0;">
+            <div style="display: table-row;">
+              <!-- 1. Geral de Demandas -->
+              <div style="display: table-cell; width: 25%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Geral de Demandas (${periodoCard})</div>
+                <div style="font-size: 24px; font-weight: 900; color: #0f172a; margin: 3px 0;">${totalDemandas}</div>
+                <div style="font-size: 10px; color: #64748b;">${totalDemandas === 1 ? '1 demanda' : `${totalDemandas} demandas`}</div>
+              </div>
+
+              <!-- 2. Demandas Concluídas -->
+              <div style="display: table-cell; width: 25%; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Concluídas</div>
+                <div style="font-size: 24px; font-weight: 900; color: #16a34a; margin: 3px 0;">${concluidas}</div>
+                <div style="font-size: 10px; color: #15803d; font-weight: 600;">
+                  ${totalDemandas > 0 ? Math.round((concluidas / totalDemandas) * 100) : 0}% entregues
+                </div>
+              </div>
+
+              <!-- 3. Demandas Em Andamento -->
+              <div style="display: table-cell; width: 25%; background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Em Andamento</div>
+                <div style="font-size: 24px; font-weight: 900; color: #2563eb; margin: 3px 0;">${emAndamento}</div>
+                <div style="font-size: 10px; color: #1d4ed8; font-weight: 600;">em produção ativa</div>
+              </div>
+
+              <!-- 4. Demandas Atrasadas -->
+              <div style="display: table-cell; width: 25%; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                <div style="font-size: 10px; font-weight: 700; color: #991b1b; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Atrasadas</div>
+                <div style="font-size: 24px; font-weight: 900; color: #dc2626; margin: 3px 0;">${atrasadas}</div>
+                <div style="font-size: 10px; color: #b91c1c;">
+                  ${atrasadas === 0 ? 'Nenhum atraso' : `${atrasadas} fora do prazo`}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TÍTULO DA LISTA DE DEMANDAS -->
+          <div style="margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #1e293b;">
+            Lista de Demandas do Filtro Selecionado:
+          </div>
+
+          <!-- TABELA DE DEMANDAS -->
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+              <tr style="background-color: #0f172a; color: #ffffff;">
+                <th style="padding: 8px 6px; border: 1px solid #334155; width: 30px; text-align: center;">#</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 135px; text-align: left;">Módulo</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; text-align: left;">Título da Demanda</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 125px; text-align: left;">Desenvolvedor</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 95px; text-align: center;">Data de Inserção</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 95px; text-align: center;">Status</th>
+                <th style="padding: 8px 8px; border: 1px solid #334155; width: 90px; text-align: center;">Prazo Final</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${linhasTabelaHtml}
+            </tbody>
+          </table>
+
+          <!-- RODAPÉ LIMPO -->
+          <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #e2e8f0; display: table; width: 100%; font-size: 10px; color: #94a3b8;">
+            <div style="display: table-cell; text-align: left;">SM - Sys Manager • Gestão de Esteira Ágil</div>
+            <div style="display: table-cell; text-align: right;">Documento de acompanhamento e auditoria</div>
+          </div>
+        `;
+      }
+
+      // Abre o Modal com o relatório renderizado imediatamente
+      const modalEl = document.getElementById('modalPreviewRelatorioPdf');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+
+      // Atualiza status do modal
+      const statusEl = document.getElementById('statusGeracaoPdfModal');
+      if (statusEl) {
+        statusEl.innerHTML = `<span class="spinner-border spinner-border-sm text-primary me-1"></span> Gerando arquivo PDF oficial...`;
+      }
+
+      // Dispara o download automático do arquivo PDF
+      setTimeout(() => {
+        executarDownloadPdfDireto();
+      }, 400);
+    }
+
+    /**
+     * Executa o download direto do PDF usando html2pdf sobre o container visível e renderizado
+     */
+    function executarDownloadPdfDireto() {
+      const containerPdf = document.getElementById('corpoVisualizacaoPdf');
+      if (!containerPdf) return;
+
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      const mesTexto = mesSelect ? mesSelect.selectedOptions[0].text : 'Todos_os_Meses';
+      const anoTexto = document.getElementById('filtroRelatorioAno').value || new Date().getFullYear();
+      const slugPeriodo = (periodoCardTextoAtual || mesTexto).toString().replace(/[^a-zA-Z0-9]/g, '_');
+      const nomeArquivo = `SM_Relatorio_${slugPeriodo}_${anoTexto}.pdf`;
+
+      const statusEl = document.getElementById('statusGeracaoPdfModal');
+      if (statusEl) {
+        statusEl.innerHTML = `<span class="spinner-border spinner-border-sm text-primary me-1"></span> Baixando ${nomeArquivo}...`;
+      }
+
+      const opt = {
+        margin:       [8, 8, 8, 8],
+        filename:     nomeArquivo,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+
+      html2pdf()
+        .set(opt)
+        .from(containerPdf)
+        .toPdf()
+        .get('pdf')
+        .then(function(pdfObj) {
+          // 1. Gera Blob e realiza download com link <a> compatível
+          try {
+            const blob = pdfObj.output('blob');
+            const blobUrl = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = nomeArquivo;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
+
+            // 2. Tenta também abrir em nova aba
+            try {
+              window.open(blobUrl, '_blank');
+            } catch(e) {}
+          } catch(e) {
+            // Fallback para save padrão do pdfObj
+            pdfObj.save(nomeArquivo);
+          }
+
+          if (statusEl) {
+            statusEl.innerHTML = `<i class="fa-solid fa-circle-check text-success me-1"></i> Arquivo <strong>${nomeArquivo}</strong> baixado com sucesso!`;
+          }
+          mostrarToast('Download do PDF concluído!');
+        })
+        .catch(err => {
+          console.error('Erro na exportação do PDF:', err);
+          if (statusEl) {
+            statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-danger me-1"></i> Não foi possível baixar diretamente. Use o botão <strong>Imprimir / Salvar PDF</strong> acima.`;
+          }
+          mostrarToast('Aviso: utilize a opção Imprimir / Salvar PDF.');
+        });
+    }
+
+    /**
+     * Imprime ou salva como PDF diretamente pelo navegador
+     */
+    function imprimirRelatorioDireto() {
+      const conteudo = document.getElementById('corpoVisualizacaoPdf');
+      if (!conteudo) return;
+
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      const mesTexto = mesSelect ? mesSelect.selectedOptions[0].text : 'Relatorio';
+      const anoTexto = document.getElementById('filtroRelatorioAno').value || new Date().getFullYear();
+      const slugPeriodo = (periodoCardTextoAtual || mesTexto).toString().replace(/[^a-zA-Z0-9]/g, '_');
+
+      const win = window.open('', '_blank', 'width=1100,height=750');
+      if (win) {
+        win.document.write(`
+          <!DOCTYPE html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="UTF-8">
+            <title>SM_Relatorio_${slugPeriodo}_${anoTexto}</title>
+            <style>
+              @page { size: landscape; margin: 8mm; }
+              body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 12px; color: #1e293b; background: #fff; }
+              @media print {
+                body { padding: 0; }
+              }
+            </style>
+          </head>
+          <body>
+            ${conteudo.innerHTML}
+            <script>
+              window.onload = function() {
+                window.focus();
+                window.print();
+              };
+            <\/script>
+          </body>
+          </html>
+        `);
+        win.document.close();
+      } else {
+        window.print();
+      }
+    }
+
+    function atualizarSelectsDev() {
+      const selectModal = document.getElementById('taskDevSelect');
+      const selectRel = document.getElementById('filtroRelatorioDev');
+
+      if (selectModal) selectModal.innerHTML = '';
+      if (selectRel) selectRel.innerHTML = '<option value="TODOS">Todos os Desenvolvedores</option>';
+
+      if (appState.usuarios.length === 0) {
+        if (selectModal) {
+          const optDefault = document.createElement('option');
+          optDefault.value = 'USR-1';
+          optDefault.innerText = 'Ten Nicolas';
+          selectModal.appendChild(optDefault);
+        }
+
+        if (selectRel) {
+          const optRelDefault = document.createElement('option');
+          optRelDefault.value = 'USR-1';
+          optRelDefault.innerText = 'Ten Nicolas';
+          selectRel.appendChild(optRelDefault);
+        }
+      } else {
+        appState.usuarios.forEach(u => {
+          if (selectModal) {
+            const opt1 = document.createElement('option');
+            opt1.value = u.id;
+            opt1.innerText = `${u.nome} (${u.cargo || 'Membro'})`;
+            selectModal.appendChild(opt1);
+          }
+
+          if (selectRel) {
+            const opt2 = document.createElement('option');
+            opt2.value = u.id;
+            opt2.innerText = u.nome;
+            selectRel.appendChild(opt2);
+          }
+        });
+
+        if (selectModal && appState.currentUser) {
+          selectModal.value = appState.currentUser.id;
+        }
+      }
+    }
+
+    function formatarData(dataStr) {
+      if (!dataStr) return '-';
+      const partes = dataStr.toString().split('T')[0].split('-');
+      if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+      return dataStr;
+    }
+
+    function getMockData() {
+      return {
+        emailAutenticado: 'nicolasrichardt@gmail.com',
+        currentUser: { id: 'USR-1', nome: 'Ten Nicolas', email: 'nicolasrichardt@gmail.com', cargo: 'Gerente de Projetos' },
+        usuarios: [
+          { id: 'USR-1', nome: 'Ten Nicolas', email: 'nicolasrichardt@gmail.com', cargo: 'Gerente de Projetos', dataCriacao: '2026-09-01' },
+          { id: 'USR-2', nome: 'Elvys Maia', email: 'elvysmaia@gmail.com', cargo: 'Desenvolvedor', dataCriacao: '2026-09-05' }
+        ],
+        tarefas: [
+          {
+            id: 'TSK-101',
+            modulo: 'SIOPLEEx_Orcamento',
+            titulo: 'Criar API de Pagamento',
+            descricao: 'Integração com gateway',
+            devId: 'USR-1',
+            devNome: 'Ten Nicolas',
+            diasEstimados: 4,
+            diasTrabalhados: 1,
+            dataInicio: formatarDataIso(new Date()),
+            dataInsercao: formatarDataIso(new Date()),
+            dataPrazo: '2026-10-04',
+            status: 'Em Andamento',
+            ativo: true,
+            urgencia: 'Alta',
+            dataConclusao: ''
+          },
+          {
+            id: 'TSK-102',
+            modulo: 'SIOPLEEx_BD',
+            titulo: 'Otimizar Banco de Dados',
+            descricao: 'Índices e queries',
+            devId: 'USR-2',
+            devNome: 'Elvys Maia',
+            diasEstimados: 2,
+            diasTrabalhados: 1,
+            dataInicio: formatarDataIso(new Date()),
+            dataInsercao: formatarDataIso(new Date()),
+            dataPrazo: '2026-10-02',
+            status: 'Em Andamento',
+            ativo: true,
+            urgencia: 'Urgente',
+            dataConclusao: ''
+          }
+        ],
+        solicitacoes: []
+      };
+    }
+  </script>
+</body>
+</html>
