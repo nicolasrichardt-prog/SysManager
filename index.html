@@ -7,6 +7,10 @@
   
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <!-- Chart.js -->
@@ -26,14 +30,17 @@
     }
 
     body {
-      background-color: #f1f5f9;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      color: #334155;
+      background-color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: #1e293b;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     .navbar-custom {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+      background: linear-gradient(135deg, #090e17 0%, #0f172a 50%, #1e293b 100%);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
 
     .brand-logo {
@@ -45,38 +52,78 @@
       color: #38bdf8;
     }
 
+    .nav-tabs {
+      border-bottom: 2px solid #e2e8f0;
+      gap: 6px;
+    }
     .nav-tabs .nav-link {
       color: #64748b;
       font-weight: 600;
+      font-size: 0.92rem;
       border: none;
       padding: 12px 20px;
-      border-radius: 8px 8px 0 0;
+      border-radius: 10px 10px 0 0;
       transition: all 0.15s ease;
-    }
-    .nav-tabs .nav-link.active {
-      color: var(--primary-color);
-      background-color: #fff;
-      border-bottom: 3px solid var(--primary-color);
+      background: transparent;
     }
     .nav-tabs .nav-link:hover:not(.active) {
       color: #0f172a;
-      background-color: #e2e8f0;
+      background-color: #f1f5f9;
+    }
+    .nav-tabs .nav-link.active {
+      color: var(--primary-color);
+      background-color: #ffffff;
+      border-bottom: 3px solid var(--primary-color);
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.02);
     }
 
     .card-custom {
-      border: none;
-      border-radius: 14px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
       background: #ffffff;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .hero-task {
+      border: 1px solid #e2e8f0;
       border-left: 6px solid var(--primary-color);
-      background: linear-gradient(to right, #ffffff, #f8faff);
+      border-radius: 16px;
+      background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+      box-shadow: 0 4px 16px -2px rgba(37, 99, 235, 0.08);
+      position: relative;
     }
     .hero-task.atrasada {
       border-left: 6px solid var(--danger-color);
-      background: linear-gradient(to right, #ffffff, #fff5f5);
+      background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
+      box-shadow: 0 4px 16px -2px rgba(239, 68, 68, 0.08);
+    }
+
+    /* Pulse Live Dot */
+    .pulse-live-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #22c55e;
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      animation: pulse-green 1.8s infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes pulse-green {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      }
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+      }
     }
 
     .badge-urgente { background-color: #ef4444; color: white; }
@@ -103,40 +150,90 @@
 
     .esteira-item {
       border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 14px;
+      padding: 16px 18px;
       margin-bottom: 12px;
       background: #ffffff;
-      transition: border-color 0.15s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .esteira-item:hover {
-      border-color: #94a3b8;
+      border-color: #cbd5e1;
+      box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+
+    /* Botões de Reordenação Subir / Descer */
+    .btn-reorder {
+      width: 28px;
+      height: 24px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #64748b;
+      font-size: 0.72rem;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .btn-reorder:hover:not(:disabled) {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+      transform: scale(1.08);
+    }
+    .btn-reorder:disabled {
+      cursor: not-allowed;
+      opacity: 0.25;
     }
 
     .metric-box {
-      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
       padding: 18px 20px;
-      background: #fff;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
       display: flex;
       align-items: center;
-      gap: 15px;
-      min-height: 95px;
+      gap: 16px;
+      min-height: 98px;
+      transition: all 0.2s ease;
+    }
+    .metric-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.08);
+      border-color: #cbd5e1;
     }
     .metric-icon {
-      width: 50px;
-      height: 50px;
-      border-radius: 12px;
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 20px;
       flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
     .btn-nova-atividade {
       background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       color: #ffffff;
+      border: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-nova-atividade:hover {
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    }
       border: none;
       font-weight: 600;
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
@@ -402,14 +499,17 @@
         <!-- DEMANDA ATUAL EM PRODUÇÃO -->
         <div class="card card-custom hero-task mb-4 p-4" id="cardDemandaAtual">
           <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-            <div>
-              <span class="badge bg-dark me-2"><i class="fa-solid fa-bolt me-1 text-warning"></i> DEMANDA ATUAL EM EXECUÇÃO</span>
-              <span class="badge bg-secondary-subtle text-secondary border font-monospace me-1" id="badgeModuloAtual">SIOPLEEx</span>
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <span class="badge bg-dark text-white px-3 py-2 rounded-pill shadow-xs d-inline-flex align-items-center">
+                <span class="pulse-live-dot"></span>
+                <span class="fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">PRODUÇÃO ATIVA</span>
+              </span>
+              <span class="badge bg-secondary-subtle text-secondary border font-monospace px-2 py-1" id="badgeModuloAtual">SIOPLEEx</span>
               <span id="badgeStatusAtual" class="badge-status-dia">Em Dia</span>
-              <span id="badgeUrgenciaAtual" class="badge badge-media ms-1">Média</span>
+              <span id="badgeUrgenciaAtual" class="badge badge-media">Média</span>
             </div>
-            <div class="text-muted small mt-2 mt-sm-0">
-              <i class="fa-solid fa-user me-1"></i> Responsável: <strong id="devNomeAtual">-</strong>
+            <div class="text-muted small mt-2 mt-sm-0 d-flex align-items-center bg-white px-3 py-1 rounded-pill border shadow-2xs">
+              <i class="fa-solid fa-user-circle me-2 text-primary fs-6"></i> Responsável: <strong id="devNomeAtual" class="text-dark ms-1">-</strong>
             </div>
           </div>
 
@@ -417,26 +517,26 @@
             <h3 class="fw-bold mb-2 text-dark" id="tituloDemandaAtual">Nenhuma demanda ativa no momento</h3>
             <p class="text-muted mb-3" id="descDemandaAtual">Selecione uma demanda nas Demandas Futuras ou cadastre uma nova para começar.</p>
 
-            <div class="row g-3 py-3 border-top border-bottom my-3">
+            <div class="row g-3 py-3 border-top border-bottom my-3 bg-white bg-opacity-75 rounded-3 px-2">
               <div class="col-6 col-md-3">
-                <span class="text-muted small d-block">Prazo Estimado:</span>
+                <span class="text-muted small d-block"><i class="fa-regular fa-clock me-1 text-primary"></i>Prazo Estimado:</span>
                 <strong class="fs-5 text-primary" id="tempoEstimadoAtual">0 dias</strong>
               </div>
               <div class="col-6 col-md-3">
-                <span class="text-muted small d-block">Em Produção:</span>
+                <span class="text-muted small d-block"><i class="fa-solid fa-stopwatch me-1 text-primary"></i>Em Produção:</span>
                 <div class="d-flex align-items-center gap-1">
                   <strong class="fs-5 text-dark" id="tempoDemandadoAtual">1 dia</strong>
                   <span class="badge bg-primary-subtle text-primary border border-primary-subtle small ms-1">
-                    <i class="fa-solid fa-calendar-day me-1"></i>Produção
+                    <i class="fa-solid fa-calendar-day me-1"></i>Ativa
                   </span>
                 </div>
               </div>
               <div class="col-6 col-md-3">
-                <span class="text-muted small d-block">Entrou em Produção:</span>
+                <span class="text-muted small d-block"><i class="fa-regular fa-calendar-plus me-1 text-secondary"></i>Início na Esteira:</span>
                 <strong class="fs-6 text-secondary" id="dataInicioAtual">-</strong>
               </div>
               <div class="col-6 col-md-3">
-                <span class="text-muted small d-block">Prazo Final:</span>
+                <span class="text-muted small d-block"><i class="fa-regular fa-calendar-check me-1 text-danger"></i>Prazo Final:</span>
                 <strong class="fs-6 text-danger" id="dataPrazoAtual">-</strong>
               </div>
             </div>
@@ -475,11 +575,11 @@
             <div class="card card-custom p-4 h-100">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                  <h5 class="fw-bold mb-1">
+                  <h5 class="fw-bold mb-1 d-flex align-items-center">
                     <i class="fa-solid fa-bars-staggered me-2 text-primary"></i>Demandas Futuras
-                    <span class="badge bg-primary-subtle text-primary rounded-pill ms-1" id="badgeQtdFuturasAba">0</span>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2 font-monospace" id="badgeQtdFuturasAba">0</span>
                   </h5>
-                  <p class="text-muted small mb-0">Selecione qual demanda será realizada no momento.</p>
+                  <p class="text-muted small mb-0">Suba ou desça as demandas para definir a prioridade de execução na fila.</p>
                 </div>
                 <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3" onclick="abrirModalNovaDemanda()">
                   <i class="fa-solid fa-plus me-1"></i> Nova Demanda
@@ -926,20 +1026,44 @@
             <label class="form-label small fw-bold">Descrição / Requisitos:</label>
             <textarea class="form-control" id="taskDescricao" rows="2" placeholder="Detalhes técnicos da tarefa..."></textarea>
           </div>
+          <!-- CALENDÁRIO: DATA DE INÍCIO E TÉRMINO DA DEMANDA -->
           <div class="row g-2 mb-3">
             <div class="col-md-6">
-              <label class="form-label small fw-bold">Prazo Estimado (em Dias):</label>
-              <input type="number" class="form-control" id="taskDias" min="1" value="2">
+              <label class="form-label small fw-bold text-dark">
+                <i class="fa-regular fa-calendar text-primary me-1"></i> Data de Início:
+              </label>
+              <input type="date" class="form-control" id="taskDataInicio" onchange="aoMudarDatasNovaDemanda()">
             </div>
             <div class="col-md-6">
-              <label class="form-label small fw-bold">Urgência:</label>
-              <select class="form-select" id="taskUrgencia" onchange="aoMudarUrgenciaNovaDemanda()">
-                <option value="Baixa">Baixa</option>
-                <option value="Media" selected>Média</option>
-                <option value="Alta">Alta</option>
-                <option value="Urgente">🚨 Urgente (Prioridade Alta)</option>
-              </select>
+              <label class="form-label small fw-bold text-dark">
+                <i class="fa-regular fa-calendar-check text-primary me-1"></i> Data de Término / Prazo:
+              </label>
+              <input type="date" class="form-control" id="taskDataPrazo" onchange="aoMudarDatasNovaDemanda()">
             </div>
+            <div class="col-12 mt-1">
+              <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3 border">
+                <small class="text-muted mb-0" id="taskDiasCalculadosDica">
+                  <i class="fa-solid fa-clock text-primary me-1"></i> Duração estimada: <strong id="lblDuracaoDias" class="text-dark">2 dias</strong>
+                </small>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapido(1)">+1 dia</button>
+                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapido(3)">+3 dias</button>
+                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapido(7)">+7 dias</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark">
+              <i class="fa-solid fa-flag text-primary me-1"></i> Urgência / Prioridade:
+            </label>
+            <select class="form-select" id="taskUrgencia" onchange="aoMudarUrgenciaNovaDemanda()">
+              <option value="Baixa">🟢 Baixa</option>
+              <option value="Media" selected>🟡 Média</option>
+              <option value="Alta">🟠 Alta</option>
+              <option value="Urgente">🚨 Urgente (Prioridade Alta)</option>
+            </select>
           </div>
           <div class="mb-3">
             <label class="form-label small fw-bold">Desenvolvedor Responsável:</label>
@@ -1325,6 +1449,7 @@
         else if (action === 'solicitarNovoPrazo') runner.solicitarNovoPrazo(data);
         else if (action === 'darCientePrazo') runner.darCientePrazo(data.solicitacaoId, data.gerenteNome || '');
         else if (action === 'excluirTarefa') runner.excluirTarefa(data.tarefaId);
+        else if (action === 'trocarOrdemTarefas' || action === 'reordenarTarefas') runner.trocarOrdemTarefas(data.tarefaId1, data.tarefaId2);
         else if (action === 'cadastrarUsuario') runner.cadastrarUsuario(data);
         else if (action === 'atualizarUsuario') runner.atualizarUsuario(data);
         else if (action === 'excluirUsuario') runner.excluirUsuario(data.usuarioId || data.id || data);
@@ -1401,8 +1526,16 @@
       const descInput = document.getElementById('taskDescricao');
       if (descInput) descInput.value = '';
 
-      const diasInput = document.getElementById('taskDias');
-      if (diasInput) diasInput.value = '2';
+      // Calendário de Início e Término
+      const dtInicioInput = document.getElementById('taskDataInicio');
+      const dtPrazoInput = document.getElementById('taskDataPrazo');
+      const hoje = new Date();
+      const prazoPadrao = new Date();
+      prazoPadrao.setDate(hoje.getDate() + 2);
+
+      if (dtInicioInput) dtInicioInput.value = formatarDataIso(hoje);
+      if (dtPrazoInput) dtPrazoInput.value = formatarDataIso(prazoPadrao);
+      atualizarDicaDuracaoModal();
 
       const urgSelect = document.getElementById('taskUrgencia');
       if (urgSelect) urgSelect.value = 'Media';
@@ -1419,6 +1552,48 @@
 
       const el = document.getElementById('modalNovaTarefa');
       bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    function aoMudarDatasNovaDemanda() {
+      const dtIniInput = document.getElementById('taskDataInicio');
+      const dtFimInput = document.getElementById('taskDataPrazo');
+      if (!dtIniInput || !dtFimInput || !dtIniInput.value || !dtFimInput.value) return;
+
+      const dtIni = new Date(dtIniInput.value + 'T00:00:00');
+      const dtFim = new Date(dtFimInput.value + 'T00:00:00');
+
+      if (dtFim < dtIni) {
+        dtFimInput.value = dtIniInput.value;
+      }
+      atualizarDicaDuracaoModal();
+    }
+
+    function ajustarPrazoRapido(diasAdicionais) {
+      const dtIniInput = document.getElementById('taskDataInicio');
+      const dtFimInput = document.getElementById('taskDataPrazo');
+      const baseVal = (dtIniInput && dtIniInput.value) ? dtIniInput.value : formatarDataIso(new Date());
+      const dtIni = new Date(baseVal + 'T00:00:00');
+      const dtFim = new Date(dtIni);
+      dtFim.setDate(dtIni.getDate() + diasAdicionais);
+      if (dtFimInput) dtFimInput.value = formatarDataIso(dtFim);
+      atualizarDicaDuracaoModal();
+    }
+
+    function atualizarDicaDuracaoModal() {
+      const dtIniInput = document.getElementById('taskDataInicio');
+      const dtFimInput = document.getElementById('taskDataPrazo');
+      const lbl = document.getElementById('lblDuracaoDias');
+      if (!lbl) return;
+
+      if (dtIniInput && dtFimInput && dtIniInput.value && dtFimInput.value) {
+        const dtIni = new Date(dtIniInput.value + 'T00:00:00');
+        const dtFim = new Date(dtFimInput.value + 'T00:00:00');
+        const diffMs = dtFim - dtIni;
+        const diffDias = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+        lbl.innerText = diffDias === 1 ? '1 dia' : `${diffDias} dias`;
+      } else {
+        lbl.innerText = '2 dias';
+      }
     }
 
     function aoMudarUrgenciaNovaDemanda() {
@@ -1868,13 +2043,14 @@
 
         botoesAcao.classList.remove('d-none');
         if (btnExcluirAtual) {
-          if (podeExcluir) btnExcluirAtual.classList.remove('d-none');
+          const podeExcluirAtual = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (demandaAtual.devId === appState.currentUser.id || (demandaAtual.devNome && appState.currentUser.nome && demandaAtual.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+          if (podeExcluirAtual) btnExcluirAtual.classList.remove('d-none');
           else btnExcluirAtual.classList.add('d-none');
         }
       } else {
         document.getElementById('tituloDemandaAtual').innerText = 'Nenhuma demanda ativa na esteira';
         document.getElementById('descDemandaAtual').innerText = 'Selecione uma demanda nas Demandas Futuras ou cadastre uma nova para iniciar!';
-        document.getElementById('devNomeAtual').innerText = appState.currentUser.nome;
+        document.getElementById('devNomeAtual').innerText = appState.currentUser ? appState.currentUser.nome : 'Desenvolvedor';
         document.getElementById('tempoEstimadoAtual').innerText = '0 dias';
         document.getElementById('tempoDemandadoAtual').innerText = '0 dias';
         document.getElementById('dataInicioAtual').innerText = '-';
@@ -1904,36 +2080,56 @@
             </div>
           `;
         } else {
-          futurasDemandas.forEach(task => {
+          futurasDemandas.forEach((task, idx) => {
+            const isPrimeira = idx === 0;
+            const isUltima = idx === futurasDemandas.length - 1;
+            const podeExcluirTask = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+
             const item = document.createElement('div');
-            item.className = 'esteira-item d-flex flex-column gap-2';
+            item.className = 'esteira-item d-flex align-items-center gap-3';
             item.innerHTML = `
-              <div class="d-flex align-items-start gap-3">
-                <div class="badge bg-light text-dark p-2 border mt-1">
-                  <i class="fa-solid fa-clock me-1 text-primary"></i> ${task.diasEstimados}d
-                </div>
-                <div class="flex-grow-1">
-                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                    <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
-                    <h6 class="mb-0 fw-bold text-dark">${task.titulo}</h6>
-                  </div>
-                  ${task.descricao ? `<small class="text-muted d-block mb-1">${task.descricao}</small>` : ''}
-                  <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
-                    <span class="badge badge-${task.urgencia.toLowerCase()}">${task.urgencia}</span>
-                    <span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo Final: ${formatarData(task.dataPrazo)}</span>
-                    ${task.status === 'Atrasada' ? '<span class="badge bg-danger">Atrasada</span>' : '<span class="badge bg-success-subtle text-success">Em Dia</span>'}
-                  </div>
-                </div>
-              </div>
-              <div class="d-flex align-items-center gap-2 pt-1">
-                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold" onclick="selecionarComoAtivaInstantanea('${task.id}')">
-                  <i class="fa-solid fa-bolt me-1 text-warning"></i> Iniciar Agora
+              <!-- Controles de Reordenação: Subir / Descer Prioridade -->
+              <div class="d-flex flex-column align-items-center justify-content-center me-1" style="min-width: 32px;">
+                <button type="button" class="btn-reorder mb-1" title="Subir na lista (Aumentar prioridade)" onclick="moverDemandaFutura('${task.id}', -1)" ${isPrimeira ? 'disabled' : ''}>
+                  <i class="fa-solid fa-chevron-up"></i>
                 </button>
-                ${podeExcluir ? `
-                  <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2" title="Excluir Demanda (Gerente/Admin)" onclick="excluirDemandaConfirm('${task.id}')">
-                    <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                <span class="badge bg-light text-secondary border font-monospace my-1" style="font-size: 0.68rem; padding: 2px 5px;" title="Posição na fila">
+                  #${idx + 1}
+                </span>
+                <button type="button" class="btn-reorder mt-1" title="Descer na lista (Diminuir prioridade)" onclick="moverDemandaFutura('${task.id}', 1)" ${isUltima ? 'disabled' : ''}>
+                  <i class="fa-solid fa-chevron-down"></i>
+                </button>
+              </div>
+
+              <!-- Conteúdo da Demanda Futura -->
+              <div class="flex-grow-1" style="min-width: 0;">
+                <div class="d-flex align-items-start gap-2">
+                  <div class="badge bg-light text-dark p-2 border mt-1 d-none d-sm-block">
+                    <i class="fa-solid fa-clock me-1 text-primary"></i> ${task.diasEstimados}d
+                  </div>
+                  <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                      <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                      <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
+                    </div>
+                    ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
+                    <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                      <span class="badge badge-${task.urgencia.toLowerCase()}">${task.urgencia}</span>
+                      <span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>
+                      ${task.status === 'Atrasada' ? '<span class="badge bg-danger">Atrasada</span>' : '<span class="badge bg-success-subtle text-success">Em Dia</span>'}
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light">
+                  <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold py-1 px-3" onclick="selecionarComoAtivaInstantanea('${task.id}')">
+                    <i class="fa-solid fa-bolt me-1 text-warning"></i> Iniciar Agora
                   </button>
-                ` : ''}
+                  ${podeExcluirTask ? `
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
+                      <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                    </button>
+                  ` : ''}
+                </div>
               </div>
             `;
             divFuturas.appendChild(item);
@@ -1954,19 +2150,21 @@
           `;
         } else {
           concluidas.forEach(task => {
+            const podeExcluirConcluida = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+
             const item = document.createElement('div');
             item.className = 'esteira-item d-flex flex-wrap justify-content-between align-items-center gap-3 border-start border-success border-4';
             item.innerHTML = `
-              <div class="d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center gap-3" style="min-width: 0; flex: 1;">
                 <div class="badge bg-success-subtle text-success p-2 border border-success-subtle">
                   <i class="fa-solid fa-check-double"></i>
                 </div>
-                <div>
+                <div style="min-width: 0; flex: 1;">
                   <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
                     <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
-                    <h6 class="mb-0 fw-bold text-dark text-truncate" style="max-width: 250px;">${task.titulo}</h6>
+                    <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
                   </div>
-                  <small class="text-muted d-block text-truncate" style="max-width: 260px;">${task.descricao || 'Demanda concluída com sucesso.'}</small>
+                  <small class="text-muted d-block text-truncate" title="${task.descricao || 'Demanda concluída com sucesso.'}">${task.descricao || 'Demanda concluída com sucesso.'}</small>
                   <div class="mt-1 d-flex flex-wrap align-items-center gap-1">
                     <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Concluída</span>
                     <span class="badge bg-secondary-subtle text-secondary small">
@@ -1980,8 +2178,8 @@
               </div>
               <div class="d-flex align-items-center gap-2">
                 <span class="badge badge-${task.urgencia.toLowerCase()}">${task.urgencia}</span>
-                ${podeExcluir ? `
-                  <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda (Gerente/Admin)" onclick="excluirDemandaConfirm('${task.id}')">
+                ${podeExcluirConcluida ? `
+                  <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
                     <i class="fa-solid fa-trash-can" style="font-size: 0.75rem;"></i>
                   </button>
                 ` : ''}
@@ -2050,14 +2248,24 @@
     }
 
     function excluirDemandaConfirm(tarefaId) {
-      if (!usuarioPodeVerPainelGerente(appState.currentUser)) {
-        alert('Permissão restrita: Apenas o Gerente de Projetos ou o Administrador Geral (Nicolas Richardt) podem excluir demandas.');
+      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
+      if (!tarefa) {
+        mostrarToast('Demanda não encontrada.');
         return;
       }
 
-      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
-      const nomeDemanda = tarefa ? `"${tarefa.titulo}"` : 'esta demanda';
+      const isGerente = usuarioPodeVerPainelGerente(appState.currentUser);
+      const isDono = appState.currentUser && (
+        tarefa.devId === appState.currentUser.id || 
+        (tarefa.devNome && appState.currentUser.nome && tarefa.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())
+      );
 
+      if (!isGerente && !isDono) {
+        alert('Permissão restrita: Você só pode excluir as suas próprias demandas.');
+        return;
+      }
+
+      const nomeDemanda = `"${tarefa.titulo}"`;
       if (!confirm(`Deseja realmente excluir ${nomeDemanda}?\nEsta ação removerá a demanda permanentemente.`)) {
         return;
       }
@@ -2089,13 +2297,59 @@
     }
 
     /**
+     * Reordena uma demanda dentro da lista de Demandas Futuras (Subir / Descer)
+     */
+    function moverDemandaFutura(tarefaId, direcao) {
+      const devId = appState.currentUser ? appState.currentUser.id : null;
+      if (!devId) return;
+
+      const tarefasDev = appState.tarefas.filter(t => t.devId === devId);
+      const futuras = tarefasDev.filter(t => !t.ativo && t.status !== 'Concluída');
+
+      const idxAtual = futuras.findIndex(t => t.id === tarefaId);
+      if (idxAtual === -1) return;
+
+      const novoIdx = idxAtual + direcao;
+      if (novoIdx < 0 || novoIdx >= futuras.length) return;
+
+      const tarefaA = futuras[idxAtual];
+      const tarefaB = futuras[novoIdx];
+
+      // Achar os índices dentro de appState.tarefas para inverter posições
+      const realIdxA = appState.tarefas.findIndex(t => t.id === tarefaA.id);
+      const realIdxB = appState.tarefas.findIndex(t => t.id === tarefaB.id);
+
+      if (realIdxA !== -1 && realIdxB !== -1) {
+        const temp = appState.tarefas[realIdxA];
+        appState.tarefas[realIdxA] = appState.tarefas[realIdxB];
+        appState.tarefas[realIdxB] = temp;
+      }
+
+      // Salva no cache local
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      // Atualiza visualização imediatamente (0ms)
+      atualizarAbaEsteira();
+      mostrarToast(`Prioridade atualizada: "${tarefaA.titulo}" movida ${direcao < 0 ? 'para cima ▲' : 'para baixo ▼'}`);
+
+      // Sincroniza ordem com a planilha no servidor
+      executarNoServidor('trocarOrdemTarefas', {
+        tarefaId1: tarefaA.id,
+        tarefaId2: tarefaB.id
+      });
+    }
+
+    /**
      * CADASTRAR DEMANDA ULTRA-RÁPIDO (0ms de atraso)
      */
     function salvarNovaTarefaInstantanea() {
       const tituloInput = document.getElementById('taskTitulo');
       const moduloInput = document.getElementById('taskModuloInput');
       const descInput = document.getElementById('taskDescricao');
-      const diasInput = document.getElementById('taskDias');
+      const dtInicioInput = document.getElementById('taskDataInicio');
+      const dtPrazoInput = document.getElementById('taskDataPrazo');
       const urgSelect = document.getElementById('taskUrgencia');
       const devSelect = document.getElementById('taskDevSelect');
       const ativaCheckbox = document.getElementById('taskAtivaAgora');
@@ -2131,12 +2385,30 @@
         devNome = appState.usuarios[0].nome;
       }
 
-      const diasEstimados = parseInt(diasInput.value) || 2;
-      const tornarAtiva = ativaCheckbox.checked;
-
+      // Tratamento das datas selecionadas pelo usuário no calendário
       const hoje = new Date();
-      const prazo = new Date(hoje);
-      prazo.setDate(hoje.getDate() + diasEstimados);
+      let dataInicioIso = dtInicioInput && dtInicioInput.value ? dtInicioInput.value : formatarDataIso(hoje);
+      let dataPrazoIso = dtPrazoInput && dtPrazoInput.value ? dtPrazoInput.value : '';
+
+      const dtIniObj = new Date(dataInicioIso + 'T00:00:00');
+      let diasEstimados = 2;
+
+      if (dataPrazoIso) {
+        const dtFimObj = new Date(dataPrazoIso + 'T00:00:00');
+        if (dtFimObj >= dtIniObj) {
+          diasEstimados = Math.max(1, Math.round((dtFimObj - dtIniObj) / (1000 * 60 * 60 * 24)));
+        } else {
+          dataPrazoIso = dataInicioIso;
+          diasEstimados = 1;
+        }
+      } else {
+        const prazo = new Date(dtIniObj);
+        prazo.setDate(prazo.getDate() + 2);
+        dataPrazoIso = formatarDataIso(prazo);
+        diasEstimados = 2;
+      }
+
+      const tornarAtiva = ativaCheckbox.checked;
 
       const novaTarefa = {
         id: 'TSK-' + Math.floor(Math.random() * 9000 + 1000),
@@ -2148,9 +2420,9 @@
         devNome: devNome,
         diasEstimados: diasEstimados,
         diasTrabalhados: tornarAtiva ? 1 : 0,
-        dataInicio: formatarDataIso(hoje),
+        dataInicio: dataInicioIso,
         dataInsercao: formatarDataIso(hoje),
-        dataPrazo: formatarDataIso(prazo),
+        dataPrazo: dataPrazoIso,
         status: 'Em Andamento',
         ativo: tornarAtiva,
         urgencia: urgSelect.value || 'Media',
@@ -2187,6 +2459,8 @@
           titulo: novaTarefa.titulo,
           descricao: novaTarefa.descricao,
           diasEstimados: novaTarefa.diasEstimados,
+          dataInicio: novaTarefa.dataInicio,
+          dataPrazo: novaTarefa.dataPrazo,
           urgencia: novaTarefa.urgencia,
           devId: devId,
           devNome: devNome,
@@ -2838,12 +3112,11 @@
         elAtrasadasDesc.innerText = totalAtrasadas === 0 ? 'nenhum atraso' : `${totalAtrasadas} fora do prazo`;
       }
 
-      // 9º Permissão de exclusão restrita a Gerente de Projetos ou Nicolas Richardt
-      const podeExcluir = usuarioPodeVerPainelGerente(appState.currentUser);
+      // Permissão de exclusão: todos podem excluir as suas próprias demandas, e Gerente/Admin qualquer uma
+      const isGerenteGeral = usuarioPodeVerPainelGerente(appState.currentUser);
       const thAcoes = document.getElementById('thAcoesRelatorio');
       if (thAcoes) {
-        if (podeExcluir) thAcoes.classList.remove('d-none');
-        else thAcoes.classList.add('d-none');
+        thAcoes.classList.remove('d-none');
       }
 
       // Renderiza Tabela com Coluna Módulo, larguras ajustadas e "Em Produção"
@@ -2851,13 +3124,17 @@
       tbody.innerHTML = '';
 
       if (filtradas.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="${podeExcluir ? 11 : 10}" class="text-center py-4 text-muted">Nenhuma demanda encontrada para o período/filtro selecionado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-muted">Nenhuma demanda encontrada para o período/filtro selecionado.</td></tr>`;
       } else {
         filtradas.forEach((t, index) => {
           const tr = document.createElement('tr');
           const isExterna = (t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa');
           const mod = isExterna ? 'Demanda Externa' : (t.modulo || 'SIOPLEEx');
           const devNomeLimpo = limparNomeDev(t.devNome);
+          const podeExcluirEstaDemanda = isGerenteGeral || (appState.currentUser && (
+            t.devId === appState.currentUser.id || 
+            (t.devNome && appState.currentUser.nome && t.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())
+          ));
           tr.innerHTML = `
             <td class="fw-bold text-muted small">${index + 1}</td>
             <td>
@@ -2877,13 +3154,13 @@
               </span>
             </td>
             <td class="small">${t.status === 'Concluída' ? formatarData(t.dataConclusao || t.dataPrazo) : formatarData(t.dataPrazo)}</td>
-            ${podeExcluir ? `
-              <td data-html2canvas-ignore="true">
-                <button type="button" class="btn btn-outline-danger btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda (Gerente/Admin)" onclick="excluirDemandaConfirm('${t.id}')">
+            <td data-html2canvas-ignore="true" class="text-center">
+              ${podeExcluirEstaDemanda ? `
+                <button type="button" class="btn btn-outline-danger btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="excluirDemandaConfirm('${t.id}')">
                   <i class="fa-solid fa-trash-can" style="font-size: 0.72rem;"></i>
                 </button>
-              </td>
-            ` : ''}
+              ` : '<span class="text-muted small">-</span>'}
+            </td>
           `;
           tbody.appendChild(tr);
         });
