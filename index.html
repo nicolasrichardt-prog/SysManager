@@ -736,7 +736,7 @@
                   <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
                 <input type="text" class="form-control border-start-0 ps-1" id="pesquisaDemandasFuturas" 
-                       placeholder="Pesquisar por título, módulo ou descrição..." 
+                       placeholder="Pesquisar por demanda ou módulo..." 
                        oninput="filtrarDemandasFuturasAoDigitar()" autocomplete="off">
                 <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaFuturas" 
                         onclick="limparPesquisaDemandasFuturas()" title="Limpar pesquisa">
@@ -1021,8 +1021,8 @@
                   <th style="width: 15%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('modulo')" title="Ordenar por Módulo">
                     Módulo <i class="fa-solid fa-sort ms-1 small" id="sortIcon_modulo"></i>
                   </th>
-                  <th class="text-start" style="width: 22%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('titulo')" title="Ordenar por Título da Demanda">
-                    Título da Demanda <i class="fa-solid fa-sort ms-1 small" id="sortIcon_titulo"></i>
+                  <th class="text-start" style="width: 22%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('titulo')" title="Ordenar por Demanda">
+                    Demanda <i class="fa-solid fa-sort ms-1 small" id="sortIcon_titulo"></i>
                   </th>
                   <th style="width: 13%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('devNome')" title="Ordenar por Desenvolvedor">
                     Desenvolvedor <i class="fa-solid fa-sort ms-1 small" id="sortIcon_devNome"></i>
@@ -1225,12 +1225,9 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label small fw-bold">Título da Demanda:</label>
+            <label class="form-label small fw-bold"><i class="fa-solid fa-list-check text-primary me-1"></i>Demanda:</label>
             <input type="text" class="form-control" id="taskTitulo" placeholder="Ex: Criar tela de login com OAuth">
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Descrição / Requisitos:</label>
-            <textarea class="form-control" id="taskDescricao" rows="2" placeholder="Detalhes técnicos da tarefa..."></textarea>
+            <input type="hidden" id="taskDescricao" value="">
           </div>
           <!-- CALENDÁRIO: DATA DE INÍCIO E TÉRMINO DA DEMANDA -->
           <div class="row g-2 mb-3">
@@ -1329,13 +1326,9 @@
           </div>
 
           <div class="mb-3">
-            <label class="form-label small fw-bold">Título da Demanda:</label>
+            <label class="form-label small fw-bold"><i class="fa-solid fa-list-check text-primary me-1"></i>Demanda:</label>
             <input type="text" class="form-control" id="editTaskTitulo" placeholder="Ex: Criar tela de login com OAuth">
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Descrição / Requisitos:</label>
-            <textarea class="form-control" id="editTaskDescricao" rows="2" placeholder="Detalhes técnicos da tarefa..."></textarea>
+            <input type="hidden" id="editTaskDescricao" value="">
           </div>
 
           <!-- DATAS: DATA DE INÍCIO (FIXA/BLOQUEADA) E DATA DE TÉRMINO/PRAZO (EDITÁVEL) -->
@@ -1422,7 +1415,7 @@
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label small fw-bold">Título da Demanda:</label>
+            <label class="form-label small fw-bold"><i class="fa-solid fa-list-check text-primary me-1"></i>Demanda:</label>
             <input type="text" class="form-control bg-light" id="solTarefaTitulo" readonly>
             <input type="hidden" id="solTarefaId">
           </div>
@@ -1811,7 +1804,7 @@
       const map = {
         'num': 'Número (#)',
         'modulo': 'Módulo',
-        'titulo': 'Título',
+        'titulo': 'Demanda',
         'devNome': 'Desenvolvedor',
         'dataInsercao': 'Data de Inserção',
         'urgencia': 'Urgência',
@@ -2789,7 +2782,7 @@
 
       const titulo = (tituloInput.value || '').trim();
       if (!titulo) {
-        alert('Por favor, informe o título da demanda.');
+        alert('Por favor, informe a demanda.');
         return;
       }
 
@@ -3074,7 +3067,7 @@
 
       const titulo = (tituloInput ? tituloInput.value : '').trim();
       if (!titulo) {
-        alert('Por favor, informe o título da demanda.');
+        alert('Por favor, informe a demanda.');
         return;
       }
 
@@ -3662,30 +3655,29 @@
       document.getElementById('lblEmissaoRelatorio').innerText = `Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}`;
 
       // Filtragem ágil por período:
-      // 1º No relatório, ao filtrar uma semana (ou intervalo), deve aparecer:
-      //    a) Demandas colocadas na esteira naquela semana/período (dataInsercao ou dataInicio dentro do intervalo);
-      //    b) + As demandas atrasadas (status === 'Atrasada' que já existiam no período);
-      //    c) + Demandas concluídas daquela semana se houver (status === 'Concluída' com conclusão no intervalo).
+      // 1. Demandas que foram colocadas na esteira no período do filtro (dataInicio ou dataInsercao no intervalo);
+      // 2. + Demandas atrasadas (qualquer demanda com status 'Atrasada' que já existia até o fim do período);
+      // 3. + Demandas concluídas nesse período (com dataConclusao no intervalo).
       let filtradas = appState.tarefas.filter(t => {
-        const dInsercao = parseDataLocal(t.dataInsercao || t.dataInicio);
-        dInsercao.setHours(0, 0, 0, 0);
+        const dEsteira = parseDataLocal(t.dataInicio || t.dataInsercao);
+        dEsteira.setHours(0, 0, 0, 0);
 
-        // a) Demandas colocadas na esteira no intervalo filtrado
-        const inseridaNoPeriodo = (!dataInicioFiltro || dInsercao.getTime() >= dataInicioFiltro.getTime()) &&
-                                  (!dataFimFiltro || dInsercao.getTime() <= dataFimFiltro.getTime());
+        // a) Demandas que foram para a esteira nesse período
+        const foiParaEsteiraNoPeriodo = (!dataInicioFiltro || dEsteira.getTime() >= dataInicioFiltro.getTime()) &&
+                                       (!dataFimFiltro || dEsteira.getTime() <= dataFimFiltro.getTime());
 
-        // b) Demandas atrasadas (qualquer demanda com status 'Atrasada' já existente até o final do período)
+        // b) + Demandas atrasadas
         const isAtrasada = (t.status === 'Atrasada') &&
-                           (!dataFimFiltro || dInsercao.getTime() <= dataFimFiltro.getTime());
+                           (!dataFimFiltro || dEsteira.getTime() <= dataFimFiltro.getTime());
 
-        // c) Demandas concluídas no período (dataConclusao ou dataPrazo no intervalo)
-        const dConclusao = parseDataLocal(t.dataConclusao || t.dataPrazo || t.dataInsercao || t.dataInicio);
+        // c) + Demandas concluídas nesse período
+        const dConclusao = parseDataLocal(t.dataConclusao || t.dataPrazo || t.dataInicio || t.dataInsercao);
         dConclusao.setHours(0, 0, 0, 0);
         const concluidaNoPeriodo = (t.status === 'Concluída') &&
                                    (!dataInicioFiltro || dConclusao.getTime() >= dataInicioFiltro.getTime()) &&
                                    (!dataFimFiltro || dConclusao.getTime() <= dataFimFiltro.getTime());
 
-        return inseridaNoPeriodo || isAtrasada || concluidaNoPeriodo;
+        return foiParaEsteiraNoPeriodo || isAtrasada || concluidaNoPeriodo;
       });
 
       // Filtro por Desenvolvedor (se selecionado)
@@ -4103,7 +4095,7 @@
                 <tr style="background-color: #0f172a; color: #f8fafc; page-break-inside: avoid !important; break-inside: avoid !important;">
                   <th style="padding: 7px 6px; border: 1px solid #334155; width: 34px; text-align: center; font-size: 9px; letter-spacing: 0.5px;">#</th>
                   <th style="padding: 7px 8px; border: 1px solid #334155; width: 140px; text-align: left; font-size: 9px; letter-spacing: 0.5px;">MÓDULO</th>
-                  <th style="padding: 7px 10px; border: 1px solid #334155; text-align: left; font-size: 9px; letter-spacing: 0.5px;">TÍTULO DA DEMANDA</th>
+                  <th style="padding: 7px 10px; border: 1px solid #334155; text-align: left; font-size: 9px; letter-spacing: 0.5px;">DEMANDA</th>
                   <th style="padding: 7px 8px; border: 1px solid #334155; width: 125px; text-align: left; font-size: 9px; letter-spacing: 0.5px;">DESENVOLVEDOR</th>
                   <th style="padding: 7px 8px; border: 1px solid #334155; width: 95px; text-align: center; font-size: 9px; letter-spacing: 0.5px;">DATA INSERÇÃO</th>
                   <th style="padding: 7px 8px; border: 1px solid #334155; width: 95px; text-align: center; font-size: 9px; letter-spacing: 0.5px;">STATUS</th>
