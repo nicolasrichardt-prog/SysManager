@@ -605,9 +605,9 @@
               </div>
               <div style="min-width: 0; flex: 1;">
                 <div class="text-muted small fw-semibold">Concluídas</div>
-                <div class="d-flex align-items-baseline gap-2">
+                <div class="d-flex align-items-center gap-2 mt-1">
                   <h3 class="mb-0 fw-bold text-success" id="metricConcluidasQtd">0</h3>
-                  <small class="text-muted font-monospace d-none d-sm-inline" style="font-size: 0.72rem;">entregues <i class="fa-solid fa-arrow-down small text-success"></i></small>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill fw-bold px-2 py-1" style="font-size: 0.74rem; letter-spacing: 0.2px;">Entregues</span>
                 </div>
               </div>
             </div>
@@ -621,9 +621,9 @@
               </div>
               <div style="min-width: 0; flex: 1;">
                 <div class="text-muted small fw-semibold">Em Andamento</div>
-                <div class="d-flex align-items-baseline gap-2">
+                <div class="d-flex align-items-center gap-2 mt-1">
                   <h3 class="mb-0 fw-bold text-primary" id="metricEmAndamentoQtd">0</h3>
-                  <small class="text-muted font-monospace d-none d-sm-inline" style="font-size: 0.72rem;">na esteira <i class="fa-solid fa-arrow-down small text-primary"></i></small>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill fw-bold px-2 py-1" style="font-size: 0.74rem; letter-spacing: 0.2px;">Na Esteira</span>
                 </div>
               </div>
             </div>
@@ -637,9 +637,9 @@
               </div>
               <div style="min-width: 0; flex: 1;">
                 <div class="text-muted small fw-semibold">Não Iniciadas</div>
-                <div class="d-flex align-items-baseline gap-2">
+                <div class="d-flex align-items-center gap-2 mt-1">
                   <h3 class="mb-0 fw-bold text-info" id="metricNaoIniciadasQtd">0</h3>
-                  <small class="text-muted font-monospace d-none d-sm-inline" style="font-size: 0.72rem;">na fila <i class="fa-solid fa-arrow-down small text-info"></i></small>
+                  <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill fw-bold px-2 py-1" style="font-size: 0.74rem; letter-spacing: 0.2px;">Na Fila</span>
                 </div>
               </div>
             </div>
@@ -653,9 +653,9 @@
               </div>
               <div style="min-width: 0; flex: 1;">
                 <div class="text-muted small fw-semibold">Atrasadas</div>
-                <div class="d-flex align-items-baseline gap-2">
+                <div class="d-flex align-items-center gap-2 mt-1">
                   <h3 class="mb-0 fw-bold text-danger" id="metricAtrasadasQtd">0</h3>
-                  <small class="text-muted font-monospace d-none d-sm-inline" style="font-size: 0.72rem;">fora do prazo <i class="fa-solid fa-arrow-down small text-danger"></i></small>
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill fw-bold px-2 py-1" style="font-size: 0.74rem; letter-spacing: 0.2px;">Fora do Prazo</span>
                 </div>
               </div>
             </div>
@@ -894,9 +894,9 @@
               </select>
             </div>
             <div class="col-xl-1 col-md-4 col-sm-6">
-              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-cube me-1 text-primary"></i>Módulo:</label>
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-cube me-1 text-primary"></i>Origem:</label>
               <select class="form-select form-select-sm" id="filtroRelatorioModulo" onchange="atualizarRelatorioMensal()">
-                <option value="TODOS" selected>Todos os Módulos</option>
+                <option value="TODOS" selected>Todas as Origens</option>
               </select>
             </div>
             <div class="col-xl-2 col-md-4 col-sm-6 position-relative">
@@ -1082,11 +1082,11 @@
             <table class="table table-sm text-center align-middle mb-0" id="tabelaRelatorioDoc" style="table-layout: fixed; width: 100%;">
               <thead class="table-dark">
                 <tr>
-                  <th style="width: 4%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('num')" title="Ordenar por número">
-                    # <i class="fa-solid fa-sort ms-1 small" id="sortIcon_num"></i>
+                  <th style="width: 5%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('num')" title="Ordenar por ID">
+                    ID <i class="fa-solid fa-sort ms-1 small" id="sortIcon_num"></i>
                   </th>
-                  <th style="width: 15%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('modulo')" title="Ordenar por Módulo">
-                    Módulo <i class="fa-solid fa-sort ms-1 small" id="sortIcon_modulo"></i>
+                  <th style="width: 14%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('modulo')" title="Ordenar por Origem">
+                    ORIGEM <i class="fa-solid fa-sort ms-1 small" id="sortIcon_modulo"></i>
                   </th>
                   <th class="text-start" style="width: 22%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('titulo')" title="Ordenar por Demanda">
                     Demanda <i class="fa-solid fa-sort ms-1 small" id="sortIcon_titulo"></i>
@@ -1122,7 +1122,7 @@
 
           <div class="d-flex justify-content-between align-items-center text-muted small mt-3 pt-2 border-top" style="font-size: 0.75rem;">
             <div>
-              <i class="fa-solid fa-shield-halved text-primary me-1"></i> SM • Sys Manager - Governança e Acompanhamento de Esteira Ágil
+              <i class="fa-solid fa-shield-halved text-primary me-1"></i> SM • Sys Manager - Governança e Acompanhamento
             </div>
             <div>
               Documento de acompanhamento
@@ -1704,8 +1704,8 @@
       'SIOPLEEx_BD_Externo'
     ];
 
-    let relatorioSortColuna = 'dataInsercao';
-    let relatorioSortDirecao = 'DESC';
+    let relatorioSortColuna = 'devNome';
+    let relatorioSortDirecao = 'ASC';
     let relatorioFiltradoAtual = [];
 
     function limparNomeDev(nome) {
@@ -1875,8 +1875,8 @@
 
     function obterNomeAmigavelColuna(col) {
       const map = {
-        'num': 'Número (#)',
-        'modulo': 'Módulo',
+        'num': 'ID',
+        'modulo': 'Origem',
         'titulo': 'Demanda',
         'devNome': 'Desenvolvedor',
         'dataInsercao': 'Data de Inserção',
@@ -4633,7 +4633,7 @@
                   <div style="display: table-cell; vertical-align: middle;">
                     <div style="font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; line-height: 1.1;">Sys Manager</div>
                     <div style="font-size: 11px; font-weight: 700; color: #2563eb; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Relatório de Demandas</div>
-                    <div style="font-size: 9.5px; color: #64748b; font-weight: 500;">Documento de acompanhamento da esteira ágil</div>
+                    <div style="font-size: 9.5px; color: #64748b; font-weight: 500;">Documento de acompanhamento</div>
                   </div>
                 </div>
               </div>
@@ -4699,8 +4699,8 @@
             <table style="width: 100%; border-collapse: collapse; font-size: 10.5px; page-break-inside: auto !important;">
               <thead style="display: table-header-group;">
                 <tr style="background-color: #0f172a; color: #ffffff; page-break-inside: avoid !important; break-inside: avoid !important;">
-                  <th style="padding: 8px 6px; border: 1px solid #1e293b; width: 34px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">#</th>
-                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 130px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">MÓDULO</th>
+                  <th style="padding: 8px 6px; border: 1px solid #1e293b; width: 38px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">ID</th>
+                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 126px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">ORIGEM</th>
                   <th style="padding: 8px 10px; border: 1px solid #1e293b; text-align: left; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">DEMANDA</th>
                   <th style="padding: 8px 6px; border: 1px solid #1e293b; width: 80px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">URGÊNCIA</th>
                   <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 125px; text-align: left; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">DESENVOLVEDOR</th>
@@ -4716,7 +4716,7 @@
 
             <!-- RODAPÉ CORPORATIVO LIMPO -->
             <div style="page-break-inside: avoid !important; break-inside: avoid !important; margin-top: 12px; padding-top: 8px; border-top: 1px solid #cbd5e1; display: table; width: 100%; font-size: 9.5px; color: #64748b;">
-              <div style="display: table-cell; text-align: left; font-weight: 500;">Sys Manager (SM) • Governança e Acompanhamento de Esteira Ágil</div>
+              <div style="display: table-cell; text-align: left; font-weight: 500;">Sys Manager (SM) • Governança e Acompanhamento</div>
               <div style="display: table-cell; text-align: right; font-weight: 500;">Documento de acompanhamento</div>
             </div>
           </div>
