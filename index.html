@@ -220,6 +220,22 @@
       box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.08);
       border-color: #cbd5e1;
     }
+    .metric-box-clickable {
+      cursor: pointer;
+      user-select: none;
+    }
+    .metric-box-clickable:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+      border-color: rgba(37, 99, 235, 0.4);
+    }
+    .metric-box-clickable:active {
+      transform: translateY(-1px);
+    }
+    .secao-destacada-temporaria {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.45) !important;
+      transition: box-shadow 0.3s ease-in-out;
+    }
     .metric-icon {
       width: 52px;
       height: 52px;
@@ -560,16 +576,6 @@
           <i class="fa-solid fa-diagram-project me-2"></i>Minha Esteira Ágil
         </button>
       </li>
-
-      <!-- 1º ABA DO GERENTE: Oculta por padrão para desenvolvedores e só visível para Gerente/Ambos -->
-      <li class="nav-item d-none" id="navItemPainelGerente">
-        <button class="nav-link position-relative" id="tab-gerente-btn" data-bs-toggle="tab" data-bs-target="#tab-gerente" type="button">
-          <i class="fa-solid fa-user-tie me-2"></i>Painel do Gerente (Prazos)
-          <span class="badge bg-danger rounded-pill ms-1 d-none" id="badgeSolicitacoesPendentes">0</span>
-        </button>
-      </li>
-
-
       <li class="nav-item">
         <button class="nav-link" id="tab-relatorio-btn" data-bs-toggle="tab" data-bs-target="#tab-relatorio" type="button">
           <i class="fa-solid fa-file-lines me-2"></i>Relatório Mensal
@@ -589,49 +595,68 @@
       <!-- ========================================== -->
       <div class="tab-pane fade show active" id="tab-esteira" role="tabpanel">
         
-        <!-- CARDS RESUMO -->
-        <div class="row g-3 mb-4">
-          <div class="col-md-3">
-            <div class="metric-box">
-              <div class="metric-icon bg-primary-subtle text-primary">
-                <i class="fa-solid fa-play"></i>
-              </div>
-              <div style="min-width: 0; flex: 1;">
-                <div class="text-muted small">Demanda Ativa</div>
-                <h6 class="mb-0 fw-bold text-dark text-truncate" id="metricAtivaTexto" title="Nenhuma demanda ativa">-</h6>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="metric-box">
-              <div class="metric-icon bg-info-subtle text-info">
-                <i class="fa-solid fa-list-ol"></i>
-              </div>
-              <div>
-                <div class="text-muted small">Demandas Futuras</div>
-                <h4 class="mb-0 fw-bold text-dark" id="metricFuturasQtd">0</h4>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="metric-box">
-              <div class="metric-icon bg-danger-subtle text-danger">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-              </div>
-              <div>
-                <div class="text-muted small">Demandas Atrasadas</div>
-                <h4 class="mb-0 fw-bold text-dark" id="metricAtrasadasQtd">0</h4>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="metric-box">
+        <!-- DASHBOARD EXECUTIVO - 4 MÉTRICAS (CONCLUÍDAS, EM ANDAMENTO, NÃO INICIADAS, ATRASADAS) -->
+        <div class="row g-3 mb-4" id="cardsResumoEsteira">
+          <!-- 1º CONCLUÍDAS -->
+          <div class="col-xl-3 col-md-6 col-6">
+            <div class="metric-box metric-box-clickable" onclick="navegarParaLista('concluidas')" title="Clique para ver a lista de Demandas Concluídas" role="button" tabindex="0">
               <div class="metric-icon bg-success-subtle text-success">
                 <i class="fa-solid fa-circle-check"></i>
               </div>
-              <div>
-                <div class="text-muted small">Concluídas</div>
-                <h4 class="mb-0 fw-bold text-dark" id="metricConcluidasQtd">0</h4>
+              <div style="min-width: 0; flex: 1;">
+                <div class="text-muted small fw-semibold">Concluídas</div>
+                <div class="d-flex align-items-baseline gap-2">
+                  <h3 class="mb-0 fw-bold text-success" id="metricConcluidasQtd">0</h3>
+                  <small class="text-muted font-monospace d-none d-sm-inline" style="font-size: 0.72rem;">entregues <i class="fa-solid fa-arrow-down small text-success"></i></small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2º EM ANDAMENTO -->
+          <div class="col-xl-3 col-md-6 col-6">
+            <div class="metric-box metric-box-clickable" onclick="navegarParaLista('emAndamento')" title="Clique para ver a lista de Demandas Em Andamento" role="button" tabindex="0">
+              <div class="metric-icon bg-primary-subtle text-primary">
+                <i class="fa-solid fa-bars-progress"></i>
+              </div>
+              <div style="min-width: 0; flex: 1;">
+                <div class="text-muted small fw-semibold">Em Andamento</div>
+                <div class="d-flex align-items-baseline gap-2">
+                  <h3 class="mb-0 fw-bold text-primary" id="metricEmAndamentoQtd">0</h3>
+                  <small class="text-muted font-monospace d-none d-sm-inline" style="font-size: 0.72rem;">na esteira <i class="fa-solid fa-arrow-down small text-primary"></i></small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3º NÃO INICIADAS -->
+          <div class="col-xl-3 col-md-6 col-6">
+            <div class="metric-box metric-box-clickable" onclick="navegarParaLista('naoIniciadas')" title="Clique para ver a lista de Demandas Não Iniciadas" role="button" tabindex="0">
+              <div class="metric-icon bg-info-subtle text-info">
+                <i class="fa-solid fa-hourglass-start"></i>
+              </div>
+              <div style="min-width: 0; flex: 1;">
+                <div class="text-muted small fw-semibold">Não Iniciadas</div>
+                <div class="d-flex align-items-baseline gap-2">
+                  <h3 class="mb-0 fw-bold text-info" id="metricNaoIniciadasQtd">0</h3>
+                  <small class="text-muted font-monospace d-none d-sm-inline" style="font-size: 0.72rem;">na fila <i class="fa-solid fa-arrow-down small text-info"></i></small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4º ATRASADAS -->
+          <div class="col-xl-3 col-md-6 col-6">
+            <div class="metric-box metric-box-clickable" onclick="navegarParaLista('atrasadas')" title="Clique para ver a lista de Demandas Atrasadas" role="button" tabindex="0">
+              <div class="metric-icon bg-danger-subtle text-danger">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div style="min-width: 0; flex: 1;">
+                <div class="text-muted small fw-semibold">Atrasadas</div>
+                <div class="d-flex align-items-baseline gap-2">
+                  <h3 class="mb-0 fw-bold text-danger" id="metricAtrasadasQtd">0</h3>
+                  <small class="text-muted font-monospace d-none d-sm-inline" style="font-size: 0.72rem;">fora do prazo <i class="fa-solid fa-arrow-down small text-danger"></i></small>
+                </div>
               </div>
             </div>
           </div>
@@ -656,7 +681,7 @@
 
           <div id="conteudoDemandaAtual">
             <h3 class="fw-bold mb-2 text-dark" id="tituloDemandaAtual">Nenhuma demanda ativa no momento</h3>
-            <p class="text-muted mb-3" id="descDemandaAtual">Selecione uma demanda nas Demandas Futuras ou cadastre uma nova para começar.</p>
+            <p class="text-muted mb-3" id="descDemandaAtual">Selecione uma demanda nas Demandas ou cadastre uma nova para começar.</p>
 
             <div class="row g-3 py-3 border-top border-bottom my-3 bg-white bg-opacity-75 rounded-3 px-2">
               <div class="col-6 col-md-3">
@@ -682,17 +707,17 @@
               </div>
             </div>
 
-            <!-- ALERTA DE ATRASO COM SOLICITAÇÃO DE NOVO PRAZO -->
+            <!-- ALERTA DE ATRASO COM AJUSTE DIRETO DE PRAZO -->
             <div class="alert alert-danger d-none align-items-center justify-content-between p-3 rounded-3" id="alertaAtrasoAtual">
               <div class="d-flex align-items-center gap-3">
                 <i class="fa-solid fa-triangle-exclamation fs-3 text-danger"></i>
                 <div>
                   <h6 class="mb-1 fw-bold">Atenção: Esta demanda excedeu o prazo previsto!</h6>
-                  <small>Solicite um novo prazo ao Gerente do Projeto para dar continuidade na esteira.</small>
+                  <small>Ajuste a data de término editando a demanda se necessário.</small>
                 </div>
               </div>
-              <button type="button" class="btn btn-danger btn-sm px-3 mt-2 mt-md-0 fw-semibold" onclick="abrirModalSolicitarPrazo()">
-                <i class="fa-solid fa-calendar-plus me-1"></i> Solicitar Novo Prazo
+              <button type="button" class="btn btn-danger btn-sm px-3 mt-2 mt-md-0 fw-semibold" onclick="editarDemandaAtualConfirm()">
+                <i class="fa-solid fa-calendar-pen me-1"></i> Ajustar Prazo
               </button>
             </div>
 
@@ -711,100 +736,91 @@
           </div>
         </div>
 
-        <!-- DIVISÃO DE TELA: DEMANDAS FUTURAS & DEMANDAS CONCLUÍDAS -->
-        <div class="row g-4">
+        <!-- DIVISÃO EM 3 COLUNAS: 1) DEMANDAS (EM ANDAMENTO + NÃO INICIADAS) | 2) DEMANDAS ATRASADAS | 3) DEMANDAS CONCLUÍDAS -->
+        <div class="row g-4 mb-4">
           
-          <!-- COLUNA ESQUERDA: DEMANDAS FUTURAS -->
-          <div class="col-lg-6">
-            <div class="card card-custom p-4 h-100">
+          <!-- COLUNA 1: DEMANDAS (EM ANDAMENTO & NÃO INICIADAS) -->
+          <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaDemandas">
+            <div class="card card-custom p-3 p-md-4 h-100 shadow-sm border-top border-primary border-3">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                   <h5 class="fw-bold mb-1 d-flex align-items-center">
-                    <i class="fa-solid fa-bars-staggered me-2 text-primary"></i>Demandas Futuras
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2 font-monospace" id="badgeQtdFuturasAba">0</span>
+                    <i class="fa-solid fa-bars-staggered me-2 text-primary"></i>Demandas
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2 font-monospace" id="badgeQtdDemandasAba">0</span>
                   </h5>
-                  <p class="text-muted small mb-0">Suba ou desça as demandas para definir a prioridade de execução na fila.</p>
+                  <p class="text-muted small mb-0">Em andamento na esteira e próximas na fila.</p>
                 </div>
-                <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3" onclick="abrirModalNovaDemanda()">
+                <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3 shadow-xs" onclick="abrirModalNovaDemanda()">
                   <i class="fa-solid fa-plus me-1"></i> Nova Demanda
                 </button>
               </div>
 
-              <!-- BARRA DE PESQUISA COM LUPA (1º Solicitado) -->
-              <div class="input-group input-group-sm mb-3">
+              <!-- BARRA DE PESQUISA COM LUPA -->
+              <div class="input-group input-group-sm mb-3 shadow-xs">
                 <span class="input-group-text bg-white border-end-0 text-primary">
                   <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
-                <input type="text" class="form-control border-start-0 ps-1" id="pesquisaDemandasFuturas" 
+                <input type="text" class="form-control border-start-0 ps-1" id="pesquisaDemandas" 
                        placeholder="Pesquisar por demanda ou módulo..." 
-                       oninput="filtrarDemandasFuturasAoDigitar()" autocomplete="off">
-                <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaFuturas" 
-                        onclick="limparPesquisaDemandasFuturas()" title="Limpar pesquisa">
+                       oninput="filtrarDemandasAoDigitar()" autocomplete="off">
+                <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaDemandas" 
+                        onclick="limparPesquisaDemandas()" title="Limpar pesquisa">
                   <i class="fa-solid fa-xmark"></i>
                 </button>
               </div>
 
-              <div id="listaFuturasDemandas" style="max-height: 480px; overflow-y: auto;">
+              <!-- CONTÊINER DA LISTA DE DEMANDAS -->
+              <div id="listaDemandas" style="max-height: 520px; overflow-y: auto;">
               </div>
             </div>
           </div>
 
-          <!-- COLUNA DIREITA: DEMANDAS CONCLUÍDAS -->
-          <div class="col-lg-6">
-            <div class="card card-custom p-4 h-100">
+          <!-- COLUNA 2: DEMANDAS ATRASADAS -->
+          <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaAtrasadas">
+            <div class="card card-custom p-3 p-md-4 h-100 shadow-sm border-top border-danger border-3">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                  <h5 class="fw-bold mb-1">
-                    <i class="fa-solid fa-circle-check me-2 text-success"></i>Demandas Concluídas
-                    <span class="badge bg-success-subtle text-success rounded-pill ms-1" id="badgeQtdConcluidasAba">0</span>
+                  <h5 class="fw-bold mb-1 d-flex align-items-center text-danger">
+                    <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>Demandas Atrasadas
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill ms-2 font-monospace" id="badgeQtdAtrasadasAba">0</span>
                   </h5>
-                  <p class="text-muted small mb-0">Histórico de entregas finalizadas na esteira.</p>
+                  <p class="text-muted small mb-0">Tarefas que excederam a data de término prevista.</p>
                 </div>
-                <span class="badge bg-light text-muted border px-2 py-1 small">
-                  <i class="fa-solid fa-clock-rotate-left me-1"></i> Finalizadas
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small rounded-pill">
+                  <i class="fa-solid fa-clock-rotate-left me-1"></i>Atraso
                 </span>
               </div>
 
-              <div id="listaConcluidasDemandas" style="max-height: 480px; overflow-y: auto;">
+              <!-- CONTÊINER DA LISTA DE ATRASADAS -->
+              <div id="listaAtrasadasDemandas" style="max-height: 520px; overflow-y: auto;">
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUNA 3: DEMANDAS CONCLUÍDAS -->
+          <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaConcluidas">
+            <div class="card card-custom p-3 p-md-4 h-100 shadow-sm border-top border-success border-3">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h5 class="fw-bold mb-1 d-flex align-items-center text-success">
+                    <i class="fa-solid fa-circle-check me-2 text-success"></i>Demandas Concluídas
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-2 font-monospace" id="badgeQtdConcluidasAba">0</span>
+                  </h5>
+                  <p class="text-muted small mb-0">Histórico de entregas finalizadas na esteira.</p>
+                </div>
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small rounded-pill">
+                  <i class="fa-solid fa-check-double me-1"></i>Finalizadas
+                </span>
+              </div>
+
+              <!-- CONTÊINER DA LISTA DE CONCLUÍDAS -->
+              <div id="listaConcluidasDemandas" style="max-height: 520px; overflow-y: auto;">
               </div>
             </div>
           </div>
 
         </div>
 
-      </div>
-
-      <!-- ========================================== -->
-      <!-- ABA 2: PAINEL DO GERENTE (CIENTE E ESTEIRA)-->
-      <!-- ========================================== -->
-      <div class="tab-pane fade" id="tab-gerente" role="tabpanel">
-        <div class="card card-custom p-4 mb-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <h5 class="fw-bold text-dark mb-1">
-                <i class="fa-solid fa-clipboard-check me-2 text-primary"></i>Solicitações de Novo Prazo
-              </h5>
-              <p class="text-muted small mb-0">O Gerente dá "Ciente" no novo prazo solicitado e a atividade retorna imediatamente para a esteira.</p>
-            </div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-hover align-middle">
-              <thead class="table-light">
-                <tr>
-                  <th>Tarefa</th>
-                  <th>Desenvolvedor</th>
-                  <th>Novo Prazo Solicitado</th>
-                  <th>Data Registro</th>
-                  <th>Status</th>
-                  <th class="text-end">Ação do Gerente</th>
-                </tr>
-              </thead>
-              <tbody id="tabelaAprovacoesGerente">
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
 
 
@@ -1490,46 +1506,6 @@
           <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancelar</button>
           <button type="button" class="btn btn-primary fw-semibold px-4" id="btnSalvarEdicaoTarefa" onclick="salvarEdicaoTarefaInstantanea()">
             <i class="fa-solid fa-check me-1"></i> Salvar Alterações
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: SOLICITAR NOVO PRAZO (SEM JUSTIFICATIVA) -->
-  <div class="modal fade" id="modalSolicitarPrazo" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-warning text-dark">
-          <h5 class="modal-title fw-bold"><i class="fa-solid fa-calendar-plus me-2"></i>Solicitar Novo Prazo</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="alert alert-warning small d-flex align-items-center gap-2">
-            <i class="fa-solid fa-circle-info fs-5"></i>
-            <div>
-              Informe a quantidade de dias adicionais necessários. O <strong>Gerente do Projeto</strong> dará ciência e a demanda continuará na esteira.
-            </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold"><i class="fa-solid fa-list-check text-primary me-1"></i>Demanda:</label>
-            <input type="text" class="form-control bg-light" id="solTarefaTitulo" readonly>
-            <input type="hidden" id="solTarefaId">
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Quantos DIAS adicionais você necessita?</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light"><i class="fa-solid fa-calendar-day text-primary"></i></span>
-              <input type="number" class="form-control" id="solNovosDias" min="1" value="2">
-              <span class="input-group-text">dia(s)</span>
-            </div>
-            <div class="form-text text-muted">O prazo da demanda será estendido a partir de hoje com essa quantidade de dias.</div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-warning fw-semibold px-4 text-dark" onclick="enviarSolicitacaoPrazoInstantanea()">
-            <i class="fa-solid fa-paper-plane me-1"></i> Solicitar Novo Prazo
           </button>
         </div>
       </div>
@@ -2428,194 +2404,296 @@
       if (emailEl) {
         emailEl.innerText = appState.currentUser.email || 'Conta autorizada';
       }
+    }
 
-      // Controle de visibilidade da aba do Gerente: Gerente de Projetos + nicolasrichardt@gmail.com (independente de qual função esteja)
-      const navItemGerente = document.getElementById('navItemPainelGerente');
-      if (navItemGerente) {
-        if (podeVerGerente) {
-          navItemGerente.classList.remove('d-none');
+    /**
+     * 4º Navega com rolagem suave até a lista correspondente ao clicar no card de dashboard
+     */
+    function navegarParaLista(tipo) {
+      const btnEsteira = document.getElementById('tab-esteira-btn');
+      if (btnEsteira && !btnEsteira.classList.contains('active')) {
+        bootstrap.Tab.getOrCreateInstance(btnEsteira).show();
+      }
+      setTimeout(() => {
+        let el = null;
+        if (tipo === 'concluidas') {
+          el = document.getElementById('secaoListaConcluidas');
+        } else if (tipo === 'atrasadas') {
+          el = document.getElementById('secaoListaAtrasadas');
         } else {
-          navItemGerente.classList.add('d-none');
-          // Se estava na aba do gerente, retorna para a esteira
-          const btnGerente = document.getElementById('tab-gerente-btn');
-          if (btnGerente && btnGerente.classList.contains('active')) {
-            bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-esteira-btn')).show();
-          }
+          el = document.getElementById('secaoListaDemandas');
+        }
+
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          el.classList.add('secao-destacada-temporaria');
+          setTimeout(() => el.classList.remove('secao-destacada-temporaria'), 1800);
+        }
+      }, 100);
+    }
+
+    /**
+     * Permite concluir qualquer demanda (Em Andamento ou Atrasada) diretamente com 1 clique
+     */
+    function finalizarDemandaPorId(tarefaId) {
+      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
+      if (!tarefa) return;
+
+      if (!confirm(`Deseja realmente concluir a demanda "${tarefa.titulo}"?`)) return;
+
+      const hojeIso = formatarDataIso(new Date());
+      tarefa.status = 'Concluída';
+      tarefa.ativo = false;
+      tarefa.dataConclusao = hojeIso;
+      tarefa.diasTrabalhados = calcularDiasEmProducao(tarefa.dataInicio, hojeIso, 'Concluída', false);
+
+      salvarEdicaoLocalDemanda(tarefa);
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      atualizarAbaEsteira();
+      renderizarGraficos();
+      atualizarRelatorioMensal();
+      mostrarToast(`Demanda "${tarefa.titulo}" concluída com sucesso!`);
+
+      executarNoServidor('concluirTarefa', {
+        tarefaId: tarefa.id,
+        devId: tarefa.devId,
+        dataConclusao: tarefa.dataConclusao,
+        diasTrabalhados: tarefa.diasTrabalhados
+      });
+    }
+
+    /**
+     * Filtro dinâmico por digitação na lista de Demandas
+     */
+    function filtrarDemandasAoDigitar() {
+      const input = document.getElementById('pesquisaDemandas') || document.getElementById('pesquisaDemandasFuturas');
+      const btnLimpar = document.getElementById('btnLimparPesquisaDemandas') || document.getElementById('btnLimparPesquisaFuturas');
+      if (input && btnLimpar) {
+        if (input.value.trim().length > 0) {
+          btnLimpar.classList.remove('d-none');
+        } else {
+          btnLimpar.classList.add('d-none');
         }
       }
+      atualizarAbaEsteira();
     }
+
+    function limparPesquisaDemandas() {
+      const input = document.getElementById('pesquisaDemandas') || document.getElementById('pesquisaDemandasFuturas');
+      const btnLimpar = document.getElementById('btnLimparPesquisaDemandas') || document.getElementById('btnLimparPesquisaFuturas');
+      if (input) input.value = '';
+      if (btnLimpar) btnLimpar.classList.add('d-none');
+      atualizarAbaEsteira();
+    }
+    window.filtrarDemandasFuturasAoDigitar = filtrarDemandasAoDigitar;
+    window.limparPesquisaDemandasFuturas = limparPesquisaDemandas;
 
     function atualizarAbaEsteira() {
       verificarEAtualizarStatusTarefas();
-      const devId = appState.currentUser ? appState.currentUser.id : null;
+      const devSelect = document.getElementById('filtroDevEsteira');
+      const devId = (devSelect && devSelect.value) ? devSelect.value : (appState.currentUser ? appState.currentUser.id : null);
       if (!devId) return;
 
-      const podeExcluir = usuarioPodeVerPainelGerente(appState.currentUser);
-
       const tarefasDev = appState.tarefas.filter(t => t.devId === devId);
-      const tarefasAtivas = tarefasDev.filter(t => t.ativo && t.status !== 'Concluída');
-      const demandaAtual = tarefasAtivas.length > 0 ? tarefasAtivas[0] : null;
-      const futurasDemandas = tarefasDev.filter(t => !t.ativo && t.status !== 'Concluída');
-      const atrasadas = tarefasDev.filter(t => t.status === 'Atrasada');
+      
+      // Categorização estrita conforme especificação:
+      // 1. Concluídas
       const concluidas = tarefasDev.filter(t => t.status === 'Concluída');
+      // 2. Em Andamento
+      const emAndamento = tarefasDev.filter(t => t.status === 'Em Andamento');
+      // 3. Não Iniciadas
+      const naoIniciadas = tarefasDev.filter(t => t.status === 'Não Iniciada' || (!t.status && !t.ativo && t.status !== 'Concluída' && t.status !== 'Atrasada'));
+      // 4. Atrasadas
+      const atrasadas = tarefasDev.filter(t => t.status === 'Atrasada');
 
-      const metricAtiva = document.getElementById('metricAtivaTexto');
-      if (demandaAtual) {
-        metricAtiva.innerText = demandaAtual.titulo;
-        metricAtiva.title = demandaAtual.titulo;
-        metricAtiva.className = 'mb-0 fw-bold text-primary text-truncate';
-      } else {
-        metricAtiva.innerText = 'Nenhuma ativa';
-        metricAtiva.title = 'Nenhuma demanda ativa no momento';
-        metricAtiva.className = 'mb-0 fw-bold text-muted';
-      }
+      // 4º Nos 4 Dashboard: Comece por "Concluídas"; "Em Andamento"; "Não Iniciadas"; "Atrasadas"
+      const elConcluidasQtd = document.getElementById('metricConcluidasQtd');
+      if (elConcluidasQtd) elConcluidasQtd.innerText = concluidas.length;
 
-      document.getElementById('metricFuturasQtd').innerText = futurasDemandas.length;
-      document.getElementById('metricAtrasadasQtd').innerText = atrasadas.length;
-      document.getElementById('metricConcluidasQtd').innerText = concluidas.length;
+      const elEmAndamentoQtd = document.getElementById('metricEmAndamentoQtd');
+      if (elEmAndamentoQtd) elEmAndamentoQtd.innerText = emAndamento.length;
 
+      const elNaoIniciadasQtd = document.getElementById('metricNaoIniciadasQtd');
+      if (elNaoIniciadasQtd) elNaoIniciadasQtd.innerText = naoIniciadas.length;
+
+      const elAtrasadasQtd = document.getElementById('metricAtrasadasQtd');
+      if (elAtrasadasQtd) elAtrasadasQtd.innerText = atrasadas.length;
+
+      // Badges das 3 Listas
+      const badgeDemandas = document.getElementById('badgeQtdDemandasAba') || document.getElementById('badgeQtdFuturasAba');
+      if (badgeDemandas) badgeDemandas.innerText = emAndamento.length + naoIniciadas.length;
+
+      const badgeAtrasadas = document.getElementById('badgeQtdAtrasadasAba');
+      if (badgeAtrasadas) badgeAtrasadas.innerText = atrasadas.length;
+
+      const badgeConcluidas = document.getElementById('badgeQtdConcluidasAba');
+      if (badgeConcluidas) badgeConcluidas.innerText = concluidas.length;
+
+      // HERO CARD: DEMANDA ATUAL EM PRODUÇÃO
+      const demandaAtual = emAndamento.length > 0 ? emAndamento[0] : (tarefasDev.find(t => t.ativo && t.status !== 'Concluída') || null);
       const cardAtual = document.getElementById('cardDemandaAtual');
       const alertaAtraso = document.getElementById('alertaAtrasoAtual');
       const botoesAcao = document.getElementById('botoesAcaoAtual');
       const badgeModuloAtual = document.getElementById('badgeModuloAtual');
       const btnExcluirAtual = document.getElementById('btnExcluirDemandaAtual');
 
-      if (demandaAtual) {
-        document.getElementById('tituloDemandaAtual').innerText = demandaAtual.titulo;
-        document.getElementById('descDemandaAtual').innerText = demandaAtual.descricao || 'Sem descrição informada.';
-        document.getElementById('devNomeAtual').innerText = demandaAtual.devNome;
-        document.getElementById('tempoEstimadoAtual').innerText = demandaAtual.diasEstimados + ' dia(s)';
-        
-        const diasProducao = calcularDiasEmProducao(demandaAtual.dataInicio, demandaAtual.dataConclusao, demandaAtual.status, true);
-        document.getElementById('tempoDemandadoAtual').innerText = diasProducao === 1 ? '1 dia' : `${diasProducao} dias`;
-        
-        document.getElementById('dataInicioAtual').innerText = formatarData(demandaAtual.dataInicio);
-        document.getElementById('dataPrazoAtual').innerText = formatarData(demandaAtual.dataPrazo);
+      if (cardAtual) {
+        if (demandaAtual) {
+          const titEl = document.getElementById('tituloDemandaAtual');
+          if (titEl) titEl.innerText = demandaAtual.titulo;
+          const descEl = document.getElementById('descDemandaAtual');
+          if (descEl) descEl.innerText = demandaAtual.descricao || 'Sem descrição informada.';
+          const devEl = document.getElementById('devNomeAtual');
+          if (devEl) devEl.innerText = limparNomeDev(demandaAtual.devNome);
+          const estEl = document.getElementById('tempoEstimadoAtual');
+          if (estEl) estEl.innerText = (demandaAtual.diasEstimados || 1) + ' dia(s)';
+          
+          const diasProducao = calcularDiasEmProducao(demandaAtual.dataInicio, demandaAtual.dataConclusao, demandaAtual.status, true);
+          const demEl = document.getElementById('tempoDemandadoAtual');
+          if (demEl) demEl.innerText = diasProducao === 1 ? '1 dia' : `${diasProducao} dias`;
+          
+          const iniEl = document.getElementById('dataInicioAtual');
+          if (iniEl) iniEl.innerText = formatarData(demandaAtual.dataInicio);
+          const przEl = document.getElementById('dataPrazoAtual');
+          if (przEl) przEl.innerText = formatarData(demandaAtual.dataPrazo);
 
-        if (badgeModuloAtual) {
-          const modText = demandaAtual.modulo || 'SIOPLEEx';
-          badgeModuloAtual.innerText = modText;
-          badgeModuloAtual.title = 'Módulo: ' + modText;
-          if (modText === 'Demanda Externa') {
-            badgeModuloAtual.className = 'badge bg-primary-subtle text-primary border border-primary-subtle font-monospace me-1';
-          } else {
-            badgeModuloAtual.className = 'badge bg-secondary-subtle text-secondary border font-monospace me-1';
+          if (badgeModuloAtual) {
+            const modText = demandaAtual.modulo || 'SIOPLEEx';
+            badgeModuloAtual.innerText = modText;
+            badgeModuloAtual.title = 'Módulo: ' + modText;
+            if (modText === 'Demanda Externa') {
+              badgeModuloAtual.className = 'badge bg-primary-subtle text-primary border border-primary-subtle font-monospace me-1';
+            } else {
+              badgeModuloAtual.className = 'badge bg-secondary-subtle text-secondary border font-monospace me-1';
+            }
           }
-        }
 
-        const badgeStatus = document.getElementById('badgeStatusAtual');
-        if (demandaAtual.status === 'Atrasada') {
-          badgeStatus.className = 'badge-status-atrasada';
-          badgeStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> Atrasada';
-          cardAtual.classList.add('atrasada');
-          alertaAtraso.classList.remove('d-none');
-          alertaAtraso.classList.add('d-flex');
+          const badgeStatus = document.getElementById('badgeStatusAtual');
+          if (badgeStatus) {
+            if (demandaAtual.status === 'Atrasada') {
+              badgeStatus.className = 'badge-status-atrasada';
+              badgeStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> Atrasada';
+              cardAtual.classList.add('atrasada');
+              if (alertaAtraso) {
+                alertaAtraso.classList.remove('d-none');
+                alertaAtraso.classList.add('d-flex');
+              }
+            } else {
+              badgeStatus.className = 'badge-status-dia';
+              badgeStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Em Andamento';
+              cardAtual.classList.remove('atrasada');
+              if (alertaAtraso) {
+                alertaAtraso.classList.add('d-none');
+                alertaAtraso.classList.remove('d-flex');
+              }
+            }
+          }
+
+          const badgeUrg = document.getElementById('badgeUrgenciaAtual');
+          if (badgeUrg) {
+            badgeUrg.innerText = demandaAtual.urgencia || 'Média';
+            badgeUrg.className = `badge badge-${(demandaAtual.urgencia || 'Media').toLowerCase()}`;
+          }
+
+          if (botoesAcao) botoesAcao.classList.remove('d-none');
+          const podeEditarAtual = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (demandaAtual.devId === appState.currentUser.id || (demandaAtual.devNome && appState.currentUser.nome && demandaAtual.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+          const btnEditarAtual = document.getElementById('btnEditarDemandaAtual');
+          if (btnEditarAtual) {
+            if (podeEditarAtual) btnEditarAtual.classList.remove('d-none');
+            else btnEditarAtual.classList.add('d-none');
+          }
+          if (btnExcluirAtual) {
+            if (podeEditarAtual) btnExcluirAtual.classList.remove('d-none');
+            else btnExcluirAtual.classList.add('d-none');
+          }
         } else {
-          badgeStatus.className = 'badge-status-dia';
-          badgeStatus.innerHTML = '<i class="fa-solid fa-check me-1"></i> Em Dia';
+          const titEl = document.getElementById('tituloDemandaAtual');
+          if (titEl) titEl.innerText = 'Nenhuma demanda em produção ativa';
+          const descEl = document.getElementById('descDemandaAtual');
+          if (descEl) descEl.innerText = 'Inicie uma demanda abaixo para colocá-la na esteira de produção!';
+          const devEl = document.getElementById('devNomeAtual');
+          if (devEl) devEl.innerText = appState.currentUser ? limparNomeDev(appState.currentUser.nome) : 'Desenvolvedor';
+          const estEl = document.getElementById('tempoEstimadoAtual');
+          if (estEl) estEl.innerText = '0 dias';
+          const demEl = document.getElementById('tempoDemandadoAtual');
+          if (demEl) demEl.innerText = '0 dias';
+          const iniEl = document.getElementById('dataInicioAtual');
+          if (iniEl) iniEl.innerText = '-';
+          const przEl = document.getElementById('dataPrazoAtual');
+          if (przEl) przEl.innerText = '-';
+          if (badgeModuloAtual) badgeModuloAtual.innerText = 'SIOPLEEx';
           cardAtual.classList.remove('atrasada');
-          alertaAtraso.classList.add('d-none');
-          alertaAtraso.classList.remove('d-flex');
+          if (alertaAtraso) alertaAtraso.classList.add('d-none');
+          if (botoesAcao) botoesAcao.classList.add('d-none');
         }
-
-        const badgeUrg = document.getElementById('badgeUrgenciaAtual');
-        badgeUrg.innerText = demandaAtual.urgencia;
-        badgeUrg.className = `badge badge-${demandaAtual.urgencia.toLowerCase()}`;
-
-        botoesAcao.classList.remove('d-none');
-        const podeEditarAtual = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (demandaAtual.devId === appState.currentUser.id || (demandaAtual.devNome && appState.currentUser.nome && demandaAtual.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
-        const btnEditarAtual = document.getElementById('btnEditarDemandaAtual');
-        if (btnEditarAtual) {
-          if (podeEditarAtual) btnEditarAtual.classList.remove('d-none');
-          else btnEditarAtual.classList.add('d-none');
-        }
-        if (btnExcluirAtual) {
-          if (podeEditarAtual) btnExcluirAtual.classList.remove('d-none');
-          else btnExcluirAtual.classList.add('d-none');
-        }
-      } else {
-        document.getElementById('tituloDemandaAtual').innerText = 'Nenhuma demanda ativa na esteira';
-        document.getElementById('descDemandaAtual').innerText = 'Selecione uma demanda nas Demandas Futuras ou cadastre uma nova para iniciar!';
-        document.getElementById('devNomeAtual').innerText = appState.currentUser ? appState.currentUser.nome : 'Desenvolvedor';
-        document.getElementById('tempoEstimadoAtual').innerText = '0 dias';
-        document.getElementById('tempoDemandadoAtual').innerText = '0 dias';
-        document.getElementById('dataInicioAtual').innerText = '-';
-        document.getElementById('dataPrazoAtual').innerText = '-';
-        if (badgeModuloAtual) badgeModuloAtual.innerText = 'SIOPLEEx';
-        cardAtual.classList.remove('atrasada');
-        alertaAtraso.classList.add('d-none');
-        botoesAcao.classList.add('d-none');
       }
 
-      // Atualiza badges das abas lado a lado
-      const badgeFuturas = document.getElementById('badgeQtdFuturasAba');
-      if (badgeFuturas) badgeFuturas.innerText = futurasDemandas.length;
+      // ==========================================
+      // 1. LISTA "DEMANDAS" (EM ANDAMENTO + NÃO INICIADAS)
+      // ==========================================
+      const divDemandas = document.getElementById('listaDemandas') || document.getElementById('listaFuturasDemandas');
+      const termoBusca = (document.getElementById('pesquisaDemandas') || document.getElementById('pesquisaDemandasFuturas') ? (document.getElementById('pesquisaDemandas') || document.getElementById('pesquisaDemandasFuturas')).value : '').trim().toLowerCase();
 
-      const badgeConcluidas = document.getElementById('badgeQtdConcluidasAba');
-      if (badgeConcluidas) badgeConcluidas.innerText = concluidas.length;
-
-      // 1. Demandas Futuras (Coluna Esquerda) com Pesquisa por Lupa
-      const divFuturas = document.getElementById('listaFuturasDemandas');
-      const termoBusca = (document.getElementById('pesquisaDemandasFuturas') ? document.getElementById('pesquisaDemandasFuturas').value : '').trim().toLowerCase();
-
-      let futurasExibidas = futurasDemandas;
-      if (termoBusca) {
-        futurasExibidas = futurasDemandas.filter(task => {
+      const filtrarPorTermo = (lista) => {
+        if (!termoBusca) return lista;
+        return lista.filter(task => {
           const tit = (task.titulo || '').toLowerCase();
           const mod = (task.modulo || '').toLowerCase();
           const desc = (task.descricao || '').toLowerCase();
           const dev = (task.devNome || '').toLowerCase();
           return tit.includes(termoBusca) || mod.includes(termoBusca) || desc.includes(termoBusca) || dev.includes(termoBusca);
         });
-      }
+      };
 
-      if (divFuturas) {
-        divFuturas.innerHTML = '';
-        if (futurasDemandas.length === 0) {
-          divFuturas.innerHTML = `
+      const emAndamentoFiltradas = filtrarPorTermo(emAndamento);
+      const naoIniciadasFiltradas = filtrarPorTermo(naoIniciadas);
+      const totalDemandasExibidas = emAndamentoFiltradas.length + naoIniciadasFiltradas.length;
+
+      if (divDemandas) {
+        divDemandas.innerHTML = '';
+        if (emAndamento.length === 0 && naoIniciadas.length === 0) {
+          divDemandas.innerHTML = `
             <div class="text-center py-4 text-muted">
               <i class="fa-solid fa-circle-check fs-2 text-success mb-2"></i>
-              <p class="mb-0 small">Nenhuma demanda futura na fila para este desenvolvedor. Esteira livre!</p>
+              <p class="mb-0 small">Nenhuma demanda pendente ou em andamento. Esteira livre!</p>
             </div>
           `;
-        } else if (futurasExibidas.length === 0) {
-          divFuturas.innerHTML = `
+        } else if (totalDemandasExibidas === 0) {
+          divDemandas.innerHTML = `
             <div class="text-center py-4 text-muted">
               <i class="fa-solid fa-magnifying-glass fs-2 text-secondary opacity-50 mb-2"></i>
-              <p class="mb-1 fw-semibold small">Nenhuma demanda futura encontrada para "${termoBusca}".</p>
-              <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-1" onclick="limparPesquisaDemandasFuturas()">
+              <p class="mb-1 fw-semibold small">Nenhuma demanda encontrada para "${termoBusca}".</p>
+              <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-1" onclick="limparPesquisaDemandas()">
                 <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
               </button>
             </div>
           `;
         } else {
-          futurasExibidas.forEach((task) => {
-            const realIdx = futurasDemandas.findIndex(t => t.id === task.id);
-            const isPrimeira = realIdx === 0;
-            const isUltima = realIdx === futurasDemandas.length - 1;
-            const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+          // Renderiza Primeiro as Em Andamento
+          if (emAndamentoFiltradas.length > 0) {
+            const headerEmAnd = document.createElement('div');
+            headerEmAnd.className = 'd-flex align-items-center justify-content-between mb-2 pb-1 border-bottom';
+            headerEmAnd.innerHTML = `
+              <span class="small fw-bold text-primary text-uppercase" style="letter-spacing: 0.5px; font-size: 0.72rem;">
+                <i class="fa-solid fa-spinner fa-spin me-1"></i> Em Andamento (${emAndamentoFiltradas.length})
+              </span>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle small font-monospace">Em Produção</span>
+            `;
+            divDemandas.appendChild(headerEmAnd);
 
-            const item = document.createElement('div');
-            item.className = 'esteira-item d-flex align-items-center gap-3';
-            item.innerHTML = `
-              <!-- Controles de Reordenação: Subir / Descer Prioridade -->
-              <div class="d-flex flex-column align-items-center justify-content-center me-1" style="min-width: 32px;">
-                <button type="button" class="btn-reorder mb-1" title="Subir na lista (Aumentar prioridade)" onclick="moverDemandaFutura('${task.id}', -1)" ${isPrimeira ? 'disabled' : ''}>
-                  <i class="fa-solid fa-chevron-up"></i>
-                </button>
-                <span class="badge bg-light text-secondary border font-monospace my-1" style="font-size: 0.68rem; padding: 2px 5px;" title="Posição na fila">
-                  #${realIdx + 1}
-                </span>
-                <button type="button" class="btn-reorder mt-1" title="Descer na lista (Diminuir prioridade)" onclick="moverDemandaFutura('${task.id}', 1)" ${isUltima ? 'disabled' : ''}>
-                  <i class="fa-solid fa-chevron-down"></i>
-                </button>
-              </div>
+            emAndamentoFiltradas.forEach(task => {
+              const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+              const diasProd = calcularDiasEmProducao(task.dataInicio, task.dataConclusao, task.status, true);
 
-              <!-- Conteúdo da Demanda Futura -->
-              <div class="flex-grow-1" style="min-width: 0;">
+              const item = document.createElement('div');
+              item.className = 'esteira-item border-start border-primary border-4 bg-primary bg-opacity-10 mb-2 p-3 rounded-3 shadow-xs';
+              item.innerHTML = `
                 <div class="d-flex align-items-start gap-2">
-                  <div class="badge bg-light text-dark p-2 border mt-1 d-none d-sm-block">
-                    <i class="fa-solid fa-hourglass-start me-1 text-primary"></i> ${task.diasEstimados ? `${task.diasEstimados}d` : 'Fila'}
+                  <div class="badge bg-primary text-white p-2 border mt-1 d-none d-sm-block">
+                    <i class="fa-solid fa-bars-progress"></i>
                   </div>
                   <div class="flex-grow-1" style="min-width: 0;">
                     <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
@@ -2625,32 +2703,174 @@
                     ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
                     <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
                       <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
-                      <span class="badge bg-secondary-subtle text-secondary border font-monospace" style="font-size: 0.72rem;"><i class="fa-regular fa-circle-dot me-1 small"></i>${task.status || 'Não Iniciada'}</span>
-                      ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
+                      <span class="badge bg-primary text-white"><i class="fa-solid fa-spinner fa-spin me-1"></i>Em Andamento</span>
+                      ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar-check text-primary me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
+                      <span class="small text-muted"><i class="fa-solid fa-stopwatch me-1"></i>${diasProd} dia(s) em prod.</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
+                      <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold py-1 px-3 shadow-xs" onclick="finalizarDemandaPorId('${task.id}')">
+                        <i class="fa-solid fa-circle-check me-1"></i> Concluir
+                      </button>
+                      ${podeEditarOuExcluir ? `
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
+                          <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
+                          <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                        </button>
+                      ` : ''}
                     </div>
                   </div>
                 </div>
+              `;
+              divDemandas.appendChild(item);
+            });
+          }
+
+          // Renderiza Seguidamente as Não Iniciadas
+          if (naoIniciadasFiltradas.length > 0) {
+            const headerNaoIni = document.createElement('div');
+            headerNaoIni.className = `d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom ${emAndamentoFiltradas.length > 0 ? 'mt-3' : ''}`;
+            headerNaoIni.innerHTML = `
+              <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px; font-size: 0.72rem;">
+                <i class="fa-solid fa-list-ol me-1"></i> Não Iniciadas (${naoIniciadasFiltradas.length})
+              </span>
+              <span class="badge bg-light text-secondary border small font-monospace">Próximas na Fila</span>
+            `;
+            divDemandas.appendChild(headerNaoIni);
+
+            naoIniciadasFiltradas.forEach((task) => {
+              const realIdx = naoIniciadas.findIndex(t => t.id === task.id);
+              const isPrimeira = realIdx === 0;
+              const isUltima = realIdx === naoIniciadas.length - 1;
+              const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+
+              const item = document.createElement('div');
+              item.className = 'esteira-item d-flex align-items-center gap-3 mb-2';
+              item.innerHTML = `
+                <!-- Controles de Reordenação: Subir / Descer Prioridade -->
+                <div class="d-flex flex-column align-items-center justify-content-center me-1" style="min-width: 32px;">
+                  <button type="button" class="btn-reorder mb-1" title="Subir na lista (Aumentar prioridade)" onclick="moverDemandaFutura('${task.id}', -1)" ${isPrimeira ? 'disabled' : ''}>
+                    <i class="fa-solid fa-chevron-up"></i>
+                  </button>
+                  <span class="badge bg-light text-secondary border font-monospace my-1" style="font-size: 0.68rem; padding: 2px 5px;" title="Posição na fila">
+                    #${realIdx + 1}
+                  </span>
+                  <button type="button" class="btn-reorder mt-1" title="Descer na lista (Diminuir prioridade)" onclick="moverDemandaFutura('${task.id}', 1)" ${isUltima ? 'disabled' : ''}>
+                    <i class="fa-solid fa-chevron-down"></i>
+                  </button>
+                </div>
+
+                <!-- Conteúdo da Demanda Não Iniciada -->
+                <div class="flex-grow-1" style="min-width: 0;">
+                  <div class="d-flex align-items-start gap-2">
+                    <div class="badge bg-light text-dark p-2 border mt-1 d-none d-sm-block">
+                      <i class="fa-solid fa-hourglass-start me-1 text-primary"></i> ${task.diasEstimados ? `${task.diasEstimados}d` : 'Fila'}
+                    </div>
+                    <div class="flex-grow-1" style="min-width: 0;">
+                      <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                        <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                        <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
+                      </div>
+                      ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
+                      <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                        <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
+                        <span class="badge bg-secondary-subtle text-secondary border font-monospace" style="font-size: 0.72rem;"><i class="fa-regular fa-circle-dot me-1 small"></i>Não Iniciada</span>
+                        ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
+                    <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold py-1 px-3 shadow-sm" onclick="abrirModalIniciarDemanda('${task.id}')">
+                      <i class="fa-solid fa-play me-1"></i> Iniciar Agora
+                    </button>
+                    ${podeEditarOuExcluir ? `
+                      <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
+                        <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+                      </button>
+                      <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
+                        <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+              `;
+              divDemandas.appendChild(item);
+            });
+          }
+        }
+      }
+
+      // ==========================================
+      // 2. LISTA "DEMANDAS ATRASADAS" (NOVA LISTA DEDICADA)
+      // ==========================================
+      const divAtrasadas = document.getElementById('listaAtrasadasDemandas');
+      if (divAtrasadas) {
+        divAtrasadas.innerHTML = '';
+        if (atrasadas.length === 0) {
+          divAtrasadas.innerHTML = `
+            <div class="text-center py-4 text-muted">
+              <i class="fa-solid fa-circle-check fs-2 text-success mb-2"></i>
+              <p class="mb-0 small fw-semibold text-success">Excelente! Nenhuma demanda em atraso.</p>
+              <small class="text-muted">Todas as entregas estão no prazo.</small>
+            </div>
+          `;
+        } else {
+          atrasadas.forEach(task => {
+            const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+            
+            let diasAtraso = 1;
+            if (task.dataPrazo) {
+              const dtPrazo = parseDataLocal(task.dataPrazo);
+              const hojeZero = new Date();
+              hojeZero.setHours(0, 0, 0, 0);
+              dtPrazo.setHours(0, 0, 0, 0);
+              diasAtraso = Math.max(1, Math.round((hojeZero.getTime() - dtPrazo.getTime()) / (1000 * 60 * 60 * 24)));
+            }
+
+            const item = document.createElement('div');
+            item.className = 'esteira-item d-flex align-items-center gap-3 border-start border-danger border-4 bg-danger bg-opacity-10 mb-2 p-3 rounded-3 shadow-xs';
+            item.innerHTML = `
+              <div class="badge bg-danger text-white p-2 border mt-1 d-none d-sm-block">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="flex-grow-1" style="min-width: 0;">
+                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                  <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                  <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
+                </div>
+                ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
+                <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                  <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
+                  <span class="badge bg-danger text-white"><i class="fa-solid fa-triangle-exclamation me-1"></i>Atrasada</span>
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle small fw-bold">
+                    <i class="fa-solid fa-clock-rotate-left me-1"></i>${diasAtraso} dia(s) de atraso
+                  </span>
+                  ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar-xmark text-danger me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
+                </div>
                 <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
-                  <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold py-1 px-3 shadow-sm" onclick="abrirModalIniciarDemanda('${task.id}')">
-                    <i class="fa-solid fa-play me-1"></i> Iniciar Agora
+                  <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold py-1 px-3 shadow-xs" onclick="finalizarDemandaPorId('${task.id}')">
+                    <i class="fa-solid fa-circle-check me-1"></i> Concluir
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Ajustar Prazo de Entrega" onclick="abrirModalEditarTarefa('${task.id}')">
+                    <i class="fa-solid fa-calendar-pen me-1"></i> Ajustar Prazo
                   </button>
                   ${podeEditarOuExcluir ? `
-                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
-                      <i class="fa-solid fa-pen-to-square me-1"></i> Editar
-                    </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
                       <i class="fa-solid fa-trash-can me-1"></i> Excluir
                     </button>
                   ` : ''}
                 </div>
               </div>
             `;
-            divFuturas.appendChild(item);
+            divAtrasadas.appendChild(item);
           });
         }
       }
 
-      // 2. Demandas Concluídas (Coluna Direita)
+      // ==========================================
+      // 3. LISTA "DEMANDAS CONCLUÍDAS"
+      // ==========================================
       const divConcluidas = document.getElementById('listaConcluidasDemandas');
       if (divConcluidas) {
         divConcluidas.innerHTML = '';
@@ -2666,10 +2886,10 @@
             const podeEditarOuExcluirConcluida = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
 
             const item = document.createElement('div');
-            item.className = 'esteira-item d-flex flex-wrap justify-content-between align-items-center gap-3 border-start border-success border-4';
+            item.className = 'esteira-item d-flex flex-wrap justify-content-between align-items-center gap-3 border-start border-success border-4 mb-2';
             item.innerHTML = `
               <div class="d-flex align-items-center gap-3" style="min-width: 0; flex: 1;">
-                <div class="badge bg-success-subtle text-success p-2 border border-success-subtle">
+                <div class="badge bg-success-subtle text-success p-2 border border-success-subtle d-none d-sm-block">
                   <i class="fa-solid fa-check-double"></i>
                 </div>
                 <div style="min-width: 0; flex: 1;">
@@ -2684,13 +2904,13 @@
                       <i class="fa-solid fa-calendar-check me-1"></i>${formatarData(task.dataConclusao || task.dataPrazo)}
                     </span>
                     <span class="badge bg-warning-subtle text-dark small">
-                      <i class="fa-solid fa-stopwatch me-1"></i>${task.diasTrabalhados} dia(s) em produção
+                      <i class="fa-solid fa-stopwatch me-1"></i>${task.diasTrabalhados || 1} dia(s) em produção
                     </span>
                   </div>
                 </div>
               </div>
               <div class="d-flex align-items-center gap-2">
-                <span class="badge badge-${task.urgencia.toLowerCase()}">${task.urgencia}</span>
+                <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
                 ${podeEditarOuExcluirConcluida ? `
                   <button type="button" class="btn btn-outline-secondary btn-sm rounded-circle p-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
                     <i class="fa-solid fa-pen-to-square" style="font-size: 0.75rem;"></i>
@@ -2952,23 +3172,24 @@
     }
 
     /**
-     * Reordena uma demanda dentro da lista de Demandas Futuras (Subir / Descer)
+     * Reordena uma demanda dentro da lista de Demandas (Subir / Descer prioridade entre Não Iniciadas)
      */
     function moverDemandaFutura(tarefaId, direcao) {
-      const devId = appState.currentUser ? appState.currentUser.id : null;
+      const devSelect = document.getElementById('filtroDevEsteira');
+      const devId = (devSelect && devSelect.value) ? devSelect.value : (appState.currentUser ? appState.currentUser.id : null);
       if (!devId) return;
 
       const tarefasDev = appState.tarefas.filter(t => t.devId === devId);
-      const futuras = tarefasDev.filter(t => !t.ativo && t.status !== 'Concluída');
+      const naoIniciadas = tarefasDev.filter(t => t.status === 'Não Iniciada' || (!t.status && !t.ativo && t.status !== 'Concluída' && t.status !== 'Atrasada'));
 
-      const idxAtual = futuras.findIndex(t => t.id === tarefaId);
+      const idxAtual = naoIniciadas.findIndex(t => t.id === tarefaId);
       if (idxAtual === -1) return;
 
       const novoIdx = idxAtual + direcao;
-      if (novoIdx < 0 || novoIdx >= futuras.length) return;
+      if (novoIdx < 0 || novoIdx >= naoIniciadas.length) return;
 
-      const tarefaA = futuras[idxAtual];
-      const tarefaB = futuras[novoIdx];
+      const tarefaA = naoIniciadas[idxAtual];
+      const tarefaB = naoIniciadas[novoIdx];
 
       // Achar os índices dentro de appState.tarefas para inverter posições
       const realIdxA = appState.tarefas.findIndex(t => t.id === tarefaA.id);
@@ -2995,6 +3216,7 @@
         tarefaId2: tarefaB.id
       });
     }
+    window.moverDemandaNaoIniciada = moverDemandaFutura;
 
     /**
      * CADASTRAR DEMANDA ULTRA-RÁPIDO (Status: "Não Iniciada", sem data de conclusão)
@@ -3723,120 +3945,9 @@
       inicializarTooltips();
     }
 
-    function abrirModalSolicitarPrazo() {
-      const devId = appState.currentUser.id;
-      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo);
-      if (!tarefaAtiva) return;
-
-      document.getElementById('solTarefaId').value = tarefaAtiva.id;
-      document.getElementById('solTarefaTitulo').value = tarefaAtiva.titulo;
-      document.getElementById('solNovosDias').value = 2;
-
-      const el = document.getElementById('modalSolicitarPrazo');
-      bootstrap.Modal.getOrCreateInstance(el).show();
-    }
-
-    function enviarSolicitacaoPrazoInstantanea() {
-      const tarefaId = document.getElementById('solTarefaId').value;
-      const tarefaTitulo = document.getElementById('solTarefaTitulo').value;
-      const novosDias = parseInt(document.getElementById('solNovosDias').value) || 1;
-
-      if (novosDias <= 0) {
-        alert('Informe ao menos 1 dia adicional.');
-        return;
-      }
-
-      fecharModalSeguro('modalSolicitarPrazo');
-
-      const novaSol = {
-        id: 'SOL-' + Math.floor(Math.random() * 9000 + 1000),
-        tarefaId: tarefaId,
-        tarefaTitulo: tarefaTitulo,
-        devId: appState.currentUser.id,
-        devNome: appState.currentUser.nome,
-        justificativa: '',
-        novosDiasSolicitados: novosDias,
-        status: 'Pendente',
-        gerenteNome: '',
-        dataSolicitacao: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR').substring(0,5)
-      };
-
-      appState.solicitacoes.unshift(novaSol);
-      atualizarPainelGerente();
-      mostrarToast('Novo prazo solicitado ao Gerente!');
-
-      executarNoServidor('solicitarNovoPrazo', novaSol);
-    }
-
-    function atualizarPainelGerente() {
-      const isGerente = usuarioPodeVerPainelGerente(appState.currentUser);
-      const badgeAvisos = document.getElementById('badgeSolicitacoesPendentes');
-      const tbody = document.getElementById('tabelaAprovacoesGerente');
-
-      const pendentes = appState.solicitacoes.filter(s => s.status === 'Pendente');
-      if (pendentes.length > 0) {
-        badgeAvisos.innerText = pendentes.length;
-        badgeAvisos.classList.remove('d-none');
-      } else {
-        badgeAvisos.classList.add('d-none');
-      }
-
-      tbody.innerHTML = '';
-      if (appState.solicitacoes.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Nenhuma solicitação de prazo registrada.</td></tr>';
-        return;
-      }
-
-      appState.solicitacoes.forEach(sol => {
-        const tr = document.createElement('tr');
-        const isPendente = sol.status === 'Pendente';
-        tr.innerHTML = `
-          <td><strong>${sol.tarefaTitulo}</strong><br><small class="text-muted">${sol.tarefaId}</small></td>
-          <td>${sol.devNome}</td>
-          <td><span class="badge bg-warning text-dark">+${sol.novosDiasSolicitados} dia(s)</span></td>
-          <td><small class="text-muted">${sol.dataSolicitacao}</small></td>
-          <td>
-            <span class="badge ${sol.status === 'Pendente' ? 'bg-warning text-dark' : 'bg-success'}">
-              ${sol.status}
-            </span>
-            ${sol.gerenteNome ? `<br><small class="text-muted">Por: ${sol.gerenteNome}</small>` : ''}
-          </td>
-          <td class="text-end">
-            ${isPendente && isGerente ? `
-              <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold" onclick="darCienteGerenteInstantaneo('${sol.id}')">
-                <i class="fa-solid fa-check-double me-1"></i> Ciente
-              </button>
-            ` : '<i class="fa-solid fa-circle-check text-success"></i> Na Esteira'}
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function darCienteGerenteInstantaneo(solId) {
-      const sol = appState.solicitacoes.find(s => s.id === solId);
-      if (sol) {
-        sol.status = 'Ciente';
-        sol.gerenteNome = appState.currentUser.nome;
-
-        const tar = appState.tarefas.find(t => t.id === sol.tarefaId);
-        if (tar) {
-          tar.diasEstimados += sol.novosDiasSolicitados;
-          tar.status = 'Em Andamento';
-          tar.ativo = true;
-          const p = new Date();
-          p.setDate(p.getDate() + sol.novosDiasSolicitados);
-          tar.dataPrazo = formatarDataIso(p);
-        }
-      }
-
-      atualizarPainelGerente();
-      atualizarAbaEsteira();
-      renderizarGraficos();
-      mostrarToast('Ciente registrado! Demanda retornou à esteira.');
-
-      executarNoServidor('darCientePrazo', { solicitacaoId: solId, gerenteNome: appState.currentUser.nome });
-    }
+    // O Painel do Gerente (Prazos) foi descontinuado conforme solicitado:
+    // os prazos agora são ajustados diretamente pelo desenvolvedor/gerente na edição da demanda.
+    function atualizarPainelGerente() {}
 
     /**
      * Aba Dashboard & Gráficos desativada
@@ -4606,7 +4717,7 @@
             <!-- RODAPÉ CORPORATIVO LIMPO -->
             <div style="page-break-inside: avoid !important; break-inside: avoid !important; margin-top: 12px; padding-top: 8px; border-top: 1px solid #cbd5e1; display: table; width: 100%; font-size: 9.5px; color: #64748b;">
               <div style="display: table-cell; text-align: left; font-weight: 500;">Sys Manager (SM) • Governança e Acompanhamento de Esteira Ágil</div>
-              <div style="display: table-cell; text-align: right; font-weight: 500;">Documento de acompanhamento • Emitido via plataforma Google Workspace</div>
+              <div style="display: table-cell; text-align: right; font-weight: 500;">Documento de acompanhamento</div>
             </div>
           </div>
         `;
