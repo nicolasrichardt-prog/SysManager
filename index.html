@@ -735,67 +735,111 @@
           </div>
         </div>
 
-        <!-- DIVISÃO EM 3 COLUNAS: 1) DEMANDAS | 2) DEMANDAS ATRASADAS | 3) DEMANDAS CONCLUÍDAS -->
+        <!-- DIVISÃO EM 4 COLUNAS: 1) EM ANDAMENTO | 2) NÃO INICIADAS | 3) ATRASADAS | 4) CONCLUÍDAS -->
         <!-- O align-items-start impede que as colunas fechadas estiquem verticalmente quando outra abrir -->
         <div class="row g-3 mb-4 align-items-start">
           
-          <!-- COLUNA 1: DEMANDAS (INICIA FECHADA) -->
-          <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaDemandas">
+          <!-- COLUNA 1: EM ANDAMENTO (INICIA FECHADA) -->
+          <div class="col-xxl-3 col-xl-3 col-lg-6 col-md-6 col-12" id="secaoListaEmAndamento">
             <div class="card card-custom p-3 shadow-sm border-top border-primary border-3">
               <div class="d-flex justify-content-between align-items-center mb-0">
-                <div style="cursor: pointer;" onclick="alternarLista('demandas')" title="Clique para abrir ou recolher a lista">
-                  <h6 class="fw-bold mb-0 d-flex align-items-center" style="font-size: 0.95rem;">
-                    <i class="fa-solid fa-bars-staggered me-2 text-primary"></i>Demandas
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2 font-monospace" id="badgeQtdDemandasAba">0</span>
+                <div style="cursor: pointer;" onclick="alternarLista('emAndamento')" title="Clique para abrir ou recolher a lista">
+                  <h6 class="fw-bold mb-0 d-flex align-items-center text-primary" style="font-size: 0.92rem;">
+                    <i class="fa-solid fa-spinner fa-spin me-2 text-primary"></i>Em Andamento
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2 font-monospace" id="badgeQtdEmAndamentoAba">0</span>
                   </h6>
-                  <p class="text-muted small mb-0" style="font-size: 0.75rem;">Em andamento na esteira e próximas na fila.</p>
+                  <p class="text-muted small mb-0" style="font-size: 0.73rem;">Demandas em produção na esteira.</p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                  <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-2 py-1 shadow-xs" onclick="abrirModalNovaDemanda()" style="font-size: 0.78rem;">
-                    <i class="fa-solid fa-plus me-1"></i> Nova Demanda
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle p-0" id="btnToggle_demandas" onclick="alternarLista('demandas')" title="Abrir lista de demandas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
-                    <i class="fa-solid fa-chevron-down" id="iconeToggle_demandas"></i>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small rounded-pill d-none d-sm-inline" style="font-size: 0.7rem;">
+                    <i class="fa-solid fa-bars-progress me-1"></i>Na Esteira
+                  </span>
+                  <button type="button" class="btn btn-sm btn-outline-primary rounded-circle p-0" id="btnToggle_emAndamento" onclick="alternarLista('emAndamento')" title="Abrir lista em andamento" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
+                    <i class="fa-solid fa-chevron-down" id="iconeToggle_emAndamento"></i>
                   </button>
                 </div>
               </div>
 
               <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
-              <div id="corpoLista_demandas" class="d-none mt-3">
-                <!-- BARRA DE PESQUISA COM LUPA -->
+              <div id="corpoLista_emAndamento" class="d-none mt-3">
+                <!-- BARRA DE PESQUISA COM LUPA (EM ANDAMENTO) -->
                 <div class="input-group input-group-sm mb-3 shadow-xs">
                   <span class="input-group-text bg-white border-end-0 text-primary">
                     <i class="fa-solid fa-magnifying-glass"></i>
                   </span>
-                  <input type="text" class="form-control border-start-0 ps-1" id="pesquisaDemandas" 
-                         placeholder="Pesquisar por demanda ou origem..." 
-                         oninput="filtrarDemandasAoDigitar()" autocomplete="off">
-                  <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaDemandas" 
-                          onclick="limparPesquisaDemandas()" title="Limpar pesquisa">
+                  <input type="text" class="form-control border-start-0 ps-1" id="pesquisaEmAndamento" 
+                         placeholder="Pesquisar demandas em andamento..." 
+                         oninput="filtrarEmAndamentoAoDigitar()" autocomplete="off">
+                  <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaEmAndamento" 
+                          onclick="limparPesquisaEmAndamento()" title="Limpar pesquisa">
                     <i class="fa-solid fa-xmark"></i>
                   </button>
                 </div>
 
-                <!-- CONTÊINER DA LISTA DE DEMANDAS -->
-                <div id="listaDemandas" style="max-height: 520px; overflow-y: auto;">
+                <!-- CONTÊINER DA LISTA DE EM ANDAMENTO -->
+                <div id="listaEmAndamento" style="max-height: 520px; overflow-y: auto;">
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- COLUNA 2: DEMANDAS ATRASADAS (INICIA FECHADA) -->
-          <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaAtrasadas">
+          <!-- COLUNA 2: NÃO INICIADAS / FILA (INICIA FECHADA) -->
+          <div class="col-xxl-3 col-xl-3 col-lg-6 col-md-6 col-12" id="secaoListaNaoIniciadas">
+            <div class="card card-custom p-3 shadow-sm border-top border-info border-3">
+              <div class="d-flex justify-content-between align-items-center mb-0">
+                <div style="cursor: pointer;" onclick="alternarLista('naoIniciadas')" title="Clique para abrir ou recolher a lista">
+                  <h6 class="fw-bold mb-0 d-flex align-items-center text-info-emphasis" style="font-size: 0.92rem;">
+                    <i class="fa-solid fa-hourglass-start me-2 text-info"></i>Não Iniciadas
+                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill ms-2 font-monospace" id="badgeQtdNaoIniciadasAba">0</span>
+                  </h6>
+                  <p class="text-muted small mb-0" style="font-size: 0.73rem;">Fila de espera aguardando início.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-2 py-1 shadow-xs" onclick="abrirModalNovaDemanda()" style="font-size: 0.75rem;">
+                    <i class="fa-solid fa-plus me-1"></i> Nova
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-info rounded-circle p-0" id="btnToggle_naoIniciadas" onclick="alternarLista('naoIniciadas')" title="Abrir lista não iniciadas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
+                    <i class="fa-solid fa-chevron-down" id="iconeToggle_naoIniciadas"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
+              <div id="corpoLista_naoIniciadas" class="d-none mt-3">
+                <!-- BARRA DE PESQUISA COM LUPA (NÃO INICIADAS) -->
+                <div class="input-group input-group-sm mb-3 shadow-xs">
+                  <span class="input-group-text bg-white border-end-0 text-info">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </span>
+                  <input type="text" class="form-control border-start-0 ps-1" id="pesquisaNaoIniciadas" 
+                         placeholder="Pesquisar demandas na fila..." 
+                         oninput="filtrarNaoIniciadasAoDigitar()" autocomplete="off">
+                  <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaNaoIniciadas" 
+                          onclick="limparPesquisaNaoIniciadas()" title="Limpar pesquisa">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+
+                <!-- CONTÊINER DA LISTA DE NÃO INICIADAS -->
+                <div id="listaNaoIniciadas" style="max-height: 520px; overflow-y: auto;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUNA 3: DEMANDAS ATRASADAS (INICIA FECHADA) -->
+          <div class="col-xxl-3 col-xl-3 col-lg-6 col-md-6 col-12" id="secaoListaAtrasadas">
             <div class="card card-custom p-3 shadow-sm border-top border-danger border-3">
               <div class="d-flex justify-content-between align-items-center mb-0">
                 <div style="cursor: pointer;" onclick="alternarLista('atrasadas')" title="Clique para abrir ou recolher a lista">
-                  <h6 class="fw-bold mb-0 d-flex align-items-center text-danger" style="font-size: 0.95rem;">
+                  <h6 class="fw-bold mb-0 d-flex align-items-center text-danger" style="font-size: 0.92rem;">
                     <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>Demandas Atrasadas
                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill ms-2 font-monospace" id="badgeQtdAtrasadasAba">0</span>
                   </h6>
-                  <p class="text-muted small mb-0" style="font-size: 0.75rem;">Tarefas que excederam a data de término prevista.</p>
+                  <p class="text-muted small mb-0" style="font-size: 0.73rem;">Tarefas que excederam a data de término prevista.</p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small rounded-pill d-none d-sm-inline" style="font-size: 0.72rem;">
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small rounded-pill d-none d-sm-inline" style="font-size: 0.7rem;">
                     <i class="fa-solid fa-clock-rotate-left me-1"></i>Atraso
                   </span>
                   <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-0" id="btnToggle_atrasadas" onclick="alternarLista('atrasadas')" title="Abrir lista de atrasadas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
@@ -827,19 +871,19 @@
             </div>
           </div>
 
-          <!-- COLUNA 3: DEMANDAS CONCLUÍDAS (INICIA FECHADA) -->
-          <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaConcluidas">
+          <!-- COLUNA 4: DEMANDAS CONCLUÍDAS (INICIA FECHADA) -->
+          <div class="col-xxl-3 col-xl-3 col-lg-6 col-md-6 col-12" id="secaoListaConcluidas">
             <div class="card card-custom p-3 shadow-sm border-top border-success border-3">
               <div class="d-flex justify-content-between align-items-center mb-0">
                 <div style="cursor: pointer;" onclick="alternarLista('concluidas')" title="Clique para abrir ou recolher a lista">
-                  <h6 class="fw-bold mb-0 d-flex align-items-center text-success" style="font-size: 0.95rem;">
+                  <h6 class="fw-bold mb-0 d-flex align-items-center text-success" style="font-size: 0.92rem;">
                     <i class="fa-solid fa-circle-check me-2 text-success"></i>Demandas Concluídas
                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-2 font-monospace" id="badgeQtdConcluidasAba">0</span>
                   </h6>
-                  <p class="text-muted small mb-0" style="font-size: 0.75rem;">Histórico de entregas finalizadas na esteira.</p>
+                  <p class="text-muted small mb-0" style="font-size: 0.73rem;">Histórico de entregas finalizadas na esteira.</p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small rounded-pill d-none d-sm-inline" style="font-size: 0.72rem;">
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small rounded-pill d-none d-sm-inline" style="font-size: 0.7rem;">
                     <i class="fa-solid fa-check-double me-1"></i>Finalizadas
                   </span>
                   <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0" id="btnToggle_concluidas" onclick="alternarLista('concluidas')" title="Abrir lista de concluídas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
@@ -2510,9 +2554,12 @@
         } else if (tipo === 'atrasadas') {
           abrirListaSeFechada('atrasadas');
           el = document.getElementById('secaoListaAtrasadas');
+        } else if (tipo === 'naoIniciadas') {
+          abrirListaSeFechada('naoIniciadas');
+          el = document.getElementById('secaoListaNaoIniciadas');
         } else {
-          abrirListaSeFechada('demandas');
-          el = document.getElementById('secaoListaDemandas');
+          abrirListaSeFechada('emAndamento');
+          el = document.getElementById('secaoListaEmAndamento');
         }
 
         if (el) {
@@ -2586,11 +2633,11 @@
     window.alternarFocoProducao = alternarFocoProducao;
 
     /**
-     * Filtro dinâmico por digitação na lista de Demandas
+     * Filtro dinâmico por digitação na lista de Em Andamento
      */
-    function filtrarDemandasAoDigitar() {
-      const input = document.getElementById('pesquisaDemandas') || document.getElementById('pesquisaDemandasFuturas');
-      const btnLimpar = document.getElementById('btnLimparPesquisaDemandas') || document.getElementById('btnLimparPesquisaFuturas');
+    function filtrarEmAndamentoAoDigitar() {
+      const input = document.getElementById('pesquisaEmAndamento');
+      const btnLimpar = document.getElementById('btnLimparPesquisaEmAndamento');
       if (input && btnLimpar) {
         if (input.value.trim().length > 0) {
           btnLimpar.classList.remove('d-none');
@@ -2600,16 +2647,48 @@
       }
       atualizarAbaEsteira();
     }
+    window.filtrarEmAndamentoAoDigitar = filtrarEmAndamentoAoDigitar;
 
-    function limparPesquisaDemandas() {
-      const input = document.getElementById('pesquisaDemandas') || document.getElementById('pesquisaDemandasFuturas');
-      const btnLimpar = document.getElementById('btnLimparPesquisaDemandas') || document.getElementById('btnLimparPesquisaFuturas');
+    function limparPesquisaEmAndamento() {
+      const input = document.getElementById('pesquisaEmAndamento');
+      const btnLimpar = document.getElementById('btnLimparPesquisaEmAndamento');
       if (input) input.value = '';
       if (btnLimpar) btnLimpar.classList.add('d-none');
       atualizarAbaEsteira();
     }
-    window.filtrarDemandasFuturasAoDigitar = filtrarDemandasAoDigitar;
-    window.limparPesquisaDemandasFuturas = limparPesquisaDemandas;
+    window.limparPesquisaEmAndamento = limparPesquisaEmAndamento;
+
+    /**
+     * Filtro dinâmico por digitação na lista de Não Iniciadas
+     */
+    function filtrarNaoIniciadasAoDigitar() {
+      const input = document.getElementById('pesquisaNaoIniciadas');
+      const btnLimpar = document.getElementById('btnLimparPesquisaNaoIniciadas');
+      if (input && btnLimpar) {
+        if (input.value.trim().length > 0) {
+          btnLimpar.classList.remove('d-none');
+        } else {
+          btnLimpar.classList.add('d-none');
+        }
+      }
+      atualizarAbaEsteira();
+    }
+    window.filtrarNaoIniciadasAoDigitar = filtrarNaoIniciadasAoDigitar;
+
+    function limparPesquisaNaoIniciadas() {
+      const input = document.getElementById('pesquisaNaoIniciadas');
+      const btnLimpar = document.getElementById('btnLimparPesquisaNaoIniciadas');
+      if (input) input.value = '';
+      if (btnLimpar) btnLimpar.classList.add('d-none');
+      atualizarAbaEsteira();
+    }
+    window.limparPesquisaNaoIniciadas = limparPesquisaNaoIniciadas;
+
+    // Aliases para retrocompatibilidade
+    window.filtrarDemandasAoDigitar = filtrarEmAndamentoAoDigitar;
+    window.limparPesquisaDemandas = limparPesquisaEmAndamento;
+    window.filtrarDemandasFuturasAoDigitar = filtrarNaoIniciadasAoDigitar;
+    window.limparPesquisaDemandasFuturas = limparPesquisaNaoIniciadas;
 
     /**
      * Filtro dinâmico por digitação na lista de Demandas Atrasadas
@@ -2694,9 +2773,12 @@
       const elAtrasadasQtd = document.getElementById('metricAtrasadasQtd');
       if (elAtrasadasQtd) elAtrasadasQtd.innerText = atrasadas.length;
 
-      // Badges das 3 Listas
-      const badgeDemandas = document.getElementById('badgeQtdDemandasAba') || document.getElementById('badgeQtdFuturasAba');
-      if (badgeDemandas) badgeDemandas.innerText = emAndamento.length + naoIniciadas.length;
+      // Badges das 4 Listas
+      const badgeEmAndamento = document.getElementById('badgeQtdEmAndamentoAba');
+      if (badgeEmAndamento) badgeEmAndamento.innerText = emAndamento.length;
+
+      const badgeNaoIniciadas = document.getElementById('badgeQtdNaoIniciadasAba');
+      if (badgeNaoIniciadas) badgeNaoIniciadas.innerText = naoIniciadas.length;
 
       const badgeAtrasadas = document.getElementById('badgeQtdAtrasadasAba');
       if (badgeAtrasadas) badgeAtrasadas.innerText = atrasadas.length;
@@ -2804,164 +2886,74 @@
       }
 
       // ==========================================
-      // 1. LISTA "DEMANDAS" (EM ANDAMENTO + NÃO INICIADAS)
+      // 1. LISTA "EM ANDAMENTO" (ESTEIRA ATIVA)
       // ==========================================
-      const divDemandas = document.getElementById('listaDemandas') || document.getElementById('listaFuturasDemandas');
-      const termoBusca = (document.getElementById('pesquisaDemandas') || document.getElementById('pesquisaDemandasFuturas') ? (document.getElementById('pesquisaDemandas') || document.getElementById('pesquisaDemandasFuturas')).value : '').trim().toLowerCase();
+      const divEmAndamento = document.getElementById('listaEmAndamento');
+      const termoBuscaEmAnd = (document.getElementById('pesquisaEmAndamento') ? document.getElementById('pesquisaEmAndamento').value : '').trim().toLowerCase();
 
-      const filtrarPorTermo = (lista) => {
-        if (!termoBusca) return lista;
-        return lista.filter(task => {
-          const tit = (task.titulo || '').toLowerCase();
-          const mod = (task.modulo || '').toLowerCase();
-          const desc = (task.descricao || '').toLowerCase();
-          const dev = (task.devNome || '').toLowerCase();
-          return tit.includes(termoBusca) || mod.includes(termoBusca) || desc.includes(termoBusca) || dev.includes(termoBusca);
-        });
-      };
+      const emAndamentoFiltradas = emAndamento.filter(task => {
+        if (!termoBuscaEmAnd) return true;
+        const tit = (task.titulo || '').toLowerCase();
+        const mod = (task.modulo || '').toLowerCase();
+        const desc = (task.descricao || '').toLowerCase();
+        const dev = (task.devNome || '').toLowerCase();
+        return tit.includes(termoBuscaEmAnd) || mod.includes(termoBuscaEmAnd) || desc.includes(termoBuscaEmAnd) || dev.includes(termoBuscaEmAnd);
+      });
 
-      const emAndamentoFiltradas = filtrarPorTermo(emAndamento);
-      const naoIniciadasFiltradas = filtrarPorTermo(naoIniciadas);
-      const totalDemandasExibidas = emAndamentoFiltradas.length + naoIniciadasFiltradas.length;
-
-      if (divDemandas) {
-        divDemandas.innerHTML = '';
-        if (emAndamento.length === 0 && naoIniciadas.length === 0) {
-          divDemandas.innerHTML = `
+      if (divEmAndamento) {
+        divEmAndamento.innerHTML = '';
+        if (emAndamento.length === 0) {
+          divEmAndamento.innerHTML = `
             <div class="text-center py-4 text-muted">
-              <i class="fa-solid fa-circle-check fs-2 text-success mb-2"></i>
-              <p class="mb-0 small">Nenhuma demanda pendente ou em andamento. Esteira livre!</p>
+              <i class="fa-solid fa-spinner fs-2 text-primary opacity-50 mb-2"></i>
+              <p class="mb-0 small fw-semibold text-primary">Nenhuma demanda em produção no momento.</p>
+              <small class="text-muted">Inicie uma demanda da fila para mover para a esteira.</small>
             </div>
           `;
-        } else if (totalDemandasExibidas === 0) {
-          divDemandas.innerHTML = `
+        } else if (emAndamentoFiltradas.length === 0) {
+          divEmAndamento.innerHTML = `
             <div class="text-center py-4 text-muted">
               <i class="fa-solid fa-magnifying-glass fs-2 text-secondary opacity-50 mb-2"></i>
-              <p class="mb-1 fw-semibold small">Nenhuma demanda encontrada para "${termoBusca}".</p>
-              <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-1" onclick="limparPesquisaDemandas()">
+              <p class="mb-1 fw-semibold small">Nenhuma demanda encontrada para "${termoBuscaEmAnd}".</p>
+              <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-1" onclick="limparPesquisaEmAndamento()">
                 <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
               </button>
             </div>
           `;
         } else {
-          // Renderiza Primeiro as Em Andamento
-          if (emAndamentoFiltradas.length > 0) {
-            const headerEmAnd = document.createElement('div');
-            headerEmAnd.className = 'd-flex align-items-center justify-content-between mb-2 pb-1 border-bottom';
-            headerEmAnd.innerHTML = `
-              <span class="small fw-bold text-primary text-uppercase" style="letter-spacing: 0.5px; font-size: 0.72rem;">
-                <i class="fa-solid fa-spinner fa-spin me-1"></i> Em Andamento (${emAndamentoFiltradas.length})
-              </span>
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle small font-monospace">Em Produção</span>
-            `;
-            divDemandas.appendChild(headerEmAnd);
+          emAndamentoFiltradas.forEach(task => {
+            const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+            const diasProd = calcularDiasEmProducao(task.dataInicio, task.dataConclusao, task.status, true);
 
-            emAndamentoFiltradas.forEach(task => {
-              const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
-              const diasProd = calcularDiasEmProducao(task.dataInicio, task.dataConclusao, task.status, true);
-
-              const item = document.createElement('div');
-              item.className = 'esteira-item border-start border-primary border-4 bg-primary bg-opacity-10 mb-2 p-3 rounded-3 shadow-xs';
-              item.innerHTML = `
-                <div class="d-flex align-items-start gap-2">
-                  <div class="badge bg-primary text-white p-2 border mt-1 d-none d-sm-block">
-                    <i class="fa-solid fa-bars-progress"></i>
-                  </div>
-                  <div class="flex-grow-1" style="min-width: 0;">
-                    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                      <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
-                      <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
-                    </div>
-                    ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
-                    <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
-                      <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
-                      <span class="badge bg-primary text-white"><i class="fa-solid fa-spinner fa-spin me-1"></i>Em Andamento</span>
-                      ${task.ativo ? '<span class="badge bg-success-subtle text-success border border-success-subtle small fw-bold"><i class="fa-solid fa-crosshairs me-1"></i>Em Foco no Painel</span>' : ''}
-                      ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar-check text-primary me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
-                      <span class="small text-muted"><i class="fa-solid fa-stopwatch me-1"></i>${diasProd} dia(s) em prod.</span>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
-                      <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold py-1 px-3 shadow-xs" onclick="finalizarDemandaPorId('${task.id}')">
-                        <i class="fa-solid fa-circle-check me-1"></i> Concluir
-                      </button>
-                      ${!task.ativo ? `
-                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-2 py-1" title="Colocar em foco no painel superior" onclick="alternarFocoProducao('${task.id}')">
-                          <i class="fa-solid fa-crosshairs me-1"></i> Focar no Painel
-                        </button>
-                      ` : ''}
-                      ${podeEditarOuExcluir ? `
-                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
-                          <i class="fa-solid fa-pen-to-square me-1"></i> Editar
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
-                          <i class="fa-solid fa-trash-can me-1"></i> Excluir
-                        </button>
-                      ` : ''}
-                    </div>
-                  </div>
+            const item = document.createElement('div');
+            item.className = 'esteira-item border-start border-primary border-4 bg-primary bg-opacity-10 mb-2 p-3 rounded-3 shadow-xs';
+            item.innerHTML = `
+              <div class="d-flex align-items-start gap-2">
+                <div class="badge bg-primary text-white p-2 border mt-1 d-none d-sm-block">
+                  <i class="fa-solid fa-bars-progress"></i>
                 </div>
-              `;
-              divDemandas.appendChild(item);
-            });
-          }
-
-          // Renderiza Seguidamente as Não Iniciadas
-          if (naoIniciadasFiltradas.length > 0) {
-            const headerNaoIni = document.createElement('div');
-            headerNaoIni.className = `d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom ${emAndamentoFiltradas.length > 0 ? 'mt-3' : ''}`;
-            headerNaoIni.innerHTML = `
-              <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px; font-size: 0.72rem;">
-                <i class="fa-solid fa-list-ol me-1"></i> Não Iniciadas (${naoIniciadasFiltradas.length})
-              </span>
-              <span class="badge bg-light text-secondary border small font-monospace">Próximas na Fila</span>
-            `;
-            divDemandas.appendChild(headerNaoIni);
-
-            naoIniciadasFiltradas.forEach((task) => {
-              const realIdx = naoIniciadas.findIndex(t => t.id === task.id);
-              const isPrimeira = realIdx === 0;
-              const isUltima = realIdx === naoIniciadas.length - 1;
-              const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
-
-              const item = document.createElement('div');
-              item.className = 'esteira-item d-flex align-items-center gap-3 mb-2';
-              item.innerHTML = `
-                <!-- Controles de Reordenação: Subir / Descer Prioridade -->
-                <div class="d-flex flex-column align-items-center justify-content-center me-1" style="min-width: 32px;">
-                  <button type="button" class="btn-reorder mb-1" title="Subir na lista (Aumentar prioridade)" onclick="moverDemandaFutura('${task.id}', -1)" ${isPrimeira ? 'disabled' : ''}>
-                    <i class="fa-solid fa-chevron-up"></i>
-                  </button>
-                  <span class="badge bg-light text-secondary border font-monospace my-1" style="font-size: 0.68rem; padding: 2px 5px;" title="Posição na fila">
-                    #${realIdx + 1}
-                  </span>
-                  <button type="button" class="btn-reorder mt-1" title="Descer na lista (Diminuir prioridade)" onclick="moverDemandaFutura('${task.id}', 1)" ${isUltima ? 'disabled' : ''}>
-                    <i class="fa-solid fa-chevron-down"></i>
-                  </button>
-                </div>
-
-                <!-- Conteúdo da Demanda Não Iniciada -->
                 <div class="flex-grow-1" style="min-width: 0;">
-                  <div class="d-flex align-items-start gap-2">
-                    <div class="badge bg-light text-dark p-2 border mt-1 d-none d-sm-block">
-                      <i class="fa-solid fa-hourglass-start me-1 text-primary"></i> ${task.diasEstimados ? `${task.diasEstimados}d` : 'Fila'}
-                    </div>
-                    <div class="flex-grow-1" style="min-width: 0;">
-                      <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                        <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
-                        <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
-                      </div>
-                      ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
-                      <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
-                        <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
-                        <span class="badge bg-secondary-subtle text-secondary border font-monospace" style="font-size: 0.72rem;"><i class="fa-regular fa-circle-dot me-1 small"></i>Não Iniciada</span>
-                        ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
-                      </div>
-                    </div>
+                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                    <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
+                  </div>
+                  ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
+                  <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                    <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
+                    <span class="badge bg-primary text-white"><i class="fa-solid fa-spinner fa-spin me-1"></i>Em Andamento</span>
+                    ${task.ativo ? '<span class="badge bg-success-subtle text-success border border-success-subtle small fw-bold"><i class="fa-solid fa-crosshairs me-1"></i>Em Foco no Painel</span>' : ''}
+                    ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar-check text-primary me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
+                    <span class="small text-muted"><i class="fa-solid fa-stopwatch me-1"></i>${diasProd} dia(s) em prod.</span>
                   </div>
                   <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
-                    <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold py-1 px-3 shadow-sm" onclick="abrirModalIniciarDemanda('${task.id}')">
-                      <i class="fa-solid fa-play me-1"></i> Iniciar Agora
+                    <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold py-1 px-3 shadow-xs" onclick="finalizarDemandaPorId('${task.id}')">
+                      <i class="fa-solid fa-circle-check me-1"></i> Concluir
                     </button>
+                    ${!task.ativo ? `
+                      <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-2 py-1" title="Colocar em foco no painel superior" onclick="alternarFocoProducao('${task.id}')">
+                        <i class="fa-solid fa-crosshairs me-1"></i> Focar no Painel
+                      </button>
+                    ` : ''}
                     ${podeEditarOuExcluir ? `
                       <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
                         <i class="fa-solid fa-pen-to-square me-1"></i> Editar
@@ -2972,10 +2964,109 @@
                     ` : ''}
                   </div>
                 </div>
-              `;
-              divDemandas.appendChild(item);
-            });
-          }
+              </div>
+            `;
+            divEmAndamento.appendChild(item);
+          });
+        }
+      }
+
+      // ==========================================
+      // 2. LISTA "NÃO INICIADAS" (FILA / BACKLOG)
+      // ==========================================
+      const divNaoIniciadas = document.getElementById('listaNaoIniciadas');
+      const termoBuscaNaoIni = (document.getElementById('pesquisaNaoIniciadas') ? document.getElementById('pesquisaNaoIniciadas').value : '').trim().toLowerCase();
+
+      const naoIniciadasFiltradas = naoIniciadas.filter(task => {
+        if (!termoBuscaNaoIni) return true;
+        const tit = (task.titulo || '').toLowerCase();
+        const mod = (task.modulo || '').toLowerCase();
+        const desc = (task.descricao || '').toLowerCase();
+        const dev = (task.devNome || '').toLowerCase();
+        return tit.includes(termoBuscaNaoIni) || mod.includes(termoBuscaNaoIni) || desc.includes(termoBuscaNaoIni) || dev.includes(termoBuscaNaoIni);
+      });
+
+      if (divNaoIniciadas) {
+        divNaoIniciadas.innerHTML = '';
+        if (naoIniciadas.length === 0) {
+          divNaoIniciadas.innerHTML = `
+            <div class="text-center py-4 text-muted">
+              <i class="fa-solid fa-clipboard-check fs-2 text-info opacity-50 mb-2"></i>
+              <p class="mb-0 small fw-semibold text-info-emphasis">Nenhuma demanda na fila de espera.</p>
+              <button type="button" class="btn btn-outline-info btn-sm rounded-pill mt-2" onclick="abrirModalNovaDemanda()">
+                <i class="fa-solid fa-plus me-1"></i> Adicionar Nova Demanda
+              </button>
+            </div>
+          `;
+        } else if (naoIniciadasFiltradas.length === 0) {
+          divNaoIniciadas.innerHTML = `
+            <div class="text-center py-4 text-muted">
+              <i class="fa-solid fa-magnifying-glass fs-2 text-secondary opacity-50 mb-2"></i>
+              <p class="mb-1 fw-semibold small">Nenhuma demanda encontrada para "${termoBuscaNaoIni}".</p>
+              <button type="button" class="btn btn-outline-info btn-sm rounded-pill mt-1" onclick="limparPesquisaNaoIniciadas()">
+                <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
+              </button>
+            </div>
+          `;
+        } else {
+          naoIniciadasFiltradas.forEach((task) => {
+            const realIdx = naoIniciadas.findIndex(t => t.id === task.id);
+            const isPrimeira = realIdx === 0;
+            const isUltima = realIdx === naoIniciadas.length - 1;
+            const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+
+            const item = document.createElement('div');
+            item.className = 'esteira-item d-flex align-items-center gap-3 mb-2';
+            item.innerHTML = `
+              <!-- Controles de Reordenação: Subir / Descer Prioridade -->
+              <div class="d-flex flex-column align-items-center justify-content-center me-1" style="min-width: 32px;">
+                <button type="button" class="btn-reorder mb-1" title="Subir na lista (Aumentar prioridade)" onclick="moverDemandaFutura('${task.id}', -1)" ${isPrimeira ? 'disabled' : ''}>
+                  <i class="fa-solid fa-chevron-up"></i>
+                </button>
+                <span class="badge bg-light text-secondary border font-monospace my-1" style="font-size: 0.68rem; padding: 2px 5px;" title="Posição na fila">
+                  #${realIdx + 1}
+                </span>
+                <button type="button" class="btn-reorder mt-1" title="Descer na lista (Diminuir prioridade)" onclick="moverDemandaFutura('${task.id}', 1)" ${isUltima ? 'disabled' : ''}>
+                  <i class="fa-solid fa-chevron-down"></i>
+                </button>
+              </div>
+
+              <!-- Conteúdo da Demanda Não Iniciada -->
+              <div class="flex-grow-1" style="min-width: 0;">
+                <div class="d-flex align-items-start gap-2">
+                  <div class="badge bg-light text-dark p-2 border mt-1 d-none d-sm-block">
+                    <i class="fa-solid fa-hourglass-start me-1 text-info"></i> ${task.diasEstimados ? `${task.diasEstimados}d` : 'Fila'}
+                  </div>
+                  <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                      <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
+                      <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
+                    </div>
+                    ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
+                    <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
+                      <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
+                      <span class="badge bg-secondary-subtle text-secondary border font-monospace" style="font-size: 0.72rem;"><i class="fa-regular fa-circle-dot me-1 small"></i>Não Iniciada</span>
+                      ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
+                  <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold py-1 px-3 shadow-sm" onclick="abrirModalIniciarDemanda('${task.id}')">
+                    <i class="fa-solid fa-play me-1"></i> Iniciar Agora
+                  </button>
+                  ${podeEditarOuExcluir ? `
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
+                      <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
+                      <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+            divNaoIniciadas.appendChild(item);
+          });
         }
       }
 
