@@ -877,20 +877,71 @@
                 <option value="TODOS">Todos os Desenvolvedores</option>
               </select>
             </div>
-            <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="col-xl-1 col-md-4 col-sm-6">
               <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-cube me-1 text-primary"></i>Módulo:</label>
               <select class="form-select form-select-sm" id="filtroRelatorioModulo" onchange="atualizarRelatorioMensal()">
                 <option value="TODOS" selected>Todos os Módulos</option>
               </select>
             </div>
-            <div class="col-xl-1 col-md-4 col-sm-6">
+            <div class="col-xl-2 col-md-4 col-sm-6 position-relative">
               <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-list-check me-1 text-primary"></i>Status:</label>
-              <select class="form-select form-select-sm" id="filtroRelatorioStatus" onchange="atualizarRelatorioMensal()">
-                <option value="TODOS" selected>Todos</option>
-                <option value="Em Andamento">Em Andamento</option>
-                <option value="Atrasada">Atrasada</option>
-                <option value="Concluída">Concluída</option>
-              </select>
+              <div class="dropdown" id="dropdownFiltroStatusContainer">
+                <button class="btn btn-sm btn-white border dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center bg-white shadow-sm" type="button" id="btnFiltroRelatorioStatus" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="min-height: 31px; font-size: 0.8125rem;">
+                  <span class="text-truncate me-1" id="lblFiltroRelatorioStatus">Todos os Status</span>
+                </button>
+                <ul class="dropdown-menu shadow-lg p-2 border rounded-3" aria-labelledby="btnFiltroRelatorioStatus" style="min-width: 240px; font-size: 0.84rem; z-index: 1060;">
+                  <li class="px-2 py-1">
+                    <div class="form-check">
+                      <input class="form-check-input cursor-pointer" type="checkbox" id="chkRelStatusTodos" checked onchange="aoAlternarTodosStatusRelatorio(this)">
+                      <label class="form-check-label fw-bold text-dark user-select-none cursor-pointer" for="chkRelStatusTodos">
+                        Todos os Status
+                      </label>
+                    </div>
+                  </li>
+                  <li><hr class="dropdown-divider my-1"></li>
+                  <li class="px-2 py-1">
+                    <div class="form-check">
+                      <input class="form-check-input chk-rel-status cursor-pointer" type="checkbox" id="chkRelStatusNaoIniciada" value="Não Iniciada" checked onchange="aoMudarCheckboxStatusRelatorio()">
+                      <label class="form-check-label text-secondary fw-semibold user-select-none cursor-pointer d-flex align-items-center gap-1" for="chkRelStatusNaoIniciada">
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-1 py-0" style="font-size: 0.65rem;">●</span> Não Iniciadas
+                      </label>
+                    </div>
+                  </li>
+                  <li class="px-2 py-1">
+                    <div class="form-check">
+                      <input class="form-check-input chk-rel-status cursor-pointer" type="checkbox" id="chkRelStatusEmAndamento" value="Em Andamento" checked onchange="aoMudarCheckboxStatusRelatorio()">
+                      <label class="form-check-label text-primary fw-semibold user-select-none cursor-pointer d-flex align-items-center gap-1" for="chkRelStatusEmAndamento">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-1 py-0" style="font-size: 0.65rem;">●</span> Em Andamento
+                      </label>
+                    </div>
+                  </li>
+                  <li class="px-2 py-1">
+                    <div class="form-check">
+                      <input class="form-check-input chk-rel-status cursor-pointer" type="checkbox" id="chkRelStatusAtrasada" value="Atrasada" checked onchange="aoMudarCheckboxStatusRelatorio()">
+                      <label class="form-check-label text-danger fw-semibold user-select-none cursor-pointer d-flex align-items-center gap-1" for="chkRelStatusAtrasada">
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-1 py-0" style="font-size: 0.65rem;">●</span> Atrasadas
+                      </label>
+                    </div>
+                  </li>
+                  <li class="px-2 py-1">
+                    <div class="form-check">
+                      <input class="form-check-input chk-rel-status cursor-pointer" type="checkbox" id="chkRelStatusConcluida" value="Concluída" checked onchange="aoMudarCheckboxStatusRelatorio()">
+                      <label class="form-check-label text-success fw-semibold user-select-none cursor-pointer d-flex align-items-center gap-1" for="chkRelStatusConcluida">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-1 py-0" style="font-size: 0.65rem;">●</span> Concluídas
+                      </label>
+                    </div>
+                  </li>
+                  <li><hr class="dropdown-divider my-1"></li>
+                  <li class="px-2 pt-1 pb-0 d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn btn-link btn-xs text-decoration-none p-0 text-muted" style="font-size: 0.74rem;" onclick="selecionarSomenteStatusRelatorio(['Em Andamento', 'Atrasada'])">
+                      <i class="fa-solid fa-bolt me-1 text-warning"></i>Apenas Ativas
+                    </button>
+                    <button type="button" class="btn btn-link btn-xs text-decoration-none p-0 text-primary fw-semibold" style="font-size: 0.74rem;" onclick="selecionarTodosStatusRelatorio(true)">
+                      Marcar Todos
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </div>
             <div class="col-xl-2 col-md-4 col-sm-12 d-flex gap-2">
               <button type="button" class="btn btn-primary btn-sm flex-fill fw-semibold py-2 rounded-3 shadow-sm" onclick="atualizarRelatorioMensalComFeedback()">
@@ -1229,39 +1280,11 @@
             <input type="text" class="form-control" id="taskTitulo" placeholder="Ex: Criar tela de login com OAuth">
             <input type="hidden" id="taskDescricao" value="">
           </div>
-          <!-- CALENDÁRIO: DATA DE INÍCIO E TÉRMINO DA DEMANDA -->
-          <div class="row g-2 mb-3">
-            <div class="col-md-6">
-              <label class="form-label small fw-bold text-dark">
-                <i class="fa-regular fa-calendar text-primary me-1"></i> Data de Início:
-              </label>
-              <input type="date" class="form-control" id="taskDataInicio" onchange="aoMudarDatasNovaDemanda()">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label small fw-bold text-dark">
-                <i class="fa-regular fa-calendar-check text-primary me-1"></i> Data de Término / Prazo:
-              </label>
-              <input type="date" class="form-control" id="taskDataPrazo" onchange="aoMudarDatasNovaDemanda()">
-            </div>
-            <div class="col-12 mt-1">
-              <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded-3 border">
-                <small class="text-muted mb-0" id="taskDiasCalculadosDica">
-                  <i class="fa-solid fa-clock text-primary me-1"></i> Duração estimada: <strong id="lblDuracaoDias" class="text-dark">2 dias</strong>
-                </small>
-                <div class="btn-group btn-group-sm" role="group">
-                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapido(1)">+1 dia</button>
-                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapido(3)">+3 dias</button>
-                  <button type="button" class="btn btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="ajustarPrazoRapido(7)">+7 dias</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div class="mb-3">
             <label class="form-label small fw-bold text-dark">
               <i class="fa-solid fa-flag text-primary me-1"></i> Urgência / Prioridade:
             </label>
-            <select class="form-select" id="taskUrgencia" onchange="aoMudarUrgenciaNovaDemanda()">
+            <select class="form-select" id="taskUrgencia">
               <option value="Baixa">🟢 Baixa</option>
               <option value="Media" selected>🟡 Média</option>
               <option value="Alta">🟠 Alta</option>
@@ -1273,11 +1296,13 @@
             <select class="form-select" id="taskDevSelect">
             </select>
           </div>
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="taskAtivaAgora">
-            <label class="form-check-label small" for="taskAtivaAgora">
-              Colocar imediatamente como <strong>Demanda Ativa na Esteira</strong>
-            </label>
+          <div class="p-3 bg-light rounded-3 border">
+            <div class="d-flex align-items-center gap-2 text-muted small">
+              <i class="fa-solid fa-circle-info text-primary fs-6"></i>
+              <div>
+                A demanda será cadastrada com status <strong>Não Iniciada</strong> na fila. O prazo de conclusão será solicitado no momento em que ela for colocada na esteira de produção.
+              </div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -1286,6 +1311,78 @@
             <i class="fa-solid fa-plus me-1"></i> Cadastrar Demanda
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: COLOCAR DEMANDA NA ESTEIRA (Define o prazo de conclusão) -->
+  <div class="modal fade" id="modalIniciarDemandaNaEsteira" tabindex="-1" aria-labelledby="modalIniciarDemandaNaEsteiraLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+        <div class="modal-header bg-dark text-white p-3" style="background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%) !important;">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-warning text-dark fw-bold px-2 py-1"><i class="fa-solid fa-play"></i></span>
+            <h5 class="modal-title fw-bold fs-6 mb-0 text-white" id="modalIniciarDemandaNaEsteiraLabel">
+              Colocar Demanda na Esteira
+            </h5>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="iniciarDemandaTarefaId">
+
+          <!-- Card resumo da demanda -->
+          <div class="p-3 rounded-3 bg-light border mb-3">
+            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+              <span class="badge bg-secondary-subtle text-secondary border font-monospace small" id="iniciarDemandaBadgeModulo">SIOPLEEx</span>
+              <span class="badge badge-media" id="iniciarDemandaBadgeUrgencia">Média</span>
+            </div>
+            <h6 class="fw-bold text-dark mb-1" id="iniciarDemandaTitulo">-</h6>
+            <div class="small text-muted d-flex align-items-center gap-1">
+              <i class="fa-solid fa-user text-primary"></i> <span id="iniciarDemandaDevNome">Desenvolvedor</span>
+            </div>
+          </div>
+
+          <!-- Pergunta de Prazo para conclusão -->
+          <div class="mb-3">
+            <label class="form-label fw-bold text-dark d-flex align-items-center justify-content-between">
+              <span><i class="fa-regular fa-calendar-check text-primary me-1"></i> Quando esta demanda será concluída?</span>
+              <span class="text-danger small">* Obrigatório</span>
+            </label>
+            <input type="date" class="form-control form-control-lg fw-semibold" id="iniciarDemandaDataPrazo" onchange="aoMudarDataPrazoIniciarDemanda()">
+            <div class="form-text text-muted" style="font-size: 0.74rem;">
+              <i class="fa-solid fa-circle-info text-primary me-1"></i> Ao entrar na esteira, o status passa para <strong>Em Andamento</strong>.
+            </div>
+          </div>
+
+          <!-- Atalhos rápidos de prazo -->
+          <div class="mb-3">
+            <label class="form-label small text-muted mb-1">Ajuste rápido de dias de produção:</label>
+            <div class="d-flex flex-wrap gap-1">
+              <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 rounded-2" onclick="definirPrazoRapidoIniciarDemanda(1)">+1 dia</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 rounded-2" onclick="definirPrazoRapidoIniciarDemanda(2)">+2 dias</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 rounded-2" onclick="definirPrazoRapidoIniciarDemanda(3)">+3 dias</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 rounded-2" onclick="definirPrazoRapidoIniciarDemanda(5)">+5 dias</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 rounded-2" onclick="definirPrazoRapidoIniciarDemanda(7)">+7 dias</button>
+              <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 rounded-2" onclick="definirPrazoRapidoIniciarDemanda(10)">+10 dias</button>
+            </div>
+          </div>
+
+          <!-- Dica de cálculo -->
+          <div class="p-2 rounded bg-primary-subtle border border-primary-subtle d-flex align-items-center justify-content-between small text-primary fw-semibold">
+            <span><i class="fa-solid fa-clock me-1"></i> Prazo de Produção:</span>
+            <span id="lblIniciarDemandaDuracao" class="fs-6 fw-bold">2 dias</span>
+          </div>
+        </div>
+        <div class="modal-footer bg-light py-2 px-3">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary fw-bold px-4" id="btnConfirmarIniciarEsteira" onclick="confirmarIniciarDemandaNaEsteira()">
+            <i class="fa-solid fa-rocket me-1"></i> Iniciar na Esteira
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
       </div>
     </div>
   </div>
@@ -1462,7 +1559,7 @@
         </div>
         <div class="modal-body p-3 bg-secondary-subtle">
           <div class="d-flex justify-content-center">
-            <div id="corpoVisualizacaoPdf" class="bg-white shadow p-4 rounded" style="width: 100%; max-width: 1060px; font-family: Arial, Helvetica, sans-serif; color: #1e293b; box-sizing: border-box;">
+            <div id="corpoVisualizacaoPdf" class="bg-white shadow p-4 rounded" style="width: 100%; max-width: 1060px; font-family: 'Plus Jakarta Sans', Arial, Helvetica, sans-serif; -webkit-font-smoothing: antialiased; color: #0f172a; box-sizing: border-box;">
               <!-- Conteúdo renderizado dinamicamente -->
             </div>
           </div>
@@ -1917,23 +2014,8 @@
       const descInput = document.getElementById('taskDescricao');
       if (descInput) descInput.value = '';
 
-      // Calendário de Início e Término
-      const dtInicioInput = document.getElementById('taskDataInicio');
-      const dtPrazoInput = document.getElementById('taskDataPrazo');
-      const hoje = new Date();
-      const prazoPadrao = new Date();
-      prazoPadrao.setDate(hoje.getDate() + 2);
-
-      if (dtInicioInput) dtInicioInput.value = formatarDataIso(hoje);
-      if (dtPrazoInput) dtPrazoInput.value = formatarDataIso(prazoPadrao);
-      atualizarDicaDuracaoModal();
-
       const urgSelect = document.getElementById('taskUrgencia');
       if (urgSelect) urgSelect.value = 'Media';
-
-      // Checkbox de colocar na esteira SEMPRE false por padrão
-      const ativaCheckbox = document.getElementById('taskAtivaAgora');
-      if (ativaCheckbox) ativaCheckbox.checked = false;
 
       // Pré-seleciona o desenvolvedor logado automaticamente
       const devSelect = document.getElementById('taskDevSelect');
@@ -2008,6 +2090,7 @@
       // 1. Inicializa tooltips Bootstrap e módulos
       inicializarTooltips();
       popularModulosUI();
+      atualizarLabelStatusRelatorio();
 
       // Ajusta ano padrão para o ano corrente se necessário
       const inputAno = document.getElementById('filtroRelatorioAno');
@@ -2239,6 +2322,9 @@
       // Aplica edições locais preservadas (garante que F5 NUNCA reverta uma edição)
       aplicarEdicoesLocais(appState.tarefas);
 
+      // Normaliza e verifica status das tarefas segundo as 4 regras oficiais
+      verificarEAtualizarStatusTarefas();
+
       // Normaliza perfis da equipe: apenas 'Desenvolvedor' e 'Gerente de Projetos' (onde Gerente de Projetos também desenvolve)
       appState.usuarios.forEach(u => {
         const cLower = (u.cargo || '').toLowerCase();
@@ -2360,6 +2446,7 @@
     }
 
     function atualizarAbaEsteira() {
+      verificarEAtualizarStatusTarefas();
       const devId = appState.currentUser ? appState.currentUser.id : null;
       if (!devId) return;
 
@@ -2528,7 +2615,7 @@
               <div class="flex-grow-1" style="min-width: 0;">
                 <div class="d-flex align-items-start gap-2">
                   <div class="badge bg-light text-dark p-2 border mt-1 d-none d-sm-block">
-                    <i class="fa-solid fa-clock me-1 text-primary"></i> ${task.diasEstimados}d
+                    <i class="fa-solid fa-hourglass-start me-1 text-primary"></i> ${task.diasEstimados ? `${task.diasEstimados}d` : 'Fila'}
                   </div>
                   <div class="flex-grow-1" style="min-width: 0;">
                     <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
@@ -2537,15 +2624,15 @@
                     </div>
                     ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
                     <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
-                      <span class="badge badge-${task.urgencia.toLowerCase()}">${task.urgencia}</span>
-                      <span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>
-                      ${task.status === 'Atrasada' ? '<span class="badge bg-danger">Atrasada</span>' : '<span class="badge bg-success-subtle text-success">Em Dia</span>'}
+                      <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
+                      <span class="badge bg-secondary-subtle text-secondary border font-monospace" style="font-size: 0.72rem;"><i class="fa-regular fa-circle-dot me-1 small"></i>${task.status || 'Não Iniciada'}</span>
+                      ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
                     </div>
                   </div>
                 </div>
                 <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
-                  <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold py-1 px-3" onclick="selecionarComoAtivaInstantanea('${task.id}')">
-                    <i class="fa-solid fa-bolt me-1 text-warning"></i> Iniciar Agora
+                  <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold py-1 px-3 shadow-sm" onclick="abrirModalIniciarDemanda('${task.id}')">
+                    <i class="fa-solid fa-play me-1"></i> Iniciar Agora
                   </button>
                   ${podeEditarOuExcluir ? `
                     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
@@ -2620,27 +2707,165 @@
       }
     }
 
-    function selecionarComoAtivaInstantanea(tarefaId) {
-      const devId = appState.currentUser.id;
-      const hojeIso = formatarDataIso(new Date());
+    let tarefaSendoIniciadaId = null;
 
-      appState.tarefas.forEach(t => {
-        if (t.devId === devId && t.status !== 'Concluída') {
-          if (t.id === tarefaId) {
-            t.ativo = true;
-            t.dataInicio = hojeIso;
-            t.diasTrabalhados = 1;
-          } else {
-            t.ativo = false;
-          }
+    /**
+     * 2º Quando a Demanda é colocada na Esteira, daí sim é perguntado quando ela será concluída!
+     */
+    function abrirModalIniciarDemanda(tarefaId) {
+      const task = appState.tarefas.find(t => t.id === tarefaId);
+      if (!task) return;
+
+      tarefaSendoIniciadaId = tarefaId;
+      const elId = document.getElementById('iniciarDemandaTarefaId');
+      if (elId) elId.value = tarefaId;
+
+      const elTit = document.getElementById('iniciarDemandaTitulo');
+      if (elTit) elTit.innerText = task.titulo;
+
+      const elDev = document.getElementById('iniciarDemandaDevNome');
+      if (elDev) elDev.innerText = limparNomeDev(task.devNome);
+
+      const badgeMod = document.getElementById('iniciarDemandaBadgeModulo');
+      if (badgeMod) {
+        const isExt = (task.demandaExterna === true || task.demandaExterna === 'true' || task.modulo === 'Demanda Externa');
+        badgeMod.innerText = isExt ? 'Demanda Externa' : (task.modulo || 'SIOPLEEx');
+        badgeMod.className = isExt 
+          ? 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle font-monospace small'
+          : 'badge bg-secondary-subtle text-secondary border font-monospace small';
+      }
+
+      const badgeUrg = document.getElementById('iniciarDemandaBadgeUrgencia');
+      if (badgeUrg) {
+        const urg = task.urgencia || 'Media';
+        badgeUrg.innerText = urg;
+        badgeUrg.className = `badge badge-${urg.toLowerCase()}`;
+      }
+
+      // Sugere prazo padrão: +2 dias a partir de hoje (ou prazo anterior se já existia)
+      const dtPrazoInput = document.getElementById('iniciarDemandaDataPrazo');
+      const hoje = new Date();
+      let prazoInicial = new Date();
+      prazoInicial.setDate(hoje.getDate() + 2);
+
+      if (task.dataPrazo) {
+        const pParsed = parseDataLocal(task.dataPrazo);
+        if (pParsed.getTime() >= hoje.getTime()) {
+          prazoInicial = pParsed;
+        }
+      }
+
+      if (dtPrazoInput) {
+        dtPrazoInput.min = formatarDataIso(hoje);
+        dtPrazoInput.value = formatarDataIso(prazoInicial);
+      }
+      aoMudarDataPrazoIniciarDemanda();
+
+      const modalEl = document.getElementById('modalIniciarDemandaNaEsteira');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+    }
+
+    function definirPrazoRapidoIniciarDemanda(diasAdicionais) {
+      const hoje = new Date();
+      const novaData = new Date();
+      novaData.setDate(hoje.getDate() + diasAdicionais);
+      const dtPrazoInput = document.getElementById('iniciarDemandaDataPrazo');
+      if (dtPrazoInput) {
+        dtPrazoInput.value = formatarDataIso(novaData);
+        aoMudarDataPrazoIniciarDemanda();
+      }
+    }
+
+    function aoMudarDataPrazoIniciarDemanda() {
+      const dtPrazoInput = document.getElementById('iniciarDemandaDataPrazo');
+      const lbl = document.getElementById('lblIniciarDemandaDuracao');
+      if (!dtPrazoInput || !lbl) return;
+
+      const val = dtPrazoInput.value;
+      if (!val) {
+        lbl.innerText = 'Selecione uma data de conclusão';
+        return;
+      }
+
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const dPrazo = parseDataLocal(val);
+      dPrazo.setHours(0, 0, 0, 0);
+
+      const diffMs = dPrazo.getTime() - hoje.getTime();
+      const diffDias = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+      lbl.innerText = `${diffDias} dia(s) de prazo (conclusão em ${formatarData(val)})`;
+    }
+
+    /**
+     * 5º Ao entrar a demanda na esteira de produção, ela se torna "Em andamento" e se dá o prazo para conclusão
+     */
+    function confirmarIniciarDemandaNaEsteira() {
+      const dtPrazoInput = document.getElementById('iniciarDemandaDataPrazo');
+      const prazoVal = dtPrazoInput ? dtPrazoInput.value : '';
+      if (!prazoVal) {
+        alert('Por favor, informe a data em que esta demanda será concluída.');
+        return;
+      }
+
+      const tarefaId = tarefaSendoIniciadaId || (document.getElementById('iniciarDemandaTarefaId') ? document.getElementById('iniciarDemandaTarefaId').value : null);
+      const task = appState.tarefas.find(t => t.id === tarefaId);
+      if (!task) return;
+
+      const hoje = new Date();
+      const hojeIso = formatarDataIso(hoje);
+      const dPrazo = parseDataLocal(prazoVal);
+      const diffDias = Math.max(1, Math.round((dPrazo.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)));
+
+      fecharModalSeguro('modalIniciarDemandaNaEsteira');
+
+      const devId = task.devId || (appState.currentUser ? appState.currentUser.id : 'USR-1');
+
+      // 5º Ao entrar na esteira de produção, se torna "Em Andamento"
+      task.ativo = true;
+      task.status = 'Em Andamento';
+      task.dataInicio = hojeIso;
+      task.dataPrazo = prazoVal;
+      task.diasEstimados = diffDias;
+      task.diasTrabalhados = 1;
+
+      // Desativa outras demandas ativas deste desenvolvedor que não estejam concluídas
+      appState.tarefas.forEach(other => {
+        if (other.devId === devId && other.id !== task.id && other.status !== 'Concluída') {
+          other.ativo = false;
         }
       });
 
+      verificarEAtualizarStatusTarefas();
+
+      // Salva no Local Edits Store para imunidade total contra F5
+      salvarEdicaoLocalDemanda(task);
+      try {
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch(e) {}
+
+      // Atualização otimista instantânea (0ms)
       atualizarAbaEsteira();
       renderizarGraficos();
-      mostrarToast('Demanda ativada na esteira!');
+      atualizarRelatorioMensal();
+      mostrarToast(`Demanda "${task.titulo}" entrou na esteira! Status: Em Andamento.`);
 
-      executarNoServidor('selecionarTarefaAtiva', { tarefaId: tarefaId, devId: devId });
+      // Sincroniza com Google Sheets
+      executarNoServidor('selecionarTarefaAtiva', {
+        tarefaId: task.id,
+        devId: devId,
+        dataInicio: task.dataInicio,
+        dataPrazo: task.dataPrazo,
+        diasEstimados: task.diasEstimados,
+        status: 'Em Andamento'
+      });
+    }
+
+    function selecionarComoAtivaInstantanea(tarefaId) {
+      abrirModalIniciarDemanda(tarefaId);
     }
 
     function finalizarDemandaAtual() {
@@ -2772,17 +2997,14 @@
     }
 
     /**
-     * CADASTRAR DEMANDA ULTRA-RÁPIDO (0ms de atraso)
+     * CADASTRAR DEMANDA ULTRA-RÁPIDO (Status: "Não Iniciada", sem data de conclusão)
      */
     function salvarNovaTarefaInstantanea() {
       const tituloInput = document.getElementById('taskTitulo');
       const moduloInput = document.getElementById('taskModuloInput');
       const descInput = document.getElementById('taskDescricao');
-      const dtInicioInput = document.getElementById('taskDataInicio');
-      const dtPrazoInput = document.getElementById('taskDataPrazo');
       const urgSelect = document.getElementById('taskUrgencia');
       const devSelect = document.getElementById('taskDevSelect');
-      const ativaCheckbox = document.getElementById('taskAtivaAgora');
 
       const titulo = (tituloInput.value || '').trim();
       if (!titulo) {
@@ -2815,55 +3037,33 @@
         devNome = appState.usuarios[0].nome;
       }
 
-      // Tratamento das datas selecionadas pelo usuário no calendário
       const hoje = new Date();
-      let dataInicioIso = dtInicioInput && dtInicioInput.value ? dtInicioInput.value : formatarDataIso(hoje);
-      let dataPrazoIso = dtPrazoInput && dtPrazoInput.value ? dtPrazoInput.value : '';
+      const hojeIso = formatarDataIso(hoje);
 
-      const dtIniObj = new Date(dataInicioIso + 'T00:00:00');
-      let diasEstimados = 2;
-
-      if (dataPrazoIso) {
-        const dtFimObj = new Date(dataPrazoIso + 'T00:00:00');
-        if (dtFimObj >= dtIniObj) {
-          diasEstimados = Math.max(1, Math.round((dtFimObj - dtIniObj) / (1000 * 60 * 60 * 24)));
-        } else {
-          dataPrazoIso = dataInicioIso;
-          diasEstimados = 1;
-        }
-      } else {
-        const prazo = new Date(dtIniObj);
-        prazo.setDate(prazo.getDate() + 2);
-        dataPrazoIso = formatarDataIso(prazo);
-        diasEstimados = 2;
-      }
-
-      const tornarAtiva = ativaCheckbox.checked;
-
+      // 1º Ao cadastrar uma demanda, não precisa colocar a data de conclusão
+      // 4º Ao cadastrar uma demanda ela será "Não Iniciada"
       const novaTarefa = {
         id: 'TSK-' + Math.floor(Math.random() * 9000 + 1000),
         modulo: modulo,
         demandaExterna: isExterna,
         titulo: titulo,
-        descricao: (descInput.value || '').trim(),
+        descricao: (descInput ? descInput.value : '').trim(),
         devId: devId,
         devNome: devNome,
-        diasEstimados: diasEstimados,
-        diasTrabalhados: tornarAtiva ? 1 : 0,
-        dataInicio: dataInicioIso,
-        dataInsercao: formatarDataIso(hoje),
-        dataPrazo: dataPrazoIso,
-        status: 'Em Andamento',
-        ativo: tornarAtiva,
-        urgencia: urgSelect.value || 'Media',
-        dataConclusao: ''
+        diasEstimados: 0,
+        diasTrabalhados: 0,
+        dataInicio: '',
+        dataInsercao: hojeIso,
+        dataPrazo: '',
+        status: 'Não Iniciada',
+        ativo: false,
+        urgencia: urgSelect ? urgSelect.value : 'Media',
+        dataConclusao: '',
+        isNovaDemanda: true
       };
 
-      if (tornarAtiva) {
-        appState.tarefas.forEach(t => {
-          if (t.devId === devId && t.status !== 'Concluída') t.ativo = false;
-        });
-      }
+      // Salva no Local Edits Store para persistência absoluta (F5 imune)
+      salvarEdicaoLocalDemanda(novaTarefa);
 
       appState.tarefas.unshift(novaTarefa);
       try {
@@ -2871,7 +3071,7 @@
       } catch(e) {}
 
       tituloInput.value = '';
-      descInput.value = '';
+      if (descInput) descInput.value = '';
       if (checkExterna) {
         checkExterna.checked = false;
         aoAlternarDemandaExterna();
@@ -2881,20 +3081,21 @@
       atualizarAbaEsteira();
       renderizarGraficos();
       atualizarRelatorioMensal();
-      mostrarToast('Demanda cadastrada com sucesso!');
+      mostrarToast('Demanda cadastrada como "Não Iniciada"!');
 
       executarNoServidor(
         'cadastrarTarefa',
         {
           titulo: novaTarefa.titulo,
           descricao: novaTarefa.descricao,
-          diasEstimados: novaTarefa.diasEstimados,
-          dataInicio: novaTarefa.dataInicio,
-          dataPrazo: novaTarefa.dataPrazo,
+          diasEstimados: 0,
+          dataInicio: '',
+          dataPrazo: '',
           urgencia: novaTarefa.urgencia,
           devId: devId,
           devNome: devNome,
-          tornarAtiva: tornarAtiva,
+          tornarAtiva: false,
+          status: 'Não Iniciada',
           modulo: modulo,
           demandaExterna: isExterna
         },
@@ -3044,6 +3245,7 @@
       try {
         let edits = JSON.parse(localStorage.getItem('SYSMANAGER_LOCAL_EDITS') || '{}');
         edits[tarefaEditada.id] = {
+          id: tarefaEditada.id,
           titulo: tarefaEditada.titulo,
           descricao: tarefaEditada.descricao || '',
           modulo: tarefaEditada.modulo || 'SIOPLEEx',
@@ -3051,9 +3253,15 @@
           devId: tarefaEditada.devId,
           devNome: tarefaEditada.devNome,
           diasEstimados: tarefaEditada.diasEstimados,
-          dataPrazo: tarefaEditada.dataPrazo,
+          diasTrabalhados: tarefaEditada.diasTrabalhados || 0,
+          dataPrazo: tarefaEditada.dataPrazo || '',
+          dataInicio: tarefaEditada.dataInicio || '',
+          dataInsercao: tarefaEditada.dataInsercao || '',
+          dataConclusao: tarefaEditada.dataConclusao || '',
           urgencia: tarefaEditada.urgencia,
-          status: tarefaEditada.status
+          status: tarefaEditada.status,
+          ativo: tarefaEditada.ativo === true,
+          isNovaDemanda: tarefaEditada.isNovaDemanda === true
         };
         localStorage.setItem('SYSMANAGER_LOCAL_EDITS', JSON.stringify(edits));
       } catch(e) {}
@@ -3065,21 +3273,47 @@
         const edits = JSON.parse(localStorage.getItem('SYSMANAGER_LOCAL_EDITS') || '{}');
         const ids = Object.keys(edits);
         if (ids.length === 0) return;
-        tarefas.forEach(t => {
-          if (!t || !t.id) return;
-          const matchId = ids.find(id => id.toUpperCase() === t.id.toString().toUpperCase());
-          if (matchId) {
-            const ed = edits[matchId];
-            if (ed.titulo) t.titulo = ed.titulo;
-            if (ed.descricao !== undefined) t.descricao = ed.descricao;
-            if (ed.modulo) t.modulo = ed.modulo;
-            if (ed.demandaExterna !== undefined) t.demandaExterna = ed.demandaExterna;
-            if (ed.devId) t.devId = ed.devId;
-            if (ed.devNome) t.devNome = ed.devNome;
-            if (ed.diasEstimados !== undefined) t.diasEstimados = ed.diasEstimados;
-            if (ed.dataPrazo) t.dataPrazo = ed.dataPrazo;
-            if (ed.urgencia) t.urgencia = ed.urgencia;
-            if (ed.status) t.status = ed.status;
+        ids.forEach(id => {
+          const ed = edits[id];
+          if (!ed || !ed.titulo) return;
+          const matchTask = tarefas.find(t => t && t.id && t.id.toString().toUpperCase() === id.toString().toUpperCase());
+          if (matchTask) {
+            if (ed.titulo) matchTask.titulo = ed.titulo;
+            if (ed.descricao !== undefined) matchTask.descricao = ed.descricao;
+            if (ed.modulo) matchTask.modulo = ed.modulo;
+            if (ed.demandaExterna !== undefined) matchTask.demandaExterna = ed.demandaExterna;
+            if (ed.devId) matchTask.devId = ed.devId;
+            if (ed.devNome) matchTask.devNome = ed.devNome;
+            if (ed.diasEstimados !== undefined) matchTask.diasEstimados = ed.diasEstimados;
+            if (ed.diasTrabalhados !== undefined) matchTask.diasTrabalhados = ed.diasTrabalhados;
+            if (ed.dataPrazo !== undefined) matchTask.dataPrazo = ed.dataPrazo;
+            if (ed.dataInicio !== undefined) matchTask.dataInicio = ed.dataInicio;
+            if (ed.dataInsercao !== undefined) matchTask.dataInsercao = ed.dataInsercao;
+            if (ed.dataConclusao !== undefined) matchTask.dataConclusao = ed.dataConclusao;
+            if (ed.urgencia) matchTask.urgencia = ed.urgencia;
+            if (ed.status) matchTask.status = ed.status;
+            if (ed.ativo !== undefined) matchTask.ativo = ed.ativo;
+          } else if (ed.isNovaDemanda) {
+            // Preserva demanda cadastrada localmente ainda não refletida no retorno do servidor
+            tarefas.unshift({
+              id: id,
+              titulo: ed.titulo,
+              descricao: ed.descricao || '',
+              modulo: ed.modulo || 'SIOPLEEx',
+              demandaExterna: ed.demandaExterna === true,
+              devId: ed.devId,
+              devNome: ed.devNome,
+              diasEstimados: ed.diasEstimados || 0,
+              diasTrabalhados: ed.diasTrabalhados || 0,
+              dataInicio: ed.dataInicio || '',
+              dataInsercao: ed.dataInsercao || formatarDataIso(new Date()),
+              dataPrazo: ed.dataPrazo || '',
+              status: ed.status || 'Não Iniciada',
+              ativo: ed.ativo === true,
+              urgencia: ed.urgencia || 'Media',
+              dataConclusao: ed.dataConclusao || '',
+              isNovaDemanda: true
+            });
           }
         });
       } catch(e) {}
@@ -3095,6 +3329,57 @@
         }
         localStorage.setItem('SYSMANAGER_LOCAL_EDITS', JSON.stringify(edits));
       } catch(e) {}
+    }
+
+    /**
+     * 3º Terão os Status "Não Iniciadas"; "Em Andamento"; "Concluídas"; "Atrasadas".
+     * 4º Ao cadastrar uma demanda ela será "Não Iniciada";
+     * 5º Ao entrar a demanda na esteira de produção, ela se torna "Em andamento" e se dá o prazo para conclusão;
+     * 6º Se estrapolar o prazo, ela fica como "atrasada".
+     */
+    function normalizarStatus(s) {
+      if (!s) return 'Não Iniciada';
+      const str = String(s).trim().toLowerCase();
+      if (str.includes('conclu')) return 'Concluída';
+      if (str.includes('atras')) return 'Atrasada';
+      if (str.includes('andam') || str.includes('produ') || str.includes('ativ')) return 'Em Andamento';
+      if (str.includes('inici') || str.includes('abert') || str.includes('fila') || str.includes('pend')) return 'Não Iniciada';
+      return 'Não Iniciada';
+    }
+
+    function verificarEAtualizarStatusTarefas() {
+      if (!appState || !Array.isArray(appState.tarefas)) return;
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+
+      appState.tarefas.forEach(t => {
+        if (!t) return;
+
+        // Se já foi concluída, mantém Concluída
+        if (t.status === 'Concluída' || (t.status && t.status.toLowerCase().includes('conclu'))) {
+          t.status = 'Concluída';
+          return;
+        }
+
+        // 6º Se extrapolar o prazo, fica como "Atrasada"
+        if (t.dataPrazo) {
+          const dtPrazo = parseDataLocal(t.dataPrazo);
+          dtPrazo.setHours(0, 0, 0, 0);
+          if (hoje.getTime() > dtPrazo.getTime()) {
+            t.status = 'Atrasada';
+            return;
+          }
+        }
+
+        // 5º Ao entrar a demanda na esteira de produção, ela se torna "Em andamento"
+        if (t.ativo) {
+          t.status = 'Em Andamento';
+          return;
+        }
+
+        // 4º Ao cadastrar ou na fila sem iniciar, status é "Não Iniciada"
+        t.status = 'Não Iniciada';
+      });
     }
 
     function salvarEdicaoTarefaInstantanea() {
@@ -3171,15 +3456,22 @@
       // tarefa.dataInicio NUNCA É ALTERADA!
       tarefa.urgencia = urgSelect ? urgSelect.value : (tarefa.urgencia || 'Media');
 
-      // Se a tarefa não estiver concluída, recalcula se está atrasada com base no novo prazo
+      // Se a tarefa não estiver concluída, recalcula seu status com base nas 4 regras oficiais
       if (tarefa.status !== 'Concluída') {
         const hojeObj = new Date();
         hojeObj.setHours(0, 0, 0, 0);
-        const prazoObj = new Date(dataPrazoIso + 'T00:00:00');
-        if (prazoObj < hojeObj) {
-          tarefa.status = 'Atrasada';
+        if (dataPrazoIso) {
+          const prazoObj = parseDataLocal(dataPrazoIso);
+          prazoObj.setHours(0, 0, 0, 0);
+          if (prazoObj.getTime() < hojeObj.getTime()) {
+            tarefa.status = 'Atrasada';
+          } else if (tarefa.ativo) {
+            tarefa.status = 'Em Andamento';
+          } else {
+            tarefa.status = 'Não Iniciada';
+          }
         } else {
-          tarefa.status = 'Em Andamento';
+          tarefa.status = tarefa.ativo ? 'Em Andamento' : 'Não Iniciada';
         }
       }
 
@@ -3602,7 +3894,81 @@
       atualizarRelatorioMensal();
     }
 
+    /**
+     * Gerenciamento de Filtro por Múltiplos Status no Relatório
+     */
+    function obterStatusSelecionadosRelatorio() {
+      const cbs = document.querySelectorAll('.chk-rel-status:checked');
+      return Array.from(cbs).map(cb => cb.value);
+    }
+
+    function atualizarLabelStatusRelatorio() {
+      const allCbs = document.querySelectorAll('.chk-rel-status');
+      const checkedCbs = document.querySelectorAll('.chk-rel-status:checked');
+      const lbl = document.getElementById('lblFiltroRelatorioStatus');
+      const chkTodos = document.getElementById('chkRelStatusTodos');
+
+      if (chkTodos) {
+        if (checkedCbs.length === allCbs.length) {
+          chkTodos.checked = true;
+          chkTodos.indeterminate = false;
+        } else if (checkedCbs.length === 0) {
+          chkTodos.checked = false;
+          chkTodos.indeterminate = false;
+        } else {
+          chkTodos.checked = false;
+          chkTodos.indeterminate = true;
+        }
+      }
+
+      if (!lbl) return;
+      if (checkedCbs.length === allCbs.length) {
+        lbl.innerText = 'Todos os Status';
+      } else if (checkedCbs.length === 0) {
+        lbl.innerHTML = '<span class="text-danger fw-semibold">Nenhum status</span>';
+      } else if (checkedCbs.length === 1) {
+        const v = checkedCbs[0].value;
+        lbl.innerText = (v === 'Não Iniciada') ? 'Não Iniciadas' : (v === 'Atrasada' ? 'Atrasadas' : (v === 'Concluída' ? 'Concluídas' : 'Em Andamento'));
+      } else {
+        const nomes = Array.from(checkedCbs).map(c => {
+          const v = c.value;
+          return (v === 'Não Iniciada') ? 'Não Iniciadas' : (v === 'Atrasada' ? 'Atrasadas' : (v === 'Concluída' ? 'Concluídas' : 'Em Andamento'));
+        });
+        lbl.innerText = nomes.join(', ');
+      }
+    }
+
+    function aoAlternarTodosStatusRelatorio(chkTodos) {
+      const marcar = chkTodos.checked;
+      const allCbs = document.querySelectorAll('.chk-rel-status');
+      allCbs.forEach(cb => { cb.checked = marcar; });
+      atualizarLabelStatusRelatorio();
+      atualizarRelatorioMensal();
+    }
+
+    function aoMudarCheckboxStatusRelatorio() {
+      atualizarLabelStatusRelatorio();
+      atualizarRelatorioMensal();
+    }
+
+    function selecionarTodosStatusRelatorio(marcar) {
+      const allCbs = document.querySelectorAll('.chk-rel-status');
+      allCbs.forEach(cb => { cb.checked = !!marcar; });
+      atualizarLabelStatusRelatorio();
+      atualizarRelatorioMensal();
+    }
+
+    function selecionarSomenteStatusRelatorio(lista) {
+      const allCbs = document.querySelectorAll('.chk-rel-status');
+      allCbs.forEach(cb => {
+        cb.checked = lista.includes(cb.value);
+      });
+      atualizarLabelStatusRelatorio();
+      atualizarRelatorioMensal();
+    }
+
     function atualizarRelatorioMensal() {
+      verificarEAtualizarStatusTarefas();
       const mesSelect = document.getElementById('filtroRelatorioMes');
       const mesFiltro = mesSelect ? mesSelect.value : 'TODOS';
       const anoFiltro = parseInt(document.getElementById('filtroRelatorioAno').value) || new Date().getFullYear();
@@ -3715,20 +4081,24 @@
       document.getElementById('lblEmissaoRelatorio').innerText = `Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}`;
 
       // Filtragem ágil por período:
-      // 1. Demandas que foram colocadas na esteira no período do filtro (dataInicio ou dataInsercao no intervalo);
+      // 1. Demandas que entraram na esteira no período do filtro (dataInicio ou dataInsercao no intervalo);
       // 2. + Demandas atrasadas (qualquer demanda com status 'Atrasada' que já existia até o fim do período);
-      // 3. + Demandas concluídas nesse período (com dataConclusao no intervalo).
+      // 3. + Demandas concluídas nesse período (com dataConclusao no intervalo);
+      // 4. + Demandas Não Iniciadas cadastradas nesse período (com dataInsercao no intervalo).
       let filtradas = appState.tarefas.filter(t => {
-        const dEsteira = parseDataLocal(t.dataInicio || t.dataInsercao);
-        dEsteira.setHours(0, 0, 0, 0);
+        const dCriacao = parseDataLocal(t.dataInsercao || t.dataInicio);
+        dCriacao.setHours(0, 0, 0, 0);
 
-        // a) Demandas que foram para a esteira nesse período
-        const foiParaEsteiraNoPeriodo = (!dataInicioFiltro || dEsteira.getTime() >= dataInicioFiltro.getTime()) &&
-                                       (!dataFimFiltro || dEsteira.getTime() <= dataFimFiltro.getTime());
+        // a) Demandas em andamento que entraram na esteira nesse período
+        const dInicioEsteira = parseDataLocal(t.dataInicio || t.dataInsercao);
+        dInicioEsteira.setHours(0, 0, 0, 0);
+        const emAndamentoNoPeriodo = (t.status === 'Em Andamento' || t.ativo) &&
+                                    (!dataInicioFiltro || dInicioEsteira.getTime() >= dataInicioFiltro.getTime()) &&
+                                    (!dataFimFiltro || dInicioEsteira.getTime() <= dataFimFiltro.getTime());
 
-        // b) + Demandas atrasadas
+        // b) + Demandas atrasadas (qualquer demanda com status 'Atrasada' que já existia até o fim do período)
         const isAtrasada = (t.status === 'Atrasada') &&
-                           (!dataFimFiltro || dEsteira.getTime() <= dataFimFiltro.getTime());
+                           (!dataFimFiltro || dCriacao.getTime() <= dataFimFiltro.getTime());
 
         // c) + Demandas concluídas nesse período
         const dConclusao = parseDataLocal(t.dataConclusao || t.dataPrazo || t.dataInicio || t.dataInsercao);
@@ -3737,7 +4107,12 @@
                                    (!dataInicioFiltro || dConclusao.getTime() >= dataInicioFiltro.getTime()) &&
                                    (!dataFimFiltro || dConclusao.getTime() <= dataFimFiltro.getTime());
 
-        return foiParaEsteiraNoPeriodo || isAtrasada || concluidaNoPeriodo;
+        // d) + Demandas Não Iniciadas cadastradas no período
+        const naoIniciadaNoPeriodo = (t.status === 'Não Iniciada') &&
+                                     (!dataInicioFiltro || dCriacao.getTime() >= dataInicioFiltro.getTime()) &&
+                                     (!dataFimFiltro || dCriacao.getTime() <= dataFimFiltro.getTime());
+
+        return emAndamentoNoPeriodo || isAtrasada || concluidaNoPeriodo || naoIniciadaNoPeriodo;
       });
 
       // Filtro por Desenvolvedor (se selecionado)
@@ -3758,10 +4133,15 @@
         });
       }
 
-      // 3º Filtro por Status (se selecionado)
-      const statusRelFiltro = document.getElementById('filtroRelatorioStatus');
-      if (statusRelFiltro && statusRelFiltro.value && statusRelFiltro.value !== 'TODOS') {
-        filtradas = filtradas.filter(t => t.status === statusRelFiltro.value);
+      // 3º Filtro por Múltiplos Status
+      const statusSelecionados = obterStatusSelecionadosRelatorio();
+      const allCbsStatus = document.querySelectorAll('.chk-rel-status');
+      if (allCbsStatus.length > 0) {
+        if (statusSelecionados.length === 0) {
+          filtradas = [];
+        } else if (statusSelecionados.length < allCbsStatus.length) {
+          filtradas = filtradas.filter(t => statusSelecionados.includes(t.status));
+        }
       }
 
       // 6º Reordenação em todas as colunas da lista
@@ -3835,7 +4215,7 @@
       const totalDemandas = filtradas.length;
       const totalConcluidas = filtradas.filter(t => t.status === 'Concluída').length;
       const totalAtrasadas = filtradas.filter(t => t.status === 'Atrasada').length;
-      const totalEmAndamento = filtradas.filter(t => t.status !== 'Concluída' && t.status !== 'Atrasada').length;
+      const totalEmAndamento = filtradas.filter(t => t.status === 'Em Andamento').length;
 
       // 1. Total de Demandas
       const elTotal = document.getElementById('relTotalDemandas');
@@ -3897,6 +4277,8 @@
             statusBadge = `<span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-weight: 600; font-size: 0.74rem;"><i class="fa-solid fa-circle-check me-1 small"></i>Concluída</span>`;
           } else if (t.status === 'Atrasada') {
             statusBadge = `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-weight: 600; font-size: 0.74rem;"><i class="fa-solid fa-triangle-exclamation me-1 small"></i>Atrasada</span>`;
+          } else if (t.status === 'Não Iniciada') {
+            statusBadge = `<span class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1" style="font-weight: 600; font-size: 0.74rem;"><i class="fa-regular fa-circle-dot me-1 small"></i>Não Iniciada</span>`;
           } else {
             statusBadge = `<span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-weight: 600; font-size: 0.74rem;"><i class="fa-solid fa-spinner fa-spin me-1 small" style="animation-duration: 3s;"></i>Em Andamento</span>`;
           }
@@ -3913,15 +4295,25 @@
             urgenciaBadge = `<span class="badge rounded-pill bg-info-subtle text-info border border-info-subtle px-2 py-1" style="font-size: 0.72rem;">Média</span>`;
           }
 
-          const prazo = t.status === 'Concluída' 
-            ? formatarData(t.dataConclusao || t.dataPrazo) 
-            : formatarData(t.dataPrazo);
+          let prazo = '';
+          if (t.status === 'Concluída') {
+            prazo = formatarData(t.dataConclusao || t.dataPrazo);
+          } else if (t.dataPrazo) {
+            prazo = formatarData(t.dataPrazo);
+          } else {
+            prazo = 'A definir';
+          }
 
           const prazoHtml = (t.status === 'Atrasada')
             ? `<span class="text-danger fw-bold font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-clock me-1"></i>${prazo}</span>`
             : (t.status === 'Concluída'
                 ? `<span class="text-success fw-semibold font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar-check me-1"></i>${prazo}</span>`
-                : `<span class="text-secondary font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar me-1"></i>${prazo}</span>`);
+                : (t.status === 'Não Iniciada'
+                    ? `<span class="text-muted font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-clock me-1"></i>${prazo}</span>`
+                    : `<span class="text-secondary font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar me-1"></i>${prazo}</span>`));
+
+          const diasEstTexto = (t.status === 'Não Iniciada' && (!t.diasEstimados || t.diasEstimados === 0)) ? '-' : `${t.diasEstimados}d`;
+          const diasTrabTexto = (t.status === 'Não Iniciada' && (!t.diasTrabalhados || t.diasTrabalhados === 0)) ? '-' : `${t.diasTrabalhados}d`;
 
           tr.innerHTML = `
             <td class="font-monospace text-muted small fw-semibold">#${String(index + 1).padStart(2, '0')}</td>
@@ -3939,8 +4331,8 @@
             </td>
             <td><span class="font-monospace text-secondary small"><i class="fa-regular fa-calendar me-1 text-primary"></i>${formatarData(t.dataInsercao || t.dataInicio)}</span></td>
             <td>${urgenciaBadge}</td>
-            <td><span class="font-monospace small text-secondary">${t.diasEstimados}d</span></td>
-            <td><span class="font-monospace small text-primary fw-bold">${t.diasTrabalhados}d</span></td>
+            <td><span class="font-monospace small text-secondary">${diasEstTexto}</span></td>
+            <td><span class="font-monospace small text-primary fw-bold">${diasTrabTexto}</span></td>
             <td>${statusBadge}</td>
             <td>${prazoHtml}</td>
             <td data-html2canvas-ignore="true" class="text-center text-nowrap">
@@ -3984,8 +4376,16 @@
       const devTexto = (devSelect && devSelect.value !== 'TODOS') ? devSelect.options[devSelect.selectedIndex].text : '';
       const modSelect = document.getElementById('filtroRelatorioModulo');
       const modTexto = (modSelect && modSelect.value !== 'TODOS') ? modSelect.value : '';
-      const statusSelect = document.getElementById('filtroRelatorioStatus');
-      const statusTexto = (statusSelect && statusSelect.value !== 'TODOS') ? statusSelect.value : '';
+      const statusSelecionados = obterStatusSelecionadosRelatorio();
+      const allCbsStatus = document.querySelectorAll('.chk-rel-status');
+      let statusTexto = '';
+      if (allCbsStatus.length > 0) {
+        if (statusSelecionados.length === 0) {
+          statusTexto = 'Nenhum status';
+        } else if (statusSelecionados.length < allCbsStatus.length) {
+          statusTexto = statusSelecionados.join(', ');
+        }
+      }
 
       const intervaloSelect = document.getElementById('filtroRelatorioIntervalo');
       const isCustomIntervalo = (intervaloSelect && intervaloSelect.value === 'CUSTOM');
@@ -4009,11 +4409,12 @@
       const totalDemandas = demandas.length;
       const concluidas = demandas.filter(t => t.status === 'Concluída').length;
       const atrasadas = demandas.filter(t => t.status === 'Atrasada').length;
-      const emAndamento = demandas.filter(t => t.status !== 'Concluída' && t.status !== 'Atrasada').length;
+      const emAndamento = demandas.filter(t => t.status === 'Em Andamento').length;
+      const naoIniciadas = demandas.filter(t => t.status === 'Não Iniciada').length;
 
       dadosRelatorioPdfAtual = {
         mesTexto, anoTexto, devTexto, modTexto, statusTexto, periodoDesc,
-        totalDemandas, concluidas, atrasadas, emAndamento, demandas
+        totalDemandas, concluidas, atrasadas, emAndamento, naoIniciadas, demandas
       };
 
       // Tags de filtros adicionais ativos (não duplica se for personalizado)
@@ -4025,28 +4426,50 @@
       if (modTexto) tagsFiltros.push(`Módulo: ${modTexto}`);
       if (statusTexto) tagsFiltros.push(`Status: ${statusTexto}`);
 
-      // Monta as linhas da tabela com a coluna Data de Inserção e regras anti-corte de página
+      // Monta as linhas da tabela com a coluna Data de Inserção, Urgência e regras anti-corte de página
       let linhasTabelaHtml = '';
       if (demandas.length === 0) {
-        linhasTabelaHtml = `<tr class="no-split" style="page-break-inside: avoid !important; break-inside: avoid !important;"><td colspan="7" style="padding: 16px; text-align: center; color: #64748b; border: 1px solid #cbd5e1; font-style: italic;">Nenhuma demanda encontrada para o filtro selecionado.</td></tr>`;
+        linhasTabelaHtml = `<tr class="no-split" style="page-break-inside: avoid !important; break-inside: avoid !important;"><td colspan="8" style="padding: 20px; text-align: center; color: #64748b; border: 1px solid #cbd5e1; font-style: italic; font-size: 11px;">Nenhuma demanda encontrada para os critérios selecionados.</td></tr>`;
       } else {
         demandas.forEach((d, idx) => {
-          let statusBadgeColor = '#1d4ed8';
-          let statusBg = '#dbeafe';
+          let statusBadgeColor = '#1e40af';
+          let statusBg = '#eff6ff';
           let statusBorder = '#93c5fd';
           if (d.status === 'Concluída') {
-            statusBadgeColor = '#15803d';
-            statusBg = '#dcfce7';
+            statusBadgeColor = '#166534';
+            statusBg = '#f0fdf4';
             statusBorder = '#86efac';
           } else if (d.status === 'Atrasada') {
-            statusBadgeColor = '#b91c1c';
-            statusBg = '#fee2e2';
+            statusBadgeColor = '#991b1b';
+            statusBg = '#fef2f2';
             statusBorder = '#fca5a5';
+          } else if (d.status === 'Não Iniciada') {
+            statusBadgeColor = '#475569';
+            statusBg = '#f1f5f9';
+            statusBorder = '#cbd5e1';
           }
 
-          const prazo = d.status === 'Concluída' 
-            ? formatarData(d.dataConclusao || d.dataPrazo) 
-            : formatarData(d.dataPrazo);
+          let urgBadgeColor = '#0369a1';
+          let urgBg = '#e0f2fe';
+          let urgBorder = '#7dd3fc';
+          const urgLower = (d.urgencia || 'Media').toLowerCase();
+          if (urgLower === 'urgente') {
+            urgBadgeColor = '#dc2626'; urgBg = '#fef2f2'; urgBorder = '#fca5a5';
+          } else if (urgLower === 'alta') {
+            urgBadgeColor = '#b45309'; urgBg = '#fffbeb'; urgBorder = '#fcd34d';
+          } else if (urgLower === 'baixa') {
+            urgBadgeColor = '#15803d'; urgBg = '#f0fdf4'; urgBorder = '#86efac';
+          }
+          const urgTexto = d.urgencia || 'Média';
+
+          let prazo = '';
+          if (d.status === 'Concluída') {
+            prazo = formatarData(d.dataConclusao || d.dataPrazo);
+          } else if (d.dataPrazo) {
+            prazo = formatarData(d.dataPrazo);
+          } else {
+            prazo = 'A definir';
+          }
 
           const isExternaPdf = (d.demandaExterna === true || d.demandaExterna === 'true' || d.modulo === 'Demanda Externa');
           const modPdf = isExternaPdf ? 'Demanda Externa' : (d.modulo || 'SIOPLEEx');
@@ -4054,19 +4477,26 @@
 
           linhasTabelaHtml += `
             <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; page-break-inside: avoid !important; break-inside: avoid !important;">
-              <td style="padding: 6px 8px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700; color: #64748b; font-size: 9.5px; font-family: monospace;">#${String(idx + 1).padStart(2, '0')}</td>
-              <td style="padding: 6px 8px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 9px; color: ${isExternaPdf ? '#b45309; font-weight: 700; background: #fffbeb;' : '#1e293b; font-weight: 600;'}">
-                ${isExternaPdf ? 'Demanda Externa' : modPdf}
+              <td style="padding: 7px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700; color: #475569; font-size: 10px;">#${String(idx + 1).padStart(2, '0')}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center;">
+                <span style="display: inline-block; padding: 2.5px 8px; border-radius: 4px; font-size: 9.5px; font-weight: 700; ${isExternaPdf ? 'background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;' : 'background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1;'}">
+                  ${isExternaPdf ? 'Demanda Externa' : modPdf}
+                </span>
               </td>
-              <td style="padding: 6px 10px; border: 1px solid #cbd5e1; font-weight: 700; color: #0f172a; font-size: 10px; line-height: 1.35;">${d.titulo}</td>
-              <td style="padding: 6px 8px; border: 1px solid #cbd5e1; color: #334155; font-size: 9.5px; font-weight: 500;">${limparNomeDev(d.devNome)}</td>
-              <td style="padding: 6px 8px; border: 1px solid #cbd5e1; text-align: center; color: #64748b; font-size: 9.5px; font-family: monospace;">${dtInsercaoFormatada}</td>
-              <td style="padding: 6px 8px; border: 1px solid #cbd5e1; text-align: center;">
-                <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: 700; color: ${statusBadgeColor}; background-color: ${statusBg}; border: 1px solid ${statusBorder};">
+              <td style="padding: 7px 10px; border: 1px solid #cbd5e1; font-weight: 700; color: #0f172a; font-size: 11px; line-height: 1.35; text-align: left;">${d.titulo}</td>
+              <td style="padding: 7px 6px; border: 1px solid #cbd5e1; text-align: center;">
+                <span style="display: inline-block; padding: 2.5px 8px; border-radius: 12px; font-size: 9px; font-weight: 700; color: ${urgBadgeColor}; background-color: ${urgBg}; border: 1px solid ${urgBorder};">
+                  ${urgTexto}
+                </span>
+              </td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; color: #1e293b; font-size: 10.5px; font-weight: 600; text-align: left;">${limparNomeDev(d.devNome)}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center; color: #334155; font-size: 10px; font-weight: 600;">${dtInsercaoFormatada}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center;">
+                <span style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 9.5px; font-weight: 700; color: ${statusBadgeColor}; background-color: ${statusBg}; border: 1px solid ${statusBorder}; text-transform: uppercase; letter-spacing: 0.3px;">
                   ${d.status}
                 </span>
               </td>
-              <td style="padding: 6px 8px; border: 1px solid #cbd5e1; text-align: center; color: ${d.status === 'Atrasada' ? '#dc2626' : '#475569'}; font-weight: ${d.status === 'Atrasada' ? '700' : '500'}; font-size: 9.5px; font-family: monospace;">${prazo}</td>
+              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center; color: ${d.status === 'Atrasada' ? '#dc2626' : (d.status === 'Concluída' ? '#16a34a' : (d.status === 'Não Iniciada' ? '#64748b' : '#334155'))}; font-weight: 700; font-size: 10px;">${prazo}</td>
             </tr>
           `;
         });
@@ -4076,29 +4506,32 @@
       const containerPdf = document.getElementById('corpoVisualizacaoPdf');
       if (containerPdf) {
         containerPdf.innerHTML = `
-          <div id="documentoPdfRenderizado" style="width: 100%; max-width: 1040px; margin: 0 auto; padding: 0; background: #ffffff; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box;">
+          <div id="documentoPdfRenderizado" style="width: 100%; max-width: 1040px; margin: 0 auto; padding: 4px 6px; background: #ffffff; color: #0f172a; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: geometricPrecision; box-sizing: border-box;">
+            <!-- BARRA DECORATIVA SUPERIOR -->
+            <div style="background: linear-gradient(90deg, #1e40af 0%, #2563eb 50%, #06b6d4 100%); height: 4px; border-radius: 2px; margin-bottom: 10px;"></div>
+
             <!-- CABEÇALHO SM EXECUTIVO -->
-            <div style="display: table; width: 100%; border-bottom: 2px solid #2563eb; padding-bottom: 8px; margin-bottom: 10px;">
+            <div style="display: table; width: 100%; border-bottom: 2px solid #2563eb; padding-bottom: 8px; margin-bottom: 12px;">
               <div style="display: table-cell; vertical-align: middle;">
                 <div style="display: table; width: auto;">
-                  <div style="display: table-cell; vertical-align: middle; padding-right: 10px;">
-                    <div style="background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%); color: #ffffff; font-weight: 900; font-size: 16px; padding: 5px 10px; border-radius: 6px; letter-spacing: 1px; display: inline-block;">
+                  <div style="display: table-cell; vertical-align: middle; padding-right: 12px;">
+                    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); color: #ffffff; font-weight: 800; font-size: 18px; padding: 7px 12px; border-radius: 8px; letter-spacing: 1px; display: inline-block; box-shadow: 0 2px 4px rgba(15,23,42,0.15);">
                       SM
                     </div>
                   </div>
                   <div style="display: table-cell; vertical-align: middle;">
-                    <div style="font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; line-height: 1.1;">Sys Manager</div>
-                    <div style="font-size: 11px; font-weight: 600; color: #475569; margin-top: 2px;">Relatório de Demandas</div>
-                    <div style="font-size: 9.5px; color: #94a3b8;">Documento de acompanhamento</div>
+                    <div style="font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; line-height: 1.1;">Sys Manager</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #2563eb; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Relatório de Demandas</div>
+                    <div style="font-size: 9.5px; color: #64748b; font-weight: 500;">Documento de acompanhamento da esteira ágil</div>
                   </div>
                 </div>
               </div>
               <div style="display: table-cell; vertical-align: middle; text-align: right;">
-                <div style="display: inline-block; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; font-weight: 700; font-size: 11px; padding: 4px 12px; border-radius: 14px; margin-bottom: 3px; box-shadow: 0 1px 3px rgba(37,99,235,0.2);">
+                <div style="display: inline-block; background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); color: #ffffff; font-weight: 700; font-size: 11.5px; padding: 5px 14px; border-radius: 20px; margin-bottom: 3px; box-shadow: 0 2px 5px rgba(37,99,235,0.25);">
                   ${periodoDesc}
                 </div>
-                ${tagsFiltros.length > 0 ? `<div style="font-size: 9.5px; color: #2563eb; font-weight: 600; margin-top: 2px;">${tagsFiltros.join(' • ')}</div>` : ''}
-                <div style="font-size: 9px; color: #64748b; margin-top: 2px;">
+                ${tagsFiltros.length > 0 ? `<div style="font-size: 10px; color: #1e40af; font-weight: 700; margin-top: 3px;">${tagsFiltros.join(' • ')}</div>` : ''}
+                <div style="font-size: 9.5px; color: #64748b; margin-top: 3px; font-weight: 500;">
                   Emitido em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}
                 </div>
               </div>
@@ -4108,58 +4541,61 @@
             <div style="display: table; width: 100%; margin-bottom: 12px; border-collapse: separate; border-spacing: 8px 0;">
               <div style="display: table-row;">
                 <!-- 1. Geral de Demandas -->
-                <div style="display: table-cell; width: 25%; background: #f8fafc; border: 1px solid #cbd5e1; border-top: 3px solid #475569; border-radius: 8px; padding: 8px 10px; text-align: center;">
-                  <div style="font-size: 9px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;">Geral de Demandas</div>
-                  <div style="font-size: 22px; font-weight: 900; color: #0f172a; margin: 2px 0; line-height: 1.1;">${totalDemandas}</div>
-                  <div style="font-size: 9px; color: #64748b; font-weight: 500;">${totalDemandas === 1 ? '1 demanda registrada' : `${totalDemandas} demandas registradas`}</div>
+                <div style="display: table-cell; width: 25%; background: #ffffff; border: 1px solid #cbd5e1; border-top: 4px solid #334155; border-radius: 8px; padding: 9px 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                  <div style="font-size: 9.5px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;">Geral de Demandas</div>
+                  <div style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 2px 0; line-height: 1.1;">${totalDemandas}</div>
+                  <div style="font-size: 9.5px; color: #64748b; font-weight: 600;">${totalDemandas === 1 ? '1 demanda registrada' : `${totalDemandas} demandas registradas`}</div>
                 </div>
 
                 <!-- 2. Demandas Concluídas -->
-                <div style="display: table-cell; width: 25%; background: #f0fdf4; border: 1px solid #86efac; border-top: 3px solid #16a34a; border-radius: 8px; padding: 8px 10px; text-align: center;">
-                  <div style="font-size: 9px; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 0.6px;">Demandas Concluídas</div>
-                  <div style="font-size: 22px; font-weight: 900; color: #16a34a; margin: 2px 0; line-height: 1.1;">${concluidas}</div>
-                  <div style="font-size: 9px; color: #15803d; font-weight: 700;">
+                <div style="display: table-cell; width: 25%; background: #f0fdf4; border: 1px solid #86efac; border-top: 4px solid #16a34a; border-radius: 8px; padding: 9px 12px; text-align: center; box-shadow: 0 1px 3px rgba(22,163,74,0.06);">
+                  <div style="font-size: 9.5px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.6px;">Demandas Concluídas</div>
+                  <div style="font-size: 24px; font-weight: 800; color: #16a34a; margin: 2px 0; line-height: 1.1;">${concluidas}</div>
+                  <div style="font-size: 9.5px; color: #15803d; font-weight: 700;">
                     ${totalDemandas > 0 ? Math.round((concluidas / totalDemandas) * 100) : 0}% entregues no período
                   </div>
                 </div>
 
                 <!-- 3. Demandas Em Andamento -->
-                <div style="display: table-cell; width: 25%; background: #eff6ff; border: 1px solid #93c5fd; border-top: 3px solid #2563eb; border-radius: 8px; padding: 8px 10px; text-align: center;">
-                  <div style="font-size: 9px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 0.6px;">Em Andamento</div>
-                  <div style="font-size: 22px; font-weight: 900; color: #2563eb; margin: 2px 0; line-height: 1.1;">${emAndamento}</div>
-                  <div style="font-size: 9px; color: #1d4ed8; font-weight: 700;">produção ativa</div>
+                <div style="display: table-cell; width: 25%; background: #eff6ff; border: 1px solid #93c5fd; border-top: 4px solid #2563eb; border-radius: 8px; padding: 9px 12px; text-align: center; box-shadow: 0 1px 3px rgba(37,99,235,0.06);">
+                  <div style="font-size: 9.5px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.6px;">Em Andamento</div>
+                  <div style="font-size: 24px; font-weight: 800; color: #2563eb; margin: 2px 0; line-height: 1.1;">${emAndamento}</div>
+                  <div style="font-size: 9.5px; color: #1d4ed8; font-weight: 700;">produção ativa na esteira</div>
                 </div>
 
                 <!-- 4. Demandas Atrasadas -->
-                <div style="display: table-cell; width: 25%; background: #fef2f2; border: 1px solid #fca5a5; border-top: 3px solid #dc2626; border-radius: 8px; padding: 8px 10px; text-align: center;">
-                  <div style="font-size: 9px; font-weight: 700; color: #991b1b; text-transform: uppercase; letter-spacing: 0.6px;">Demandas Atrasadas</div>
-                  <div style="font-size: 22px; font-weight: 900; color: #dc2626; margin: 2px 0; line-height: 1.1;">${atrasadas}</div>
-                  <div style="font-size: 9px; color: #b91c1c; font-weight: 700;">
-                    ${atrasadas === 0 ? 'Nenhum atraso' : `${atrasadas} fora do prazo`}
+                <div style="display: table-cell; width: 25%; background: #fef2f2; border: 1px solid #fca5a5; border-top: 4px solid #dc2626; border-radius: 8px; padding: 9px 12px; text-align: center; box-shadow: 0 1px 3px rgba(220,38,38,0.06);">
+                  <div style="font-size: 9.5px; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.6px;">Demandas Atrasadas</div>
+                  <div style="font-size: 24px; font-weight: 800; color: #dc2626; margin: 2px 0; line-height: 1.1;">${atrasadas}</div>
+                  <div style="font-size: 9.5px; color: #b91c1c; font-weight: 700;">
+                    ${atrasadas === 0 ? 'Nenhum atraso registrado' : `${atrasadas} fora do prazo limite`}
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- TÍTULO DA TABELA -->
-            <div style="margin-bottom: 6px; font-size: 11px; font-weight: 700; color: #0f172a; display: table; width: 100%;">
-              <div style="display: table-cell; text-align: left;">Detalhamento das Demandas do Período</div>
-              <div style="display: table-cell; text-align: right; font-size: 9.5px; font-weight: 500; color: #64748b;">
-                Total: <strong>${totalDemandas}</strong> | Concluídas: <strong style="color: #16a34a;">${concluidas}</strong> | Em Produção: <strong style="color: #2563eb;">${emAndamento}</strong> | Atrasadas: <strong style="color: #dc2626;">${atrasadas}</strong>
+            <div style="margin-bottom: 6px; font-size: 11.5px; font-weight: 700; color: #0f172a; display: table; width: 100%;">
+              <div style="display: table-cell; text-align: left; vertical-align: middle;">
+                <span style="font-weight: 800; color: #0f172a;">Detalhamento das Demandas do Período</span>
+              </div>
+              <div style="display: table-cell; text-align: right; font-size: 10px; font-weight: 600; color: #475569; vertical-align: middle;">
+                Total: <strong style="color: #0f172a;">${totalDemandas}</strong> | Concluídas: <strong style="color: #16a34a;">${concluidas}</strong> | Em Produção: <strong style="color: #2563eb;">${emAndamento}</strong> | Atrasadas: <strong style="color: #dc2626;">${atrasadas}</strong> | Não Iniciadas: <strong style="color: #64748b;">${naoIniciadas}</strong>
               </div>
             </div>
 
-            <!-- TABELA DE DEMANDAS CORPORATIVA -->
-            <table style="width: 100%; border-collapse: collapse; font-size: 10px; page-break-inside: auto !important;">
+            <!-- TABELA DE DEMANDAS CORPORATIVA COM COLUNA URGÊNCIA -->
+            <table style="width: 100%; border-collapse: collapse; font-size: 10.5px; page-break-inside: auto !important;">
               <thead style="display: table-header-group;">
-                <tr style="background-color: #0f172a; color: #f8fafc; page-break-inside: avoid !important; break-inside: avoid !important;">
-                  <th style="padding: 7px 6px; border: 1px solid #334155; width: 34px; text-align: center; font-size: 9px; letter-spacing: 0.5px;">#</th>
-                  <th style="padding: 7px 8px; border: 1px solid #334155; width: 140px; text-align: left; font-size: 9px; letter-spacing: 0.5px;">MÓDULO</th>
-                  <th style="padding: 7px 10px; border: 1px solid #334155; text-align: left; font-size: 9px; letter-spacing: 0.5px;">DEMANDA</th>
-                  <th style="padding: 7px 8px; border: 1px solid #334155; width: 125px; text-align: left; font-size: 9px; letter-spacing: 0.5px;">DESENVOLVEDOR</th>
-                  <th style="padding: 7px 8px; border: 1px solid #334155; width: 95px; text-align: center; font-size: 9px; letter-spacing: 0.5px;">DATA INSERÇÃO</th>
-                  <th style="padding: 7px 8px; border: 1px solid #334155; width: 95px; text-align: center; font-size: 9px; letter-spacing: 0.5px;">STATUS</th>
-                  <th style="padding: 7px 8px; border: 1px solid #334155; width: 90px; text-align: center; font-size: 9px; letter-spacing: 0.5px;">PRAZO FINAL</th>
+                <tr style="background-color: #0f172a; color: #ffffff; page-break-inside: avoid !important; break-inside: avoid !important;">
+                  <th style="padding: 8px 6px; border: 1px solid #1e293b; width: 34px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">#</th>
+                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 130px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">MÓDULO</th>
+                  <th style="padding: 8px 10px; border: 1px solid #1e293b; text-align: left; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">DEMANDA</th>
+                  <th style="padding: 8px 6px; border: 1px solid #1e293b; width: 80px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">URGÊNCIA</th>
+                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 125px; text-align: left; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">DESENVOLVEDOR</th>
+                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 95px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">DATA INSERÇÃO</th>
+                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 105px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">STATUS</th>
+                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 95px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">PRAZO FINAL</th>
                 </tr>
               </thead>
               <tbody style="page-break-inside: auto;">
@@ -4168,9 +4604,9 @@
             </table>
 
             <!-- RODAPÉ CORPORATIVO LIMPO -->
-            <div style="page-break-inside: avoid !important; break-inside: avoid !important; margin-top: 10px; padding-top: 6px; border-top: 1px solid #e2e8f0; display: table; width: 100%; font-size: 9px; color: #94a3b8;">
-              <div style="display: table-cell; text-align: left;">SM - Sys Manager • Gestão de Esteira Ágil</div>
-              <div style="display: table-cell; text-align: right;">Documento de acompanhamento</div>
+            <div style="page-break-inside: avoid !important; break-inside: avoid !important; margin-top: 12px; padding-top: 8px; border-top: 1px solid #cbd5e1; display: table; width: 100%; font-size: 9.5px; color: #64748b;">
+              <div style="display: table-cell; text-align: left; font-weight: 500;">Sys Manager (SM) • Governança e Acompanhamento de Esteira Ágil</div>
+              <div style="display: table-cell; text-align: right; font-weight: 500;">Documento de acompanhamento • Emitido via plataforma Google Workspace</div>
             </div>
           </div>
         `;
@@ -4218,8 +4654,8 @@
       const opt = {
         margin:       [8, 8, 8, 8],
         filename:     nomeArquivo,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        image:        { type: 'jpeg', quality: 0.99 },
+        html2canvas:  { scale: 2.8, letterRendering: true, useCORS: true, logging: false, backgroundColor: '#ffffff' },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
         pagebreak:    { mode: 'css' }
       };
@@ -4287,7 +4723,7 @@
             <title>SM_Relatorio_${slugPeriodo}_${anoTexto}</title>
             <style>
               @page { size: landscape; margin: 8mm; }
-              body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 0; color: #1e293b; background: #fff; }
+              body { font-family: 'Plus Jakarta Sans', Arial, Helvetica, sans-serif; margin: 0; padding: 0; color: #0f172a; background: #fff; -webkit-font-smoothing: antialiased; }
               table { width: 100%; border-collapse: collapse; page-break-inside: auto !important; }
               thead { display: table-header-group !important; }
               tr { page-break-inside: avoid !important; break-inside: avoid !important; }
