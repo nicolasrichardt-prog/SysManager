@@ -205,14 +205,14 @@
 
     .metric-box {
       border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 18px 20px;
+      border-radius: 12px;
+      padding: 10px 14px;
       background: #ffffff;
       box-shadow: 0 1px 3px rgba(0,0,0,0.04);
       display: flex;
       align-items: center;
-      gap: 16px;
-      min-height: 98px;
+      gap: 12px;
+      min-height: 64px;
       transition: all 0.2s ease;
     }
     .metric-box:hover {
@@ -225,27 +225,27 @@
       user-select: none;
     }
     .metric-box-clickable:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
       border-color: rgba(37, 99, 235, 0.4);
     }
     .metric-box-clickable:active {
-      transform: translateY(-1px);
+      transform: translateY(0);
     }
     .secao-destacada-temporaria {
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.45) !important;
       transition: box-shadow 0.3s ease-in-out;
     }
     .metric-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 16px;
       flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     }
 
     .btn-nova-atividade {
@@ -324,7 +324,7 @@
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
-      padding: 16px 18px;
+      padding: 10px 14px;
       text-align: left;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -351,31 +351,31 @@
       background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%);
     }
     .kpi-label {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.5px;
       color: #64748b;
-      margin-bottom: 6px;
+      margin-bottom: 3px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .kpi-number {
-      font-size: 1.9rem;
+      font-size: 1.35rem;
       font-weight: 800;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.02em;
       line-height: 1.1;
-      margin-bottom: 6px;
+      margin-bottom: 3px;
     }
     .kpi-badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      font-size: 0.72rem;
+      gap: 3px;
+      font-size: 0.65rem;
       font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 12px;
+      padding: 1px 6px;
+      border-radius: 10px;
     }
     .dev-avatar-circle {
       width: 24px;
@@ -587,7 +587,7 @@
       <div class="tab-pane fade show active" id="tab-esteira" role="tabpanel">
         
         <!-- DASHBOARD EXECUTIVO - 4 MÉTRICAS (CONCLUÍDAS, EM ANDAMENTO, NÃO INICIADAS, ATRASADAS) -->
-        <div class="row g-3 mb-4" id="cardsResumoEsteira">
+        <div class="row g-2 mb-3" id="cardsResumoEsteira">
           <!-- 1º CONCLUÍDAS -->
           <div class="col-xl-3 col-md-6 col-6">
             <div class="metric-box metric-box-clickable" onclick="navegarParaLista('concluidas')" title="Clique para ver a lista de Demandas Concluídas" role="button" tabindex="0">
@@ -595,10 +595,10 @@
                 <i class="fa-solid fa-circle-check"></i>
               </div>
               <div style="min-width: 0; flex: 1;">
-                <div class="text-muted small fw-semibold">Concluídas</div>
-                <div class="d-flex align-items-center gap-2 mt-1">
-                  <h3 class="mb-0 fw-bold text-success" id="metricConcluidasQtd">0</h3>
-                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill fw-bold px-2 py-1" style="font-size: 0.74rem; letter-spacing: 0.2px;">Entregues</span>
+                <div class="text-muted small fw-semibold" style="font-size: 0.72rem;">Concluídas</div>
+                <div class="d-flex align-items-center gap-2 mt-0">
+                  <h4 class="mb-0 fw-bold text-success" id="metricConcluidasQtd" style="font-size: 1.35rem; line-height: 1;">0</h4>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 7px; letter-spacing: 0.2px;">Entregues ↓</span>
                 </div>
               </div>
             </div>
@@ -611,10 +611,10 @@
                 <i class="fa-solid fa-bars-progress"></i>
               </div>
               <div style="min-width: 0; flex: 1;">
-                <div class="text-muted small fw-semibold">Em Andamento</div>
-                <div class="d-flex align-items-center gap-2 mt-1">
-                  <h3 class="mb-0 fw-bold text-primary" id="metricEmAndamentoQtd">0</h3>
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill fw-bold px-2 py-1" style="font-size: 0.74rem; letter-spacing: 0.2px;">Na Esteira</span>
+                <div class="text-muted small fw-semibold" style="font-size: 0.72rem;">Em Andamento</div>
+                <div class="d-flex align-items-center gap-2 mt-0">
+                  <h4 class="mb-0 fw-bold text-primary" id="metricEmAndamentoQtd" style="font-size: 1.35rem; line-height: 1;">0</h4>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 7px; letter-spacing: 0.2px;">Na Esteira ↓</span>
                 </div>
               </div>
             </div>
@@ -627,10 +627,10 @@
                 <i class="fa-solid fa-hourglass-start"></i>
               </div>
               <div style="min-width: 0; flex: 1;">
-                <div class="text-muted small fw-semibold">Não Iniciadas</div>
-                <div class="d-flex align-items-center gap-2 mt-1">
-                  <h3 class="mb-0 fw-bold text-info" id="metricNaoIniciadasQtd">0</h3>
-                  <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill fw-bold px-2 py-1" style="font-size: 0.74rem; letter-spacing: 0.2px;">Na Fila</span>
+                <div class="text-muted small fw-semibold" style="font-size: 0.72rem;">Não Iniciadas</div>
+                <div class="d-flex align-items-center gap-2 mt-0">
+                  <h4 class="mb-0 fw-bold text-info" id="metricNaoIniciadasQtd" style="font-size: 1.35rem; line-height: 1;">0</h4>
+                  <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 7px; letter-spacing: 0.2px;">Na Fila ↓</span>
                 </div>
               </div>
             </div>
@@ -643,10 +643,10 @@
                 <i class="fa-solid fa-triangle-exclamation"></i>
               </div>
               <div style="min-width: 0; flex: 1;">
-                <div class="text-muted small fw-semibold">Atrasadas</div>
-                <div class="d-flex align-items-center gap-2 mt-1">
-                  <h3 class="mb-0 fw-bold text-danger" id="metricAtrasadasQtd">0</h3>
-                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill fw-bold px-2 py-1" style="font-size: 0.74rem; letter-spacing: 0.2px;">Fora do Prazo</span>
+                <div class="text-muted small fw-semibold" style="font-size: 0.72rem;">Atrasadas</div>
+                <div class="d-flex align-items-center gap-2 mt-0">
+                  <h4 class="mb-0 fw-bold text-danger" id="metricAtrasadasQtd" style="font-size: 1.35rem; line-height: 1;">0</h4>
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 7px; letter-spacing: 0.2px;">Fora do Prazo ↓</span>
                 </div>
               </div>
             </div>
@@ -883,8 +883,8 @@
       <div class="tab-pane fade" id="tab-relatorio" role="tabpanel">
         
         <!-- TOOLBAR DE FILTROS EXECUTIVOS -->
-        <div class="card card-filter-toolbar mb-4">
-          <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <div class="card card-filter-toolbar mb-3 p-3">
+          <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
             <div class="d-flex align-items-center gap-2">
               <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle p-2 rounded-2">
                 <i class="fa-solid fa-sliders"></i>
@@ -1012,10 +1012,10 @@
               </div>
             </div>
             <div class="col-xl-2 col-md-4 col-sm-12 d-flex gap-2">
-              <button type="button" class="btn btn-primary btn-sm flex-fill fw-semibold py-2 rounded-3 shadow-sm" onclick="atualizarRelatorioMensalComFeedback()">
+              <button type="button" class="btn btn-primary btn-sm flex-fill fw-semibold py-1 rounded-3 shadow-xs" onclick="atualizarRelatorioMensalComFeedback()" style="font-size: 0.8rem;">
                 <i class="fa-solid fa-filter me-1"></i> Filtrar
               </button>
-              <button type="button" class="btn btn-success btn-sm flex-fill fw-semibold py-2 rounded-3 shadow-sm" onclick="baixarRelatorioPDF()">
+              <button type="button" class="btn btn-success btn-sm flex-fill fw-semibold py-1 rounded-3 shadow-xs" onclick="baixarRelatorioPDF()" style="font-size: 0.8rem;">
                 <i class="fa-solid fa-file-pdf me-1"></i> Baixar PDF
               </button>
             </div>
@@ -1037,35 +1037,35 @@
         </div>
 
         <!-- ÁREA DO RELATÓRIO CORPORATIVO -->
-        <div id="areaRelatorioImpressao" class="border shadow-sm">
-          <div class="d-flex flex-wrap justify-content-between align-items-center pb-3 mb-4 border-bottom">
-            <div class="d-flex align-items-center gap-3">
-              <div class="d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%); letter-spacing: 1px; font-size: 1.25rem;">
+        <div id="areaRelatorioImpressao" class="border shadow-sm p-3">
+          <div class="d-flex flex-wrap justify-content-between align-items-center pb-2 mb-3 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%); letter-spacing: 1px; font-size: 1.05rem;">
                 SM
               </div>
               <div>
                 <div class="d-flex align-items-center gap-2">
-                  <h3 class="fw-bold text-dark mb-0" style="letter-spacing: -0.5px;">Sys Manager</h3>
-                  <span class="badge border" style="background: #f1f5f9; color: #334155; font-size: 0.72rem; letter-spacing: 0.5px;">Relatório de Demandas</span>
+                  <h4 class="fw-bold text-dark mb-0" style="letter-spacing: -0.5px; font-size: 1.15rem;">Sys Manager</h4>
+                  <span class="badge border" style="background: #f1f5f9; color: #334155; font-size: 0.68rem; letter-spacing: 0.5px;">Relatório de Demandas</span>
                 </div>
-                <p class="text-muted small mb-0 mt-1" style="font-size: 0.82rem;">Documento de acompanhamento</p>
+                <p class="text-muted small mb-0" style="font-size: 0.75rem;">Documento de acompanhamento</p>
               </div>
             </div>
             <div class="text-end mt-2 mt-md-0">
-              <span class="badge fs-6 px-3 py-2 fw-semibold shadow-sm" id="lblPeriodoRelatorio" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 20px;">
+              <span class="badge px-3 py-1 fw-semibold shadow-xs" id="lblPeriodoRelatorio" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 20px; font-size: 0.8rem;">
                 Período Geral (2026)
               </span>
-              <div class="small text-muted mt-1" id="lblEmissaoRelatorio" style="font-size: 0.76rem;">
+              <div class="small text-muted mt-1" id="lblEmissaoRelatorio" style="font-size: 0.72rem;">
                 <i class="fa-regular fa-clock me-1 text-primary"></i>Emitido em: 01/10/2026
               </div>
             </div>
           </div>
 
-          <!-- DASHBOARD DO RELATÓRIO: 4 CARDS (TOTAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) -->
-          <div class="row g-3 mb-4">
+          <!-- DASHBOARD DO RELATÓRIO: 4 CARDS (TOTAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) COMPACTOS E HARMÔNICOS -->
+          <div class="row g-2 mb-3">
             <!-- 1. Total de Demandas -->
             <div class="col-md-3 col-6">
-              <div class="report-kpi-card kpi-total h-100">
+              <div class="report-kpi-card kpi-total">
                 <div class="kpi-label">
                   <span>Geral de Demandas</span>
                   <i class="fa-solid fa-layer-group text-secondary"></i>
@@ -1079,7 +1079,7 @@
 
             <!-- 2. Demandas Concluídas -->
             <div class="col-md-3 col-6">
-              <div class="report-kpi-card kpi-concluidas h-100">
+              <div class="report-kpi-card kpi-concluidas">
                 <div class="kpi-label text-success">
                   <span>Demandas Concluídas</span>
                   <i class="fa-solid fa-circle-check text-success"></i>
@@ -1093,7 +1093,7 @@
 
             <!-- 3. Demandas Em Andamento -->
             <div class="col-md-3 col-6">
-              <div class="report-kpi-card kpi-andamento h-100">
+              <div class="report-kpi-card kpi-andamento">
                 <div class="kpi-label text-primary">
                   <span>Em Produção</span>
                   <i class="fa-solid fa-bars-progress text-primary"></i>
@@ -1107,7 +1107,7 @@
 
             <!-- 4. Demandas Atrasadas -->
             <div class="col-md-3 col-6">
-              <div class="report-kpi-card kpi-atrasadas h-100">
+              <div class="report-kpi-card kpi-atrasadas">
                 <div class="kpi-label text-danger">
                   <span>Demandas Atrasadas</span>
                   <i class="fa-solid fa-triangle-exclamation text-danger"></i>
