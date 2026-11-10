@@ -233,7 +233,7 @@ function processarRequisicaoApi(action, data) {
     } else if (action === 'cadastrarTarefa') {
       result = cadastrarTarefa(data);
     } else if (action === 'selecionarTarefaAtiva') {
-      result = selecionarTarefaAtiva(data.tarefaId, data.devId);
+      result = selecionarTarefaAtiva(data.tarefaId, data.devId, data);
     } else if (action === 'concluirTarefa' || action === 'finalizarTarefa') {
       result = concluirTarefa(data.tarefaId, data.devId);
     } else if (action === 'solicitarNovoPrazo') {
@@ -453,18 +453,29 @@ function getAppData(clientEmail) {
     rawTasks.forEach(r => {
       if (!r[0]) return;
 
+      const isAtivo = (r[10] === 'SIM' || r[10] === true);
       const dataPrazo = r[8] ? new Date(r[8]) : null;
       let statusAtual = r[9];
 
-      if (statusAtual !== 'Concluída' && dataPrazo) {
-        const prazoSemHora = new Date(dataPrazo);
-        prazoSemHora.setHours(0, 0, 0, 0);
-        if (hoje.getTime() > prazoSemHora.getTime() && statusAtual !== 'Atrasada') {
-          statusAtual = 'Atrasada';
+      if (statusAtual !== 'Concluída') {
+        if (dataPrazo) {
+          const prazoSemHora = new Date(dataPrazo);
+          prazoSemHora.setHours(0, 0, 0, 0);
+          if (hoje.getTime() > prazoSemHora.getTime()) {
+            statusAtual = 'Atrasada';
+          } else if (isAtivo) {
+            statusAtual = 'Em Andamento';
+          } else {
+            statusAtual = 'Não Iniciada';
+          }
+        } else {
+          if (isAtivo) {
+            statusAtual = 'Em Andamento';
+          } else {
+            statusAtual = 'Não Iniciada';
+          }
         }
       }
-
-      const isAtivo = (r[10] === 'SIM' || r[10] === true);
       const diasAuto = calcularDiasExecucao(r[7], r[12], statusAtual, isAtivo);
 
       tarefas.push({
@@ -793,12 +804,12 @@ function cadastrarTarefa(dados) {
       dados.descricao || '',
       dados.devId,
       dados.devNome,
-      dias,
-      tornarAtiva ? 1 : 0,
-      hoje,
-      dataPrazo,
-      'Em Andamento',
-      tornarAtiva ? 'SIM' : 'NAO',
+      0,
+      0,
+      dados.dataInicio ? new Date(dados.dataInicio) : '',
+      dados.dataPrazo ? new Date(dados.dataPrazo) : '',
+      'Não Iniciada',
+      'NAO',
       dados.urgencia || 'Media',
       '',
       (dados.demandaExterna || dados.modulo === 'Demanda Externa') ? 'Demanda Externa' : (dados.modulo ? dados.modulo.toString().trim() : 'SIOPLEEx')
@@ -811,7 +822,7 @@ function cadastrarTarefa(dados) {
   }
 }
 
-function selecionarTarefaAtiva(tarefaId, devId) {
+function selecionarTarefaAtiva(tarefaId, devId, dadosExtras) {
   const check = verificarAutorizacao();
   if (!check.autorizado) return { success: false };
 
@@ -829,9 +840,23 @@ function selecionarTarefaAtiva(tarefaId, devId) {
       if (r[3] === devId && r[9] !== 'Concluída') {
         if (r[0] === tarefaId) {
           r[10] = 'SIM';
-          if (!r[7]) r[7] = hoje;
+          r[9] = 'Em Andamento';
+          if (dadosExtras && dadosExtras.dataInicio) {
+            r[7] = new Date(dadosExtras.dataInicio);
+          } else if (!r[7]) {
+            r[7] = hoje;
+          }
+          if (dadosExtras && dadosExtras.dataPrazo) {
+            r[8] = new Date(dadosExtras.dataPrazo);
+          }
+          if (dadosExtras && dadosExtras.diasEstimados) {
+            r[5] = Number(dadosExtras.diasEstimados) || 1;
+          }
         } else {
           r[10] = 'NAO';
+          if (r[9] !== 'Atrasada') {
+            r[9] = 'Não Iniciada';
+          }
         }
       }
     });
