@@ -344,10 +344,23 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
+      cursor: pointer;
+      user-select: none;
     }
     .report-kpi-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.08);
+    }
+    .report-kpi-card.kpi-filtro-ativo {
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 2px #2563eb, 0 8px 20px -4px rgba(37, 99, 235, 0.25) !important;
+    }
+    .linha-tabela-relatorio {
+      transition: background-color 0.15s ease;
+      cursor: pointer;
+    }
+    .linha-tabela-relatorio:hover {
+      background-color: #f1f5f9 !important;
     }
     .report-kpi-card.kpi-total {
       border-top: 3px solid #64748b;
@@ -801,7 +814,7 @@
           
           <div class="offcanvas-body p-4 d-flex flex-column" style="background-color: #f8fafc;">
             <!-- BARRA DE PESQUISA COM LUPA DENTRO DO DRAWER -->
-            <div class="input-group input-group-sm mb-3 shadow-xs">
+            <div class="input-group input-group-sm mb-3 shadow-xs" id="containerPesquisaDrawer">
               <span class="input-group-text bg-white border-end-0 text-secondary" id="drawerPesquisaIcon">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </span>
@@ -966,6 +979,9 @@
               <button type="button" class="btn btn-success btn-sm flex-fill fw-semibold py-1 rounded-3 shadow-xs" onclick="baixarRelatorioPDF()" style="font-size: 0.8rem;">
                 <i class="fa-solid fa-file-pdf me-1"></i> Baixar PDF
               </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm rounded-3 shadow-xs px-2" onclick="limparTodosFiltrosRelatorio()" title="Redefinir todos os filtros para o padrão">
+                <i class="fa-solid fa-rotate-left"></i>
+              </button>
             </div>
           </div>
           <!-- Linha extra para Datas Personalizadas caso selecionado CUSTOM -->
@@ -1009,11 +1025,11 @@
             </div>
           </div>
 
-          <!-- DASHBOARD DO RELATÓRIO: 4 CARDS (TOTAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) COMPACTOS E HARMÔNICOS -->
+          <!-- DASHBOARD DO RELATÓRIO: 4 CARDS (TOTAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) CLICÁVEIS -->
           <div class="row g-2 mb-3">
             <!-- 1. Total de Demandas -->
             <div class="col-md-3 col-6">
-              <div class="report-kpi-card kpi-total">
+              <div class="report-kpi-card kpi-total" id="kpiCardRel_TODOS" onclick="filtrarRelatorioPorKpi('TODOS')" role="button" tabindex="0" title="Clique para ver todas as demandas">
                 <div class="kpi-label">
                   <span>Geral de Demandas</span>
                   <i class="fa-solid fa-layer-group text-secondary"></i>
@@ -1027,7 +1043,7 @@
 
             <!-- 2. Demandas Concluídas -->
             <div class="col-md-3 col-6">
-              <div class="report-kpi-card kpi-concluidas">
+              <div class="report-kpi-card kpi-concluidas" id="kpiCardRel_Concluida" onclick="filtrarRelatorioPorKpi('Concluída')" role="button" tabindex="0" title="Clique para filtrar apenas Concluídas">
                 <div class="kpi-label text-success">
                   <span>Demandas Concluídas</span>
                   <i class="fa-solid fa-circle-check text-success"></i>
@@ -1041,7 +1057,7 @@
 
             <!-- 3. Demandas Em Andamento -->
             <div class="col-md-3 col-6">
-              <div class="report-kpi-card kpi-andamento">
+              <div class="report-kpi-card kpi-andamento" id="kpiCardRel_EmAndamento" onclick="filtrarRelatorioPorKpi('Em Andamento')" role="button" tabindex="0" title="Clique para filtrar apenas Em Andamento">
                 <div class="kpi-label text-primary">
                   <span>Em Produção</span>
                   <i class="fa-solid fa-bars-progress text-primary"></i>
@@ -1055,7 +1071,7 @@
 
             <!-- 4. Demandas Atrasadas -->
             <div class="col-md-3 col-6">
-              <div class="report-kpi-card kpi-atrasadas">
+              <div class="report-kpi-card kpi-atrasadas" id="kpiCardRel_Atrasada" onclick="filtrarRelatorioPorKpi('Atrasada')" role="button" tabindex="0" title="Clique para filtrar apenas Atrasadas">
                 <div class="kpi-label text-danger">
                   <span>Demandas Atrasadas</span>
                   <i class="fa-solid fa-triangle-exclamation text-danger"></i>
@@ -1068,13 +1084,31 @@
             </div>
           </div>
 
-          <!-- DETALHAMENTO COM NUMERAÇÃO, MÓDULO E REORDENAÇÃO DE TODAS AS COLUNAS -->
-          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
-              <i class="fa-solid fa-table-list text-primary"></i>Detalhamento das Demandas do Período
-            </h5>
-            <div class="small text-muted" data-html2canvas-ignore="true" style="font-size: 0.78rem;">
-              <i class="fa-solid fa-arrow-down-up-across-line me-1 text-primary"></i> Clique em qualquer coluna para ordenar
+          <!-- DETALHAMENTO COM NUMERAÇÃO, MÓDULO, REORDENAÇÃO E BARRA DE BUSCA RÁPIDA -->
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <div>
+              <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                <i class="fa-solid fa-table-list text-primary"></i>Detalhamento das Demandas do Período
+              </h5>
+              <div class="small text-muted" data-html2canvas-ignore="true" style="font-size: 0.74rem;">
+                <i class="fa-solid fa-arrow-down-up-across-line me-1 text-primary"></i> Clique em qualquer coluna para ordenar ou na linha para abrir o dossiê da demanda
+              </div>
+            </div>
+            
+            <!-- BARRA DE PESQUISA RÁPIDA COM LUPA NA TABELA -->
+            <div class="d-flex align-items-center gap-2" data-html2canvas-ignore="true">
+              <div class="input-group input-group-sm shadow-xs" style="min-width: 250px; max-width: 320px;">
+                <span class="input-group-text bg-white border-end-0 text-secondary">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" class="form-control border-start-0 ps-1" id="pesquisaTabelaRelatorio" 
+                       placeholder="Pesquisar nas demandas..." 
+                       oninput="filtrarTabelaRelatorioAoDigitar()" autocomplete="off">
+                <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaRelatorio" 
+                        onclick="limparPesquisaRelatorio()" title="Limpar pesquisa">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -2800,6 +2834,8 @@
 
     function abrirDrawerLista(tipo) {
       if (tipo) drawerTipoAtual = tipo;
+      const contPesquisa = document.getElementById('containerPesquisaDrawer');
+      if (contPesquisa) contPesquisa.classList.remove('d-none');
       const inputPesquisa = document.getElementById('drawerPesquisaInput');
       if (inputPesquisa) inputPesquisa.value = '';
       const btnLimpar = document.getElementById('drawerBtnLimparPesquisa');
@@ -3130,6 +3166,226 @@
       });
     }
     window.renderizarConteudoDrawer = renderizarConteudoDrawer;
+
+    /**
+     * Abre o Drawer Lateral com o Dossiê Completo de uma Demanda Específica
+     */
+    function abrirDrawerDetalheDemanda(tarefaId) {
+      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
+      if (!tarefa) return;
+
+      const realIdx = appState.tarefas.findIndex(t => t.id === tarefa.id);
+      const isExterna = (tarefa.demandaExterna === true || tarefa.demandaExterna === 'true' || tarefa.modulo === 'Demanda Externa');
+      const mod = isExterna ? 'Demanda Externa' : (tarefa.modulo || 'SIOPLEEx');
+      const devNomeLimpo = limparNomeDev(tarefa.devNome);
+      const iniciais = obterIniciaisDev(devNomeLimpo);
+
+      // Oculta o campo de busca de lista quando estiver no Dossiê
+      const contPesquisa = document.getElementById('containerPesquisaDrawer');
+      if (contPesquisa) contPesquisa.classList.add('d-none');
+
+      // Configura cabeçalho do Drawer
+      const elTitulo = document.getElementById('drawerTitulo');
+      if (elTitulo) elTitulo.innerText = 'Dossiê da Demanda';
+
+      const elSubtitulo = document.getElementById('drawerSubtitulo');
+      if (elSubtitulo) elSubtitulo.innerText = `ID #${String(realIdx + 1).padStart(2, '0')} • ${mod}`;
+
+      const elIcon = document.getElementById('drawerIcon');
+      if (elIcon) elIcon.className = 'fa-solid fa-id-card fs-5 text-primary';
+
+      const elIconCont = document.getElementById('drawerIconContainer');
+      if (elIconCont) elIconCont.className = 'rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle text-primary';
+
+      const elBadgeQtd = document.getElementById('drawerBadgeQtd');
+      if (elBadgeQtd) {
+        let corBadge = 'bg-primary text-white';
+        if (tarefa.status === 'Concluída') corBadge = 'bg-success text-white';
+        else if (tarefa.status === 'Atrasada') corBadge = 'bg-danger text-white';
+        else if (tarefa.status === 'Não Iniciada') corBadge = 'bg-secondary text-white';
+        elBadgeQtd.innerText = tarefa.status;
+        elBadgeQtd.className = `badge ${corBadge} font-monospace rounded-pill`;
+      }
+
+      const elBtnNova = document.getElementById('drawerBtnNovaDemanda');
+      if (elBtnNova) elBtnNova.classList.add('d-none');
+
+      let diasProd = 0;
+      if (tarefa.status === 'Em Andamento' || tarefa.status === 'Concluída' || tarefa.status === 'Atrasada') {
+        diasProd = calcularDiasEmProducao(tarefa.dataInicio, tarefa.dataConclusao, tarefa.status, tarefa.ativo);
+      }
+
+      let diasAtraso = 0;
+      if (tarefa.status === 'Atrasada' && tarefa.dataPrazo) {
+        const dtPrazo = parseDataLocal(tarefa.dataPrazo);
+        const hojeZero = new Date();
+        hojeZero.setHours(0, 0, 0, 0);
+        dtPrazo.setHours(0, 0, 0, 0);
+        diasAtraso = Math.max(1, Math.round((hojeZero.getTime() - dtPrazo.getTime()) / (1000 * 60 * 60 * 24)));
+      }
+
+      const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || 
+        (appState.currentUser && (tarefa.devId === appState.currentUser.id || (tarefa.devNome && appState.currentUser.nome && tarefa.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+
+      const divConteudo = document.getElementById('drawerConteudoLista');
+      if (!divConteudo) return;
+
+      divConteudo.innerHTML = `
+        <!-- CARD PRINCIPAL DO DOSSIÊ -->
+        <div class="card card-custom p-4 mb-3 bg-white border border-light-subtle shadow-xs">
+          
+          <!-- Linha de Badges de Identificação -->
+          <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge ${isExterna ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace">
+                <i class="fa-solid ${isExterna ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${escapeHtml(mod)}
+              </span>
+              <span class="badge badge-${(tarefa.urgencia || 'Media').toLowerCase()}">${tarefa.urgencia || 'Média'}</span>
+              ${tarefa.ativo ? '<span class="badge bg-success-subtle text-success border border-success-subtle fw-bold"><i class="fa-solid fa-crosshairs me-1"></i>Em Foco no Painel</span>' : ''}
+              ${diasAtraso > 0 ? `<span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold"><i class="fa-solid fa-clock-rotate-left me-1"></i>${diasAtraso} dia(s) de atraso</span>` : ''}
+              ${tarefa.status === 'Concluída' ? '<span class="badge bg-success-subtle text-success border border-success-subtle fw-bold"><i class="fa-solid fa-circle-check me-1"></i>Concluída</span>' : ''}
+            </div>
+            <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.78rem;">
+              ID #${String(realIdx + 1).padStart(2, '0')}
+            </span>
+          </div>
+
+          <!-- Título da Demanda -->
+          <h5 class="fw-bold text-dark mb-3" style="line-height: 1.4; font-size: 1.15rem;">${escapeHtml(tarefa.titulo)}</h5>
+
+          <!-- Bloco de Descrição Completa -->
+          <div class="mb-4">
+            <label class="small text-muted fw-bold text-uppercase mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+              <i class="fa-solid fa-align-left me-1 text-primary"></i>Descrição / Especificações
+            </label>
+            <div class="p-3 rounded-3 bg-light border border-light-subtle text-dark" style="font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word;">
+              ${tarefa.descricao ? escapeHtml(tarefa.descricao) : '<span class="text-muted fst-italic">Nenhuma descrição detalhada informada para esta demanda.</span>'}
+            </div>
+          </div>
+
+          <!-- Grid de Metadados / Linha do Tempo -->
+          <div class="row g-2 mb-4">
+            <!-- Desenvolvedor -->
+            <div class="col-md-6 col-12">
+              <div class="p-3 rounded-3 border bg-white h-100">
+                <small class="text-muted d-block mb-1" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Desenvolvedor Responsável</small>
+                <div class="d-flex align-items-center gap-2 mt-1">
+                  <span class="dev-avatar-circle">${iniciais}</span>
+                  <div>
+                    <span class="fw-bold text-dark small d-block">${devNomeLimpo}</span>
+                    <span class="text-muted" style="font-size: 0.7rem;">Membro da equipe</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status e Urgência -->
+            <div class="col-md-6 col-12">
+              <div class="p-3 rounded-3 border bg-white h-100">
+                <small class="text-muted d-block mb-1" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Status Operacional</small>
+                <div class="d-flex align-items-center gap-2 mt-2">
+                  <span class="badge ${tarefa.status === 'Concluída' ? 'bg-success' : (tarefa.status === 'Atrasada' ? 'bg-danger' : (tarefa.status === 'Em Andamento' ? 'bg-primary' : 'bg-secondary'))} px-2 py-1">
+                    ${tarefa.status}
+                  </span>
+                  <span class="text-muted small">• Prioridade ${tarefa.urgencia || 'Média'}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data de Inserção -->
+            <div class="col-md-6 col-12">
+              <div class="p-3 rounded-3 border bg-white h-100">
+                <small class="text-muted d-block mb-1" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Data de Inserção</small>
+                <div class="fw-semibold text-dark small">
+                  <i class="fa-regular fa-calendar-plus text-primary me-1"></i>${formatarData(tarefa.dataInsercao || tarefa.dataInicio) || '-'}
+                </div>
+              </div>
+            </div>
+
+            <!-- Início de Produção -->
+            <div class="col-md-6 col-12">
+              <div class="p-3 rounded-3 border bg-white h-100">
+                <small class="text-muted d-block mb-1" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Início de Produção</small>
+                <div class="fw-semibold text-dark small">
+                  <i class="fa-regular fa-calendar text-info me-1"></i>${formatarData(tarefa.dataInicio) || 'Não iniciado'}
+                </div>
+              </div>
+            </div>
+
+            <!-- Prazo Final -->
+            <div class="col-md-6 col-12">
+              <div class="p-3 rounded-3 border bg-white h-100">
+                <small class="text-muted d-block mb-1" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Prazo Final Estipulado</small>
+                <div class="fw-bold small ${tarefa.status === 'Atrasada' ? 'text-danger' : 'text-dark'}">
+                  <i class="fa-regular fa-calendar-check ${tarefa.status === 'Atrasada' ? 'text-danger' : 'text-primary'} me-1"></i>${formatarData(tarefa.dataPrazo) || 'A definir'}
+                </div>
+              </div>
+            </div>
+
+            <!-- Tempo / Dias -->
+            <div class="col-md-6 col-12">
+              <div class="p-3 rounded-3 border bg-white h-100">
+                <small class="text-muted d-block mb-1" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Tempo em Produção</small>
+                <div class="fw-semibold text-dark small">
+                  <i class="fa-solid fa-stopwatch text-warning me-1"></i><strong>${diasProd}</strong> dia(s) ${tarefa.status === 'Concluída' ? 'trabalhados' : 'em andamento'}
+                  ${tarefa.diasEstimados ? `<span class="text-muted small"> (Est: ${tarefa.diasEstimados}d)</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            ${tarefa.dataConclusao ? `
+              <div class="col-12">
+                <div class="p-3 rounded-3 border bg-success bg-opacity-10 border-success-subtle">
+                  <small class="text-success d-block mb-1" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 800;">Entrega Concluída com Sucesso</small>
+                  <div class="fw-bold text-success small">
+                    <i class="fa-solid fa-circle-check me-1"></i>Finalizada em: ${formatarData(tarefa.dataConclusao)}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Barra de Ações Rápidas -->
+          <div class="d-flex align-items-center justify-content-between pt-3 border-top flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              ${(tarefa.status === 'Em Andamento' || tarefa.status === 'Atrasada') ? `
+                <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold px-3 py-1 shadow-xs" onclick="finalizarDemandaPorId('${tarefa.id}')">
+                  <i class="fa-solid fa-circle-check me-1"></i> Concluir Demanda
+                </button>
+              ` : ''}
+              ${tarefa.status === 'Não Iniciada' ? `
+                <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold px-3 py-1 shadow-sm" onclick="abrirModalIniciarDemanda('${tarefa.id}')">
+                  <i class="fa-solid fa-play me-1"></i> Iniciar Agora
+                </button>
+              ` : ''}
+              ${(!tarefa.ativo && tarefa.status === 'Em Andamento') ? `
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-2 py-1" onclick="alternarFocoProducao('${tarefa.id}')">
+                  <i class="fa-solid fa-crosshairs me-1"></i> Focar no Painel
+                </button>
+              ` : ''}
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              ${podeEditarOuExcluir ? `
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" onclick="abrirModalEditarTarefa('${tarefa.id}')">
+                  <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" onclick="excluirDemandaConfirm('${tarefa.id}')">
+                  <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                </button>
+              ` : ''}
+              <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 py-1" data-bs-dismiss="offcanvas">
+                Fechar
+              </button>
+            </div>
+          </div>
+
+        </div>
+      `;
+
+      const bsDrawer = bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('drawerLateralDemandas'));
+      bsDrawer.show();
+    }
+    window.abrirDrawerDetalheDemanda = abrirDrawerDetalheDemanda;
 
     let tarefaSendoIniciadaId = null;
 
@@ -4296,6 +4552,98 @@
       atualizarRelatorioMensal();
     }
 
+    /**
+     * FILTROS RÁPIDOS DA ABA RELATÓRIO MENSAL (KPIs, BUSCA TEXTUAL, RESET)
+     */
+    let kpiFiltroAtivoRelatorio = null;
+
+    function filtrarRelatorioPorKpi(tipo) {
+      if (kpiFiltroAtivoRelatorio === tipo || tipo === 'TODOS') {
+        kpiFiltroAtivoRelatorio = null;
+      } else {
+        kpiFiltroAtivoRelatorio = tipo;
+      }
+
+      // Atualiza visual nos 4 cards
+      const mapeamento = {
+        'TODOS': 'kpiCardRel_TODOS',
+        'Concluída': 'kpiCardRel_Concluida',
+        'Em Andamento': 'kpiCardRel_EmAndamento',
+        'Atrasada': 'kpiCardRel_Atrasada'
+      };
+
+      Object.entries(mapeamento).forEach(([status, elementId]) => {
+        const el = document.getElementById(elementId);
+        if (el) {
+          if (kpiFiltroAtivoRelatorio === status) {
+            el.classList.add('kpi-filtro-ativo');
+          } else {
+            el.classList.remove('kpi-filtro-ativo');
+          }
+        }
+      });
+
+      atualizarRelatorioMensal();
+    }
+    window.filtrarRelatorioPorKpi = filtrarRelatorioPorKpi;
+
+    function filtrarTabelaRelatorioAoDigitar() {
+      const input = document.getElementById('pesquisaTabelaRelatorio');
+      const btnLimpar = document.getElementById('btnLimparPesquisaRelatorio');
+      if (input && btnLimpar) {
+        if (input.value.trim().length > 0) btnLimpar.classList.remove('d-none');
+        else btnLimpar.classList.add('d-none');
+      }
+      atualizarRelatorioMensal();
+    }
+    window.filtrarTabelaRelatorioAoDigitar = filtrarTabelaRelatorioAoDigitar;
+
+    function limparPesquisaRelatorio() {
+      const input = document.getElementById('pesquisaTabelaRelatorio');
+      const btnLimpar = document.getElementById('btnLimparPesquisaRelatorio');
+      if (input) input.value = '';
+      if (btnLimpar) btnLimpar.classList.add('d-none');
+      atualizarRelatorioMensal();
+    }
+    window.limparPesquisaRelatorio = limparPesquisaRelatorio;
+
+    function limparTodosFiltrosRelatorio() {
+      const mesSelect = document.getElementById('filtroRelatorioMes');
+      if (mesSelect) mesSelect.value = 'TODOS';
+      const anoInput = document.getElementById('filtroRelatorioAno');
+      if (anoInput) anoInput.value = '2026';
+      const intSelect = document.getElementById('filtroRelatorioIntervalo');
+      if (intSelect) intSelect.value = 'TODOS';
+      const devSelect = document.getElementById('filtroRelatorioDev');
+      if (devSelect) devSelect.value = 'TODOS';
+      const modSelect = document.getElementById('filtroRelatorioModulo');
+      if (modSelect) modSelect.value = 'TODOS';
+
+      const chkTodos = document.getElementById('chkRelStatusTodos');
+      if (chkTodos) {
+        chkTodos.checked = true;
+        aoAlternarTodosStatusRelatorio(chkTodos);
+      }
+
+      const inputBusca = document.getElementById('pesquisaTabelaRelatorio');
+      if (inputBusca) inputBusca.value = '';
+      const btnLimpar = document.getElementById('btnLimparPesquisaRelatorio');
+      if (btnLimpar) btnLimpar.classList.add('d-none');
+
+      kpiFiltroAtivoRelatorio = null;
+      ['kpiCardRel_TODOS', 'kpiCardRel_Concluida', 'kpiCardRel_EmAndamento', 'kpiCardRel_Atrasada'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('kpi-filtro-ativo');
+      });
+
+      const linhaCustom = document.getElementById('linhaDatasPersonalizadas');
+      if (linhaCustom) linhaCustom.classList.add('d-none');
+
+      atualizarRelatorioMensal();
+      mostrarToast('Filtros do relatório redefinidos para o padrão!');
+    }
+    window.limparTodosFiltrosRelatorio = limparTodosFiltrosRelatorio;
+
     function atualizarRelatorioMensal() {
       verificarEAtualizarStatusTarefas();
       const mesSelect = document.getElementById('filtroRelatorioMes');
@@ -4538,9 +4886,7 @@
         }
       });
 
-      // Guarda resultado filtrado atual para exportação precisa em PDF
-      relatorioFiltradoAtual = filtradas;
-
+      // Guarda métricas consolidadas do período filtrado
       const totalDemandas = filtradas.length;
       const totalConcluidas = filtradas.filter(t => t.status === 'Concluída').length;
       const totalAtrasadas = filtradas.filter(t => t.status === 'Atrasada').length;
@@ -4576,6 +4922,29 @@
         elAtrasadasDesc.innerText = totalAtrasadas === 0 ? 'nenhum atraso' : `${totalAtrasadas} fora do prazo`;
       }
 
+      // Aplica Filtro Rápido de KPI clicado e Barra de Pesquisa Textual da Tabela
+      let exibidasNaTabela = [...filtradas];
+      if (kpiFiltroAtivoRelatorio && kpiFiltroAtivoRelatorio !== 'TODOS') {
+        exibidasNaTabela = exibidasNaTabela.filter(t => t.status === kpiFiltroAtivoRelatorio);
+      }
+
+      const inputBuscaTab = document.getElementById('pesquisaTabelaRelatorio');
+      const termoBuscaTabela = (inputBuscaTab ? inputBuscaTab.value : '').trim().toLowerCase();
+      if (termoBuscaTabela) {
+        exibidasNaTabela = exibidasNaTabela.filter(t => {
+          const tit = (t.titulo || '').toLowerCase();
+          const mod = ((t.demandaExterna || t.modulo === 'Demanda Externa') ? 'Demanda Externa' : (t.modulo || 'SIOPLEEx')).toLowerCase();
+          const dev = (t.devNome || '').toLowerCase();
+          const desc = (t.descricao || '').toLowerCase();
+          const st = (t.status || '').toLowerCase();
+          const urg = (t.urgencia || '').toLowerCase();
+          return tit.includes(termoBuscaTabela) || mod.includes(termoBuscaTabela) || dev.includes(termoBuscaTabela) || desc.includes(termoBuscaTabela) || st.includes(termoBuscaTabela) || urg.includes(termoBuscaTabela);
+        });
+      }
+
+      // Guarda resultado exibido para exportação precisa
+      relatorioFiltradoAtual = exibidasNaTabela;
+
       // Permissão de exclusão: todos podem excluir as suas próprias demandas, e Gerente/Admin qualquer uma
       const isGerenteGeral = usuarioPodeVerPainelGerente(appState.currentUser);
       const thAcoes = document.getElementById('thAcoesRelatorio');
@@ -4587,11 +4956,18 @@
       const tbody = document.getElementById('tabelaCorpoRelatorio');
       tbody.innerHTML = '';
 
-      if (filtradas.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-muted">Nenhuma demanda encontrada para o período/filtro selecionado.</td></tr>`;
+      if (exibidasNaTabela.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-muted"><i class="fa-solid fa-magnifying-glass me-2 text-secondary opacity-50"></i>Nenhuma demanda encontrada para os critérios selecionados.</td></tr>`;
       } else {
-        filtradas.forEach((t, index) => {
+        exibidasNaTabela.forEach((t, index) => {
           const tr = document.createElement('tr');
+          tr.className = 'linha-tabela-relatorio';
+          tr.title = 'Clique para ver o dossiê completo desta demanda';
+          tr.onclick = function(e) {
+            if (e.target.closest('button') || e.target.closest('a')) return;
+            abrirDrawerDetalheDemanda(t.id);
+          };
+
           const isExterna = (t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa');
           const mod = isExterna ? 'Demanda Externa' : (t.modulo || 'SIOPLEEx');
           const devNomeLimpo = limparNomeDev(t.devNome);
@@ -4665,16 +5041,19 @@
             <td>${statusBadge}</td>
             <td>${prazoHtml}</td>
             <td data-html2canvas-ignore="true" class="text-center text-nowrap">
-              ${podeExcluirEstaDemanda ? `
-                <div class="d-inline-flex gap-1">
-                  <button type="button" class="btn btn-outline-secondary btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Editar Demanda" onclick="abrirModalEditarTarefa('${t.id}')">
+              <div class="d-inline-flex gap-1">
+                <button type="button" class="btn btn-outline-primary btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Ver Dossiê da Demanda" onclick="event.stopPropagation(); abrirDrawerDetalheDemanda('${t.id}')">
+                  <i class="fa-solid fa-eye" style="font-size: 0.72rem;"></i>
+                </button>
+                ${podeExcluirEstaDemanda ? `
+                  <button type="button" class="btn btn-outline-secondary btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Editar Demanda" onclick="event.stopPropagation(); abrirModalEditarTarefa('${t.id}')">
                     <i class="fa-solid fa-pen-to-square" style="font-size: 0.72rem;"></i>
                   </button>
-                  <button type="button" class="btn btn-outline-danger btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="excluirDemandaConfirm('${t.id}')">
+                  <button type="button" class="btn btn-outline-danger btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="event.stopPropagation(); excluirDemandaConfirm('${t.id}')">
                     <i class="fa-solid fa-trash-can" style="font-size: 0.72rem;"></i>
                   </button>
-                </div>
-              ` : '<span class="text-muted small">-</span>'}
+                ` : ''}
+              </div>
             </td>
           `;
           tbody.appendChild(tr);
@@ -4806,26 +5185,26 @@
 
           linhasTabelaHtml += `
             <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; page-break-inside: avoid !important; break-inside: avoid !important;">
-              <td style="padding: 7px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700; color: #475569; font-size: 10px;">${String(idx + 1).padStart(2, '0')}</td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center;">
-                <span style="display: inline-block; padding: 2.5px 8px; border-radius: 4px; font-size: 9.5px; font-weight: 700; ${isExternaPdf ? 'background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;' : 'background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1;'}">
+              <td style="padding: 6px 6px; border: 1px solid #e2e8f0; text-align: center; font-weight: 700; color: #64748b; font-family: monospace; font-size: 9.5px;">${String(idx + 1).padStart(2, '0')}</td>
+              <td style="padding: 6px 8px; border: 1px solid #e2e8f0; text-align: center;">
+                <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.3px; ${isExternaPdf ? 'background: #fef3c7; color: #92400e; border: 1px solid #fde68a;' : 'background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;'}">
                   ${isExternaPdf ? 'Demanda Externa' : modPdf}
                 </span>
               </td>
-              <td style="padding: 7px 10px; border: 1px solid #cbd5e1; font-weight: 700; color: #0f172a; font-size: 11px; line-height: 1.35; text-align: left;">${d.titulo}</td>
-              <td style="padding: 7px 6px; border: 1px solid #cbd5e1; text-align: center;">
-                <span style="display: inline-block; padding: 2.5px 8px; border-radius: 12px; font-size: 9px; font-weight: 700; color: ${urgBadgeColor}; background-color: ${urgBg}; border: 1px solid ${urgBorder};">
+              <td style="padding: 6px 10px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f172a; font-size: 10.5px; line-height: 1.35; text-align: left;">${d.titulo}</td>
+              <td style="padding: 6px 6px; border: 1px solid #e2e8f0; text-align: center;">
+                <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 8.5px; font-weight: 700; color: ${urgBadgeColor}; background-color: ${urgBg}; border: 1px solid ${urgBorder};">
                   ${urgTexto}
                 </span>
               </td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; color: #1e293b; font-size: 10.5px; font-weight: 600; text-align: left;">${limparNomeDev(d.devNome)}</td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center; color: #334155; font-size: 10px; font-weight: 600;">${dtInsercaoFormatada}</td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center;">
-                <span style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 9.5px; font-weight: 700; color: ${statusBadgeColor}; background-color: ${statusBg}; border: 1px solid ${statusBorder}; text-transform: uppercase; letter-spacing: 0.3px;">
+              <td style="padding: 6px 8px; border: 1px solid #e2e8f0; color: #1e293b; font-size: 10px; font-weight: 600; text-align: left;">${limparNomeDev(d.devNome)}</td>
+              <td style="padding: 6px 8px; border: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 9.5px; font-weight: 600; font-family: monospace;">${dtInsercaoFormatada}</td>
+              <td style="padding: 6px 8px; border: 1px solid #e2e8f0; text-align: center;">
+                <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: 700; color: ${statusBadgeColor}; background-color: ${statusBg}; border: 1px solid ${statusBorder}; text-transform: uppercase; letter-spacing: 0.3px;">
                   ${d.status}
                 </span>
               </td>
-              <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center; color: ${d.status === 'Atrasada' ? '#dc2626' : (d.status === 'Concluída' ? '#16a34a' : (d.status === 'Não Iniciada' ? '#64748b' : '#334155'))}; font-weight: 700; font-size: 10px;">${prazo}</td>
+              <td style="padding: 6px 8px; border: 1px solid #e2e8f0; text-align: center; color: ${d.status === 'Atrasada' ? '#dc2626' : (d.status === 'Concluída' ? '#16a34a' : (d.status === 'Não Iniciada' ? '#64748b' : '#334155'))}; font-weight: 700; font-size: 9.5px; font-family: monospace;">${prazo}</td>
             </tr>
           `;
         });
@@ -4835,96 +5214,99 @@
       const containerPdf = document.getElementById('corpoVisualizacaoPdf');
       if (containerPdf) {
         containerPdf.innerHTML = `
-          <div id="documentoPdfRenderizado" style="width: 100%; max-width: 1040px; margin: 0 auto; padding: 4px 6px; background: #ffffff; color: #0f172a; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: geometricPrecision; box-sizing: border-box;">
+          <div id="documentoPdfRenderizado" style="width: 100%; max-width: 1040px; margin: 0 auto; padding: 8px 10px; background: #ffffff; color: #0f172a; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: geometricPrecision; box-sizing: border-box;">
             <!-- BARRA DECORATIVA SUPERIOR -->
-            <div style="background: linear-gradient(90deg, #1e40af 0%, #2563eb 50%, #06b6d4 100%); height: 4px; border-radius: 2px; margin-bottom: 10px;"></div>
+            <div style="background: linear-gradient(90deg, #0f172a 0%, #1d4ed8 50%, #38bdf8 100%); height: 3px; border-radius: 2px; margin-bottom: 12px;"></div>
 
-            <!-- CABEÇALHO SM EXECUTIVO -->
-            <div style="display: table; width: 100%; border-bottom: 2px solid #2563eb; padding-bottom: 8px; margin-bottom: 12px;">
+            <!-- CABEÇALHO SM EXECUTIVO ELEGANTE -->
+            <div style="display: table; width: 100%; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
               <div style="display: table-cell; vertical-align: middle;">
                 <div style="display: table; width: auto;">
                   <div style="display: table-cell; vertical-align: middle; padding-right: 12px;">
-                    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); color: #ffffff; font-weight: 800; font-size: 18px; padding: 7px 12px; border-radius: 8px; letter-spacing: 1px; display: inline-block; box-shadow: 0 2px 4px rgba(15,23,42,0.15);">
+                    <div style="background: #0f172a; color: #ffffff; font-weight: 800; font-size: 16px; padding: 6px 12px; border-radius: 8px; letter-spacing: 1.5px; display: inline-block; box-shadow: 0 2px 4px rgba(15,23,42,0.12);">
                       SM
                     </div>
                   </div>
                   <div style="display: table-cell; vertical-align: middle;">
-                    <div style="font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; line-height: 1.1;">Sys Manager</div>
-                    <div style="font-size: 11px; font-weight: 700; color: #2563eb; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">Relatório de Demandas</div>
-                    <div style="font-size: 9.5px; color: #64748b; font-weight: 500;">Documento de acompanhamento</div>
+                    <div style="font-size: 21px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; line-height: 1.1;">Sys Manager</div>
+                    <div style="font-size: 9.5px; font-weight: 800; color: #2563eb; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.8px;">Relatório de Demandas</div>
+                    <div style="font-size: 9px; color: #64748b; font-weight: 500; margin-top: 1px;">Documento de acompanhamento</div>
                   </div>
                 </div>
               </div>
               <div style="display: table-cell; vertical-align: middle; text-align: right;">
-                <div style="display: inline-block; background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); color: #ffffff; font-weight: 700; font-size: 11.5px; padding: 5px 14px; border-radius: 20px; margin-bottom: 3px; box-shadow: 0 2px 5px rgba(37,99,235,0.25);">
+                <div style="display: inline-block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-weight: 700; font-size: 11px; padding: 4px 14px; border-radius: 16px; margin-bottom: 3px;">
                   ${periodoDesc}
                 </div>
-                ${tagsFiltros.length > 0 ? `<div style="font-size: 10px; color: #1e40af; font-weight: 700; margin-top: 3px;">${tagsFiltros.join(' • ')}</div>` : ''}
-                <div style="font-size: 9.5px; color: #64748b; margin-top: 3px; font-weight: 500;">
+                ${tagsFiltros.length > 0 ? `<div style="font-size: 9.5px; color: #475569; font-weight: 600; margin-top: 3px;">${tagsFiltros.join(' • ')}</div>` : ''}
+                <div style="font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 500;">
                   Emitido em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}
                 </div>
               </div>
             </div>
 
-            <!-- 4 CARDS RESUMO EXECUTIVO -->
+            <!-- 4 CARDS RESUMO EXECUTIVO SOFISTICADOS -->
             <div style="display: table; width: 100%; margin-bottom: 12px; border-collapse: separate; border-spacing: 8px 0;">
               <div style="display: table-row;">
                 <!-- 1. Geral de Demandas -->
-                <div style="display: table-cell; width: 25%; background: #ffffff; border: 1px solid #cbd5e1; border-top: 4px solid #334155; border-radius: 8px; padding: 9px 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-                  <div style="font-size: 9.5px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;">Geral de Demandas</div>
+                <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); border: 1px solid #e2e8f0; border-top: 3px solid #64748b; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                  <div style="font-size: 9px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Geral de Demandas</div>
                   <div style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 2px 0; line-height: 1.1;">${totalDemandas}</div>
-                  <div style="font-size: 9.5px; color: #64748b; font-weight: 600;">${totalDemandas === 1 ? '1 demanda registrada' : `${totalDemandas} demandas registradas`}</div>
+                  <div style="font-size: 9px; color: #64748b; font-weight: 600;">${totalDemandas === 1 ? '1 demanda registrada' : `${totalDemandas} demandas registradas`}</div>
                 </div>
 
                 <!-- 2. Demandas Concluídas -->
-                <div style="display: table-cell; width: 25%; background: #f0fdf4; border: 1px solid #86efac; border-top: 4px solid #16a34a; border-radius: 8px; padding: 9px 12px; text-align: center; box-shadow: 0 1px 3px rgba(22,163,74,0.06);">
-                  <div style="font-size: 9.5px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.6px;">Demandas Concluídas</div>
+                <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); border: 1px solid #bbf7d0; border-top: 3px solid #16a34a; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(22,163,74,0.03);">
+                  <div style="font-size: 9px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Concluídas</div>
                   <div style="font-size: 24px; font-weight: 800; color: #16a34a; margin: 2px 0; line-height: 1.1;">${concluidas}</div>
-                  <div style="font-size: 9.5px; color: #15803d; font-weight: 700;">
+                  <div style="font-size: 9px; color: #15803d; font-weight: 700;">
                     ${totalDemandas > 0 ? Math.round((concluidas / totalDemandas) * 100) : 0}% entregues no período
                   </div>
                 </div>
 
                 <!-- 3. Demandas Em Andamento -->
-                <div style="display: table-cell; width: 25%; background: #eff6ff; border: 1px solid #93c5fd; border-top: 4px solid #2563eb; border-radius: 8px; padding: 9px 12px; text-align: center; box-shadow: 0 1px 3px rgba(37,99,235,0.06);">
-                  <div style="font-size: 9.5px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.6px;">Em Andamento</div>
+                <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; border-top: 3px solid #2563eb; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(37,99,235,0.03);">
+                  <div style="font-size: 9px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">Em Andamento</div>
                   <div style="font-size: 24px; font-weight: 800; color: #2563eb; margin: 2px 0; line-height: 1.1;">${emAndamento}</div>
-                  <div style="font-size: 9.5px; color: #1d4ed8; font-weight: 700;">produção ativa na esteira</div>
+                  <div style="font-size: 9px; color: #1d4ed8; font-weight: 700;">produção ativa na esteira</div>
                 </div>
 
                 <!-- 4. Demandas Atrasadas -->
-                <div style="display: table-cell; width: 25%; background: #fef2f2; border: 1px solid #fca5a5; border-top: 4px solid #dc2626; border-radius: 8px; padding: 9px 12px; text-align: center; box-shadow: 0 1px 3px rgba(220,38,38,0.06);">
-                  <div style="font-size: 9.5px; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.6px;">Demandas Atrasadas</div>
+                <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%); border: 1px solid #fecaca; border-top: 3px solid #dc2626; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(220,38,38,0.03);">
+                  <div style="font-size: 9px; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Atrasadas</div>
                   <div style="font-size: 24px; font-weight: 800; color: #dc2626; margin: 2px 0; line-height: 1.1;">${atrasadas}</div>
-                  <div style="font-size: 9.5px; color: #b91c1c; font-weight: 700;">
+                  <div style="font-size: 9px; color: #b91c1c; font-weight: 700;">
                     ${atrasadas === 0 ? 'Nenhum atraso registrado' : `${atrasadas} fora do prazo limite`}
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- TÍTULO DA TABELA -->
-            <div style="margin-bottom: 6px; font-size: 11.5px; font-weight: 700; color: #0f172a; display: table; width: 100%;">
+            <!-- BARRA DE SUBTÍTULO E RESUMO DA TABELA -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 10px; margin-bottom: 8px; display: table; width: 100%; box-sizing: border-box;">
               <div style="display: table-cell; text-align: left; vertical-align: middle;">
-                <span style="font-weight: 800; color: #0f172a;">Detalhamento das Demandas do Período</span>
+                <span style="font-weight: 800; font-size: 9.5px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">Detalhamento das Demandas do Período</span>
               </div>
-              <div style="display: table-cell; text-align: right; font-size: 10px; font-weight: 600; color: #475569; vertical-align: middle;">
-                Total: <strong style="color: #0f172a;">${totalDemandas}</strong> | Concluídas: <strong style="color: #16a34a;">${concluidas}</strong> | Em Produção: <strong style="color: #2563eb;">${emAndamento}</strong> | Atrasadas: <strong style="color: #dc2626;">${atrasadas}</strong> | Não Iniciadas: <strong style="color: #64748b;">${naoIniciadas}</strong>
+              <div style="display: table-cell; text-align: right; vertical-align: middle;">
+                <span style="display: inline-block; background: #e2e8f0; color: #334155; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Total: ${totalDemandas}</span>
+                <span style="display: inline-block; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Concluídas: ${concluidas}</span>
+                <span style="display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Em Produção: ${emAndamento}</span>
+                <span style="display: inline-block; background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Atrasadas: ${atrasadas}</span>
               </div>
             </div>
 
-            <!-- TABELA DE DEMANDAS CORPORATIVA COM COLUNA URGÊNCIA -->
-            <table style="width: 100%; border-collapse: collapse; font-size: 10.5px; page-break-inside: auto !important;">
+            <!-- TABELA DE DEMANDAS CORPORATIVA COM BORDAS SUAVES -->
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px; border: 1px solid #e2e8f0; page-break-inside: auto !important;">
               <thead style="display: table-header-group;">
                 <tr style="background-color: #0f172a; color: #ffffff; page-break-inside: avoid !important; break-inside: avoid !important;">
-                  <th style="padding: 8px 6px; border: 1px solid #1e293b; width: 38px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">ID</th>
-                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 126px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">ORIGEM</th>
-                  <th style="padding: 8px 10px; border: 1px solid #1e293b; text-align: left; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">DEMANDA</th>
-                  <th style="padding: 8px 6px; border: 1px solid #1e293b; width: 80px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">URGÊNCIA</th>
-                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 125px; text-align: left; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">DESENVOLVEDOR</th>
-                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 95px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">DATA INSERÇÃO</th>
-                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 105px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">STATUS</th>
-                  <th style="padding: 8px 8px; border: 1px solid #1e293b; width: 95px; text-align: center; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px;">PRAZO FINAL</th>
+                  <th style="padding: 7px 6px; border: 1px solid #1e293b; width: 36px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">ID</th>
+                  <th style="padding: 7px 8px; border: 1px solid #1e293b; width: 124px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">ORIGEM</th>
+                  <th style="padding: 7px 10px; border: 1px solid #1e293b; text-align: left; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">DEMANDA</th>
+                  <th style="padding: 7px 6px; border: 1px solid #1e293b; width: 75px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">URGÊNCIA</th>
+                  <th style="padding: 7px 8px; border: 1px solid #1e293b; width: 125px; text-align: left; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">DESENVOLVEDOR</th>
+                  <th style="padding: 7px 8px; border: 1px solid #1e293b; width: 95px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">DATA INSERÇÃO</th>
+                  <th style="padding: 7px 8px; border: 1px solid #1e293b; width: 105px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">STATUS</th>
+                  <th style="padding: 7px 8px; border: 1px solid #1e293b; width: 95px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">PRAZO FINAL</th>
                 </tr>
               </thead>
               <tbody style="page-break-inside: auto;">
@@ -4933,7 +5315,7 @@
             </table>
 
             <!-- RODAPÉ CORPORATIVO LIMPO -->
-            <div style="page-break-inside: avoid !important; break-inside: avoid !important; margin-top: 12px; padding-top: 8px; border-top: 1px solid #cbd5e1; display: table; width: 100%; font-size: 9.5px; color: #64748b;">
+            <div style="page-break-inside: avoid !important; break-inside: avoid !important; margin-top: 12px; padding-top: 8px; border-top: 1px solid #e2e8f0; display: table; width: 100%; font-size: 9px; color: #64748b;">
               <div style="display: table-cell; text-align: left; font-weight: 500;">Sys Manager (SM) • Governança e Acompanhamento</div>
               <div style="display: table-cell; text-align: right; font-weight: 500;">Documento de acompanhamento</div>
             </div>
