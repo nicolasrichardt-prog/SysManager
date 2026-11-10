@@ -2533,12 +2533,23 @@
       if (!confirm(`Deseja realmente concluir a demanda "${tarefa.titulo}"?`)) return;
 
       const hojeIso = formatarDataIso(new Date());
+      const eraAtiva = tarefa.ativo;
       tarefa.status = 'Concluída';
       tarefa.ativo = false;
       tarefa.dataConclusao = hojeIso;
       tarefa.diasTrabalhados = calcularDiasEmProducao(tarefa.dataInicio, hojeIso, 'Concluída', false);
 
       salvarEdicaoLocalDemanda(tarefa);
+
+      // Se a demanda concluída era a que estava em foco, promove outra em andamento para foco
+      if (eraAtiva) {
+        const outraEmAndamento = appState.tarefas.find(t => t.devId === tarefa.devId && t.id !== tarefa.id && t.status === 'Em Andamento');
+        if (outraEmAndamento) {
+          outraEmAndamento.ativo = true;
+          salvarEdicaoLocalDemanda(outraEmAndamento);
+        }
+      }
+
       try {
         localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
       } catch(e) {}
@@ -2555,6 +2566,24 @@
         diasTrabalhados: tarefa.diasTrabalhados
       });
     }
+
+    /**
+     * Alterna qual demanda em andamento fica em foco no Hero Card ("PRODUÇÃO ATIVA")
+     */
+    function alternarFocoProducao(tarefaId) {
+      const task = appState.tarefas.find(t => t.id === tarefaId);
+      if (!task) return;
+      const devId = task.devId || (appState.currentUser ? appState.currentUser.id : null);
+      appState.tarefas.forEach(t => {
+        if (t.devId === devId && t.status !== 'Concluída') {
+          t.ativo = (t.id === task.id);
+          salvarEdicaoLocalDemanda(t);
+        }
+      });
+      atualizarAbaEsteira();
+      mostrarToast(`Demanda "${task.titulo}" colocada em foco no painel.`);
+    }
+    window.alternarFocoProducao = alternarFocoProducao;
 
     /**
      * Filtro dinâmico por digitação na lista de Demandas
@@ -2676,7 +2705,7 @@
       if (badgeConcluidas) badgeConcluidas.innerText = concluidas.length;
 
       // HERO CARD: DEMANDA ATUAL EM PRODUÇÃO
-      const demandaAtual = emAndamento.length > 0 ? emAndamento[0] : (tarefasDev.find(t => t.ativo && t.status !== 'Concluída') || null);
+      const demandaAtual = tarefasDev.find(t => t.ativo && t.status !== 'Concluída') || (emAndamento.length > 0 ? emAndamento[0] : (atrasadas.length > 0 ? atrasadas[0] : null));
       const cardAtual = document.getElementById('cardDemandaAtual');
       const alertaAtraso = document.getElementById('alertaAtrasoAtual');
       const botoesAcao = document.getElementById('botoesAcaoAtual');
@@ -2847,6 +2876,7 @@
                     <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
                       <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
                       <span class="badge bg-primary text-white"><i class="fa-solid fa-spinner fa-spin me-1"></i>Em Andamento</span>
+                      ${task.ativo ? '<span class="badge bg-success-subtle text-success border border-success-subtle small fw-bold"><i class="fa-solid fa-crosshairs me-1"></i>Em Foco no Painel</span>' : ''}
                       ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar-check text-primary me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
                       <span class="small text-muted"><i class="fa-solid fa-stopwatch me-1"></i>${diasProd} dia(s) em prod.</span>
                     </div>
@@ -2854,6 +2884,11 @@
                       <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold py-1 px-3 shadow-xs" onclick="finalizarDemandaPorId('${task.id}')">
                         <i class="fa-solid fa-circle-check me-1"></i> Concluir
                       </button>
+                      ${!task.ativo ? `
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-2 py-1" title="Colocar em foco no painel superior" onclick="alternarFocoProducao('${task.id}')">
+                          <i class="fa-solid fa-crosshairs me-1"></i> Focar no Painel
+                        </button>
+                      ` : ''}
                       ${podeEditarOuExcluir ? `
                         <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
                           <i class="fa-solid fa-pen-to-square me-1"></i> Editar
@@ -3237,17 +3272,22 @@
       task.diasEstimados = diffDias;
       task.diasTrabalhados = 1;
 
-      // Desativa outras demandas ativas deste desenvolvedor que não estejam concluídas
+      // Desativa foco de outras demandas deste desenvolvedor que não estejam concluídas,
+      // MAS PRESERVA rigorosamente seu status "Em Andamento" (ou "Atrasada")
       appState.tarefas.forEach(other => {
         if (other.devId === devId && other.id !== task.id && other.status !== 'Concluída') {
           other.ativo = false;
+          if (other.status !== 'Atrasada') {
+            other.status = 'Em Andamento';
+          }
+          salvarEdicaoLocalDemanda(other);
         }
       });
 
-      verificarEAtualizarStatusTarefas();
-
       // Salva no Local Edits Store para imunidade total contra F5
       salvarEdicaoLocalDemanda(task);
+
+      verificarEAtualizarStatusTarefas();
       try {
         localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
       } catch(e) {}
@@ -3274,25 +3314,15 @@
     }
 
     function finalizarDemandaAtual() {
-      const devId = appState.currentUser.id;
-      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo && t.status !== 'Concluída');
-      if (!tarefaAtiva) return;
-
-      if (!confirm(`Deseja concluir a demanda "${tarefaAtiva.titulo}"?`)) return;
-
-      const hojeIso = formatarDataIso(new Date());
-      tarefaAtiva.status = 'Concluída';
-      tarefaAtiva.ativo = false;
-      tarefaAtiva.dataConclusao = hojeIso;
-
-      // O usuário escolherá manualmente qual demanda mover para produção em seguida
-
-      atualizarAbaEsteira();
-      renderizarGraficos();
-      atualizarRelatorioMensal();
-      mostrarToast('Demanda concluída com sucesso! Escolha qual demanda mover para produção.');
-
-      executarNoServidor('concluirTarefa', { tarefaId: tarefaAtiva.id, devId: devId });
+      const devSelect = document.getElementById('filtroDevEsteira');
+      const devId = (devSelect && devSelect.value) ? devSelect.value : (appState.currentUser ? appState.currentUser.id : '');
+      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo && t.status !== 'Concluída') || 
+                          appState.tarefas.find(t => t.devId === devId && t.status === 'Em Andamento');
+      if (!tarefaAtiva) {
+        mostrarToast('Nenhuma demanda ativa no momento para concluir.');
+        return;
+      }
+      finalizarDemandaPorId(tarefaAtiva.id);
     }
 
     function excluirDemandaAtualConfirm() {
@@ -3762,14 +3792,14 @@
       appState.tarefas.forEach(t => {
         if (!t) return;
 
-        // Se já foi concluída, mantém Concluída
-        if (t.status === 'Concluída' || (t.status && t.status.toLowerCase().includes('conclu'))) {
+        // 1. Se já foi concluída, mantém Concluída
+        if (t.status === 'Concluída' || (t.status && String(t.status).toLowerCase().includes('conclu'))) {
           t.status = 'Concluída';
           return;
         }
 
-        // 6º Se extrapolar o prazo, fica como "Atrasada"
-        if (t.dataPrazo) {
+        // 2. 6º Se extrapolar o prazo, fica como "Atrasada"
+        if (t.dataPrazo && t.dataPrazo.trim() !== '' && t.dataPrazo !== '-') {
           const dtPrazo = parseDataLocal(t.dataPrazo);
           dtPrazo.setHours(0, 0, 0, 0);
           if (hoje.getTime() > dtPrazo.getTime()) {
@@ -3778,13 +3808,33 @@
           }
         }
 
-        // 5º Ao entrar a demanda na esteira de produção, ela se torna "Em andamento"
-        if (t.ativo) {
+        // 3. Regra Fundamental da Esteira:
+        // A partir do momento que uma demanda entra na esteira (t.ativo, já 'Em Andamento', já 'Atrasada', ou possui dataInicio / dataPrazo):
+        // Ela se torna e permanece estritamente "Em Andamento"!
+        // O status dela JAMAIS retornará para "Não Iniciada".
+        const jaEntrouNaEsteira = Boolean(
+          t.ativo || 
+          t.status === 'Em Andamento' || 
+          t.status === 'Atrasada' || 
+          (t.dataInicio && t.dataInicio.trim() !== '' && t.dataInicio !== '-') ||
+          (t.dataPrazo && t.dataPrazo.trim() !== '' && t.dataPrazo !== '-') ||
+          (t.diasTrabalhados && t.diasTrabalhados > 0)
+        );
+
+        if (jaEntrouNaEsteira) {
           t.status = 'Em Andamento';
+          // Auto-repara qualquer cache local antigo que tivesse marcado indevidamente como "Não Iniciada"
+          try {
+            const edits = JSON.parse(localStorage.getItem('SYSMANAGER_LOCAL_EDITS') || '{}');
+            if (edits[t.id] && edits[t.id].status === 'Não Iniciada') {
+              edits[t.id].status = 'Em Andamento';
+              localStorage.setItem('SYSMANAGER_LOCAL_EDITS', JSON.stringify(edits));
+            }
+          } catch(e) {}
           return;
         }
 
-        // 4º Ao cadastrar ou na fila sem iniciar, status é "Não Iniciada"
+        // 4. Ao cadastrar ou na fila sem nunca entrar na esteira, status é "Não Iniciada"
         t.status = 'Não Iniciada';
       });
     }
@@ -3863,22 +3913,21 @@
       // tarefa.dataInicio NUNCA É ALTERADA!
       tarefa.urgencia = urgSelect ? urgSelect.value : (tarefa.urgencia || 'Media');
 
-      // Se a tarefa não estiver concluída, recalcula seu status com base nas 4 regras oficiais
+      // Se a tarefa não estiver concluída, recalcula seu status com base nas regras da esteira:
+      // Se já entrou na esteira (dataPrazo/dataInicio/ativo/Em Andamento), JAMAIS retorna para Não Iniciada!
       if (tarefa.status !== 'Concluída') {
         const hojeObj = new Date();
         hojeObj.setHours(0, 0, 0, 0);
-        if (dataPrazoIso) {
+        if (dataPrazoIso && dataPrazoIso.trim() !== '' && dataPrazoIso !== '-') {
           const prazoObj = parseDataLocal(dataPrazoIso);
           prazoObj.setHours(0, 0, 0, 0);
           if (prazoObj.getTime() < hojeObj.getTime()) {
             tarefa.status = 'Atrasada';
-          } else if (tarefa.ativo) {
-            tarefa.status = 'Em Andamento';
           } else {
-            tarefa.status = 'Não Iniciada';
+            tarefa.status = 'Em Andamento';
           }
         } else {
-          tarefa.status = tarefa.ativo ? 'Em Andamento' : 'Não Iniciada';
+          tarefa.status = (tarefa.ativo || tarefa.dataInicio) ? 'Em Andamento' : 'Não Iniciada';
         }
       }
 
