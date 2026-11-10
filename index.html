@@ -653,106 +653,115 @@
           </div>
         </div>
 
-        <!-- DEMANDA ATUAL EM PRODUÇÃO -->
-        <div class="card card-custom hero-task mb-4 p-4" id="cardDemandaAtual">
-          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <!-- DEMANDA ATUAL EM PRODUÇÃO (COMPACTO E HARMÔNICO) -->
+        <div class="card card-custom hero-task mb-3 p-3 shadow-sm" id="cardDemandaAtual">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
             <div class="d-flex align-items-center flex-wrap gap-2">
-              <span class="badge bg-dark text-white px-3 py-2 rounded-pill shadow-xs d-inline-flex align-items-center">
-                <span class="pulse-live-dot"></span>
-                <span class="fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">PRODUÇÃO ATIVA</span>
+              <span class="badge bg-dark text-white px-2 py-1 rounded-pill shadow-xs d-inline-flex align-items-center" style="font-size: 0.7rem;">
+                <span class="pulse-live-dot me-1"></span>
+                <span class="fw-bold" style="letter-spacing: 0.5px;">PRODUÇÃO ATIVA</span>
               </span>
-              <span class="badge bg-secondary-subtle text-secondary border font-monospace px-2 py-1" id="badgeModuloAtual">SIOPLEEx</span>
-              <span id="badgeStatusAtual" class="badge-status-dia">Em Dia</span>
-              <span id="badgeUrgenciaAtual" class="badge badge-media">Média</span>
+              <span class="badge bg-secondary-subtle text-secondary border font-monospace px-2 py-1" id="badgeModuloAtual" style="font-size: 0.72rem;">SIOPLEEx</span>
+              <span id="badgeStatusAtual" class="badge-status-dia" style="font-size: 0.72rem; padding: 2px 8px;">Em Dia</span>
+              <span id="badgeUrgenciaAtual" class="badge badge-media" style="font-size: 0.72rem; padding: 2px 8px;">Média</span>
             </div>
-            <div class="text-muted small mt-2 mt-sm-0 d-flex align-items-center bg-white px-3 py-1 rounded-pill border shadow-2xs">
-              <i class="fa-solid fa-user-circle me-2 text-primary fs-6"></i> Responsável: <strong id="devNomeAtual" class="text-dark ms-1">-</strong>
+            <div class="text-muted small d-flex align-items-center bg-white px-2 py-1 rounded-pill border shadow-2xs" style="font-size: 0.75rem;">
+              <i class="fa-solid fa-user-circle me-1 text-primary"></i> Responsável: <strong id="devNomeAtual" class="text-dark ms-1">-</strong>
             </div>
           </div>
 
           <div id="conteudoDemandaAtual">
-            <h3 class="fw-bold mb-2 text-dark" id="tituloDemandaAtual">Nenhuma demanda ativa no momento</h3>
-            <p class="text-muted mb-3" id="descDemandaAtual">Selecione uma demanda nas Demandas ou cadastre uma nova para começar.</p>
-
-            <div class="row g-3 py-3 border-top border-bottom my-3 bg-white bg-opacity-75 rounded-3 px-2">
-              <div class="col-6 col-md-3">
-                <span class="text-muted small d-block"><i class="fa-regular fa-clock me-1 text-primary"></i>Prazo Estimado:</span>
-                <strong class="fs-5 text-primary" id="tempoEstimadoAtual">0 dias</strong>
-              </div>
-              <div class="col-6 col-md-3">
-                <span class="text-muted small d-block"><i class="fa-solid fa-stopwatch me-1 text-primary"></i>Em Produção:</span>
-                <div class="d-flex align-items-center gap-1">
-                  <strong class="fs-5 text-dark" id="tempoDemandadoAtual">1 dia</strong>
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle small ms-1">
-                    <i class="fa-solid fa-calendar-day me-1"></i>Ativa
-                  </span>
-                </div>
-              </div>
-              <div class="col-6 col-md-3">
-                <span class="text-muted small d-block"><i class="fa-regular fa-calendar-plus me-1 text-secondary"></i>Início na Esteira:</span>
-                <strong class="fs-6 text-secondary" id="dataInicioAtual">-</strong>
-              </div>
-              <div class="col-6 col-md-3">
-                <span class="text-muted small d-block"><i class="fa-regular fa-calendar-check me-1 text-danger"></i>Prazo Final:</span>
-                <strong class="fs-6 text-danger" id="dataPrazoAtual">-</strong>
-              </div>
+            <div class="mb-2">
+              <h5 class="fw-bold mb-1 text-dark text-truncate" id="tituloDemandaAtual" style="font-size: 1.05rem; letter-spacing: -0.2px;">Nenhuma demanda ativa no momento</h5>
+              <p class="text-muted small mb-0 text-truncate" id="descDemandaAtual">Selecione uma demanda nas listas ou cadastre uma nova para começar.</p>
             </div>
 
             <!-- ALERTA DE ATRASO COM AJUSTE DIRETO DE PRAZO -->
-            <div class="alert alert-danger d-none align-items-center justify-content-between p-3 rounded-3" id="alertaAtrasoAtual">
-              <div class="d-flex align-items-center gap-3">
-                <i class="fa-solid fa-triangle-exclamation fs-3 text-danger"></i>
+            <div class="alert alert-danger d-none align-items-center justify-content-between p-2 my-2 rounded-3" id="alertaAtrasoAtual" style="font-size: 0.78rem;">
+              <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation text-danger fs-6"></i>
                 <div>
-                  <h6 class="mb-1 fw-bold">Atenção: Esta demanda excedeu o prazo previsto!</h6>
-                  <small>Ajuste a data de término editando a demanda se necessário.</small>
+                  <strong class="text-danger">Atenção:</strong> Esta demanda excedeu o prazo previsto!
                 </div>
               </div>
-              <button type="button" class="btn btn-danger btn-sm px-3 mt-2 mt-md-0 fw-semibold" onclick="editarDemandaAtualConfirm()">
+              <button type="button" class="btn btn-danger btn-sm px-2 py-1 fw-semibold rounded-pill" onclick="editarDemandaAtualConfirm()" style="font-size: 0.75rem;">
                 <i class="fa-solid fa-calendar-pen me-1"></i> Ajustar Prazo
               </button>
             </div>
 
-            <!-- AÇÃO DA DEMANDA ATUAL -->
-            <div class="d-flex flex-wrap align-items-center gap-3 mt-3" id="botoesAcaoAtual">
-              <button type="button" class="btn btn-success px-4 py-2 fw-semibold rounded-pill shadow-sm" onclick="finalizarDemandaAtual()">
-                <i class="fa-solid fa-circle-check me-2"></i> Concluir Demanda
-              </button>
-              <button type="button" class="btn btn-outline-primary px-3 py-2 fw-semibold rounded-pill shadow-sm" id="btnEditarDemandaAtual" onclick="editarDemandaAtualConfirm()">
-                <i class="fa-solid fa-pen-to-square me-1"></i> Editar Demanda
-              </button>
-              <button type="button" class="btn btn-outline-danger px-3 py-2 fw-semibold rounded-pill shadow-sm" id="btnExcluirDemandaAtual" onclick="excluirDemandaAtualConfirm()">
-                <i class="fa-solid fa-trash-can me-1"></i> Excluir Demanda
-              </button>
+            <!-- FAIXA INTEGRADA: INDICADORES + BOTÕES DE AÇÃO -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-2 mt-1 border-top border-light-subtle">
+              <!-- Indicadores compactos em linha -->
+              <div class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 text-secondary" style="font-size: 0.78rem;">
+                <span class="d-inline-flex align-items-center" title="Prazo estimado original">
+                  <i class="fa-regular fa-clock me-1 text-primary"></i>
+                  <span class="text-muted me-1">Estimado:</span>
+                  <strong class="text-primary font-monospace" id="tempoEstimadoAtual">0 dias</strong>
+                </span>
+                <span class="text-muted opacity-50 d-none d-sm-inline">•</span>
+                <span class="d-inline-flex align-items-center" title="Tempo em produção">
+                  <i class="fa-solid fa-stopwatch me-1 text-primary"></i>
+                  <span class="text-muted me-1">Em Prod.:</span>
+                  <strong class="text-dark font-monospace me-1" id="tempoDemandadoAtual">1 dia</strong>
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace" style="font-size: 0.65rem; padding: 1px 4px;">Ativa</span>
+                </span>
+                <span class="text-muted opacity-50 d-none d-sm-inline">•</span>
+                <span class="d-inline-flex align-items-center" title="Data de início na esteira">
+                  <i class="fa-regular fa-calendar-plus me-1 text-secondary"></i>
+                  <span class="text-muted me-1">Início:</span>
+                  <strong class="text-secondary font-monospace" id="dataInicioAtual">-</strong>
+                </span>
+                <span class="text-muted opacity-50 d-none d-sm-inline">•</span>
+                <span class="d-inline-flex align-items-center" title="Data de prazo final">
+                  <i class="fa-regular fa-calendar-check me-1 text-danger"></i>
+                  <span class="text-muted me-1">Prazo:</span>
+                  <strong class="text-danger font-monospace" id="dataPrazoAtual">-</strong>
+                </span>
+              </div>
+
+              <!-- Botões de Ação Harmônicos e Compactos -->
+              <div class="d-inline-flex align-items-center gap-2" id="botoesAcaoAtual">
+                <button type="button" class="btn btn-success btn-sm px-3 py-1 fw-bold rounded-pill shadow-xs" onclick="finalizarDemandaAtual()" style="font-size: 0.8rem;">
+                  <i class="fa-solid fa-circle-check me-1"></i> Concluir Demanda
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1 fw-semibold rounded-pill" id="btnEditarDemandaAtual" onclick="editarDemandaAtualConfirm()" style="font-size: 0.8rem;" title="Editar Demanda">
+                  <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1 fw-semibold rounded-pill" id="btnExcluirDemandaAtual" onclick="excluirDemandaAtualConfirm()" style="font-size: 0.8rem;" title="Excluir Demanda">
+                  <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- DIVISÃO EM 3 COLUNAS: 1) DEMANDAS (EM ANDAMENTO + NÃO INICIADAS) | 2) DEMANDAS ATRASADAS | 3) DEMANDAS CONCLUÍDAS -->
-        <div class="row g-4 mb-4">
+        <!-- DIVISÃO EM 3 COLUNAS: 1) DEMANDAS | 2) DEMANDAS ATRASADAS | 3) DEMANDAS CONCLUÍDAS -->
+        <!-- O align-items-start impede que as colunas fechadas estiquem verticalmente quando outra abrir -->
+        <div class="row g-3 mb-4 align-items-start">
           
-          <!-- COLUNA 1: DEMANDAS (EM ANDAMENTO & NÃO INICIADAS) -->
+          <!-- COLUNA 1: DEMANDAS (INICIA FECHADA) -->
           <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaDemandas">
-            <div class="card card-custom p-3 p-md-4 h-100 shadow-sm border-top border-primary border-3">
-              <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="card card-custom p-3 shadow-sm border-top border-primary border-3">
+              <div class="d-flex justify-content-between align-items-center mb-0">
                 <div style="cursor: pointer;" onclick="alternarLista('demandas')" title="Clique para abrir ou recolher a lista">
-                  <h5 class="fw-bold mb-1 d-flex align-items-center">
+                  <h6 class="fw-bold mb-0 d-flex align-items-center" style="font-size: 0.95rem;">
                     <i class="fa-solid fa-bars-staggered me-2 text-primary"></i>Demandas
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2 font-monospace" id="badgeQtdDemandasAba">0</span>
-                  </h5>
-                  <p class="text-muted small mb-0">Em andamento na esteira e próximas na fila.</p>
+                  </h6>
+                  <p class="text-muted small mb-0" style="font-size: 0.75rem;">Em andamento na esteira e próximas na fila.</p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                  <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3 shadow-xs" onclick="abrirModalNovaDemanda()">
+                  <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-2 py-1 shadow-xs" onclick="abrirModalNovaDemanda()" style="font-size: 0.78rem;">
                     <i class="fa-solid fa-plus me-1"></i> Nova Demanda
                   </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle p-0" id="btnToggle_demandas" onclick="alternarLista('demandas')" title="Recolher lista" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">
-                    <i class="fa-solid fa-chevron-up" id="iconeToggle_demandas"></i>
+                  <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle p-0" id="btnToggle_demandas" onclick="alternarLista('demandas')" title="Abrir lista de demandas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
+                    <i class="fa-solid fa-chevron-down" id="iconeToggle_demandas"></i>
                   </button>
                 </div>
               </div>
 
-              <!-- CORPO COLAPSÁVEL -->
-              <div id="corpoLista_demandas">
+              <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
+              <div id="corpoLista_demandas" class="d-none mt-3">
                 <!-- BARRA DE PESQUISA COM LUPA -->
                 <div class="input-group input-group-sm mb-3 shadow-xs">
                   <span class="input-group-text bg-white border-end-0 text-primary">
@@ -776,27 +785,27 @@
 
           <!-- COLUNA 2: DEMANDAS ATRASADAS (INICIA FECHADA) -->
           <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaAtrasadas">
-            <div class="card card-custom p-3 p-md-4 h-100 shadow-sm border-top border-danger border-3">
-              <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="card card-custom p-3 shadow-sm border-top border-danger border-3">
+              <div class="d-flex justify-content-between align-items-center mb-0">
                 <div style="cursor: pointer;" onclick="alternarLista('atrasadas')" title="Clique para abrir ou recolher a lista">
-                  <h5 class="fw-bold mb-1 d-flex align-items-center text-danger">
+                  <h6 class="fw-bold mb-0 d-flex align-items-center text-danger" style="font-size: 0.95rem;">
                     <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>Demandas Atrasadas
                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill ms-2 font-monospace" id="badgeQtdAtrasadasAba">0</span>
-                  </h5>
-                  <p class="text-muted small mb-0">Tarefas que excederam a data de término prevista.</p>
+                  </h6>
+                  <p class="text-muted small mb-0" style="font-size: 0.75rem;">Tarefas que excederam a data de término prevista.</p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small rounded-pill d-none d-sm-inline">
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small rounded-pill d-none d-sm-inline" style="font-size: 0.72rem;">
                     <i class="fa-solid fa-clock-rotate-left me-1"></i>Atraso
                   </span>
-                  <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-0" id="btnToggle_atrasadas" onclick="alternarLista('atrasadas')" title="Abrir lista de atrasadas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">
+                  <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-0" id="btnToggle_atrasadas" onclick="alternarLista('atrasadas')" title="Abrir lista de atrasadas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
                     <i class="fa-solid fa-chevron-down" id="iconeToggle_atrasadas"></i>
                   </button>
                 </div>
               </div>
 
               <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
-              <div id="corpoLista_atrasadas" class="d-none">
+              <div id="corpoLista_atrasadas" class="d-none mt-3">
                 <!-- BARRA DE PESQUISA COM LUPA (ATRASADAS) -->
                 <div class="input-group input-group-sm mb-3 shadow-xs">
                   <span class="input-group-text bg-white border-end-0 text-danger">
@@ -820,27 +829,27 @@
 
           <!-- COLUNA 3: DEMANDAS CONCLUÍDAS (INICIA FECHADA) -->
           <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaConcluidas">
-            <div class="card card-custom p-3 p-md-4 h-100 shadow-sm border-top border-success border-3">
-              <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="card card-custom p-3 shadow-sm border-top border-success border-3">
+              <div class="d-flex justify-content-between align-items-center mb-0">
                 <div style="cursor: pointer;" onclick="alternarLista('concluidas')" title="Clique para abrir ou recolher a lista">
-                  <h5 class="fw-bold mb-1 d-flex align-items-center text-success">
+                  <h6 class="fw-bold mb-0 d-flex align-items-center text-success" style="font-size: 0.95rem;">
                     <i class="fa-solid fa-circle-check me-2 text-success"></i>Demandas Concluídas
                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-2 font-monospace" id="badgeQtdConcluidasAba">0</span>
-                  </h5>
-                  <p class="text-muted small mb-0">Histórico de entregas finalizadas na esteira.</p>
+                  </h6>
+                  <p class="text-muted small mb-0" style="font-size: 0.75rem;">Histórico de entregas finalizadas na esteira.</p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small rounded-pill d-none d-sm-inline">
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small rounded-pill d-none d-sm-inline" style="font-size: 0.72rem;">
                     <i class="fa-solid fa-check-double me-1"></i>Finalizadas
                   </span>
-                  <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0" id="btnToggle_concluidas" onclick="alternarLista('concluidas')" title="Abrir lista de concluídas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">
+                  <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0" id="btnToggle_concluidas" onclick="alternarLista('concluidas')" title="Abrir lista de concluídas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
                     <i class="fa-solid fa-chevron-down" id="iconeToggle_concluidas"></i>
                   </button>
                 </div>
               </div>
 
               <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
-              <div id="corpoLista_concluidas" class="d-none">
+              <div id="corpoLista_concluidas" class="d-none mt-3">
                 <!-- BARRA DE PESQUISA COM LUPA (CONCLUÍDAS) -->
                 <div class="input-group input-group-sm mb-3 shadow-xs">
                   <span class="input-group-text bg-white border-end-0 text-success">
