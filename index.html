@@ -588,24 +588,36 @@
   <!-- CONTEÚDO PRINCIPAL -->
   <div class="container-fluid py-4 px-md-4">
     
-    <!-- ABAS -->
-    <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
-      <li class="nav-item">
-        <button class="nav-link active" id="tab-esteira-btn" data-bs-toggle="tab" data-bs-target="#tab-esteira" type="button">
-          <i class="fa-solid fa-diagram-project me-2"></i>Minha Esteira Ágil
+    <!-- LINHA DE NAVEGAÇÃO SUPERIOR: ABAS + BOTÃO NOVA DEMANDA -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 border-bottom" style="border-bottom: 2px solid #e2e8f0 !important;">
+      <ul class="nav nav-tabs border-bottom-0 mb-0" id="mainTabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" id="tab-esteira-btn" data-bs-toggle="tab" data-bs-target="#tab-esteira" type="button">
+            <i class="fa-solid fa-diagram-project me-2"></i>Minha Esteira Ágil
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" id="tab-relatorio-btn" data-bs-toggle="tab" data-bs-target="#tab-relatorio" type="button">
+            <i class="fa-solid fa-file-lines me-2"></i>Relatório Mensal
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" id="tab-usuarios-btn" data-bs-toggle="tab" data-bs-target="#tab-usuarios" type="button">
+            <i class="fa-solid fa-users me-2"></i>Equipe
+          </button>
+        </li>
+      </ul>
+
+      <div class="pb-2">
+        <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm d-inline-flex align-items-center gap-2" 
+                onclick="abrirModalNovaDemanda()" 
+                title="Cadastrar Nova Demanda" 
+                id="btnCriarNovaDemandaTop"
+                style="font-size: 0.84rem; letter-spacing: 0.2px;">
+          <i class="fa-solid fa-plus"></i> Nova Demanda
         </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link" id="tab-relatorio-btn" data-bs-toggle="tab" data-bs-target="#tab-relatorio" type="button">
-          <i class="fa-solid fa-file-lines me-2"></i>Relatório Mensal
-        </button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link" id="tab-usuarios-btn" data-bs-toggle="tab" data-bs-target="#tab-usuarios" type="button">
-          <i class="fa-solid fa-users me-2"></i>Equipe
-        </button>
-      </li>
-    </ul>
+      </div>
+    </div>
 
     <div class="tab-content" id="mainTabsContent">
 
@@ -736,8 +748,16 @@
                   </div>
                 </div>
                 <div class="text-end">
-                  <span class="badge bg-info text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdNaoIniciadasAba">0</span>
-                  <div class="small text-info-emphasis fw-semibold mt-1" style="font-size: 0.72rem;">Ver fila &rarr;</div>
+                  <div class="d-flex align-items-center justify-content-end gap-1 mb-1">
+                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-2 py-0 fw-bold shadow-2xs" 
+                            style="font-size: 0.72rem; line-height: 1.5;" 
+                            onclick="event.stopPropagation(); abrirModalNovaDemanda();" 
+                            title="Cadastrar Nova Demanda">
+                      <i class="fa-solid fa-plus me-1"></i>Nova
+                    </button>
+                    <span class="badge bg-info text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdNaoIniciadasAba">0</span>
+                  </div>
+                  <div class="small text-info-emphasis fw-semibold" style="font-size: 0.72rem;">Ver fila &rarr;</div>
                 </div>
               </div>
             </div>
