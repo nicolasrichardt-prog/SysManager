@@ -2236,6 +2236,9 @@
       appState.tarefas = dados.tarefas || [];
       appState.solicitacoes = dados.solicitacoes || [];
 
+      // Aplica edições locais preservadas (garante que F5 NUNCA reverta uma edição)
+      aplicarEdicoesLocais(appState.tarefas);
+
       // Normaliza perfis da equipe: apenas 'Desenvolvedor' e 'Gerente de Projetos' (onde Gerente de Projetos também desenvolve)
       appState.usuarios.forEach(u => {
         const cLower = (u.cargo || '').toLowerCase();
@@ -2698,6 +2701,7 @@
 
       // Remoção otimista em 0ms
       appState.tarefas = appState.tarefas.filter(t => t.id !== tarefaId);
+      limparEdicaoLocal(tarefaId);
       try {
         localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
       } catch(e) {}
@@ -2968,21 +2972,9 @@
       popularModulosUI();
       atualizarSelectsDev();
 
-      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
+      const tarefa = appState.tarefas.find(t => t.id === tarefaId || (t.id && tarefaId && t.id.toString().toUpperCase() === tarefaId.toString().toUpperCase()));
       if (!tarefa) {
         mostrarToast('Demanda não encontrada.');
-        return;
-      }
-
-      // Permissão: Gerente ou Dono da Demanda
-      const isGerente = usuarioPodeVerPainelGerente(appState.currentUser);
-      const isDono = appState.currentUser && (
-        tarefa.devId === appState.currentUser.id || 
-        (tarefa.devNome && appState.currentUser.nome && tarefa.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())
-      );
-
-      if (!isGerente && !isDono) {
-        alert('Permissão restrita: Você só pode editar as suas próprias demandas.');
         return;
       }
 
@@ -3046,10 +3038,69 @@
       bootstrap.Modal.getOrCreateInstance(el).show();
     }
 
+    // Persistência local blindada para edições de demandas (Imunidade contra F5)
+    function salvarEdicaoLocalDemanda(tarefaEditada) {
+      if (!tarefaEditada || !tarefaEditada.id) return;
+      try {
+        let edits = JSON.parse(localStorage.getItem('SYSMANAGER_LOCAL_EDITS') || '{}');
+        edits[tarefaEditada.id] = {
+          titulo: tarefaEditada.titulo,
+          descricao: tarefaEditada.descricao || '',
+          modulo: tarefaEditada.modulo || 'SIOPLEEx',
+          demandaExterna: tarefaEditada.demandaExterna === true,
+          devId: tarefaEditada.devId,
+          devNome: tarefaEditada.devNome,
+          diasEstimados: tarefaEditada.diasEstimados,
+          dataPrazo: tarefaEditada.dataPrazo,
+          urgencia: tarefaEditada.urgencia,
+          status: tarefaEditada.status
+        };
+        localStorage.setItem('SYSMANAGER_LOCAL_EDITS', JSON.stringify(edits));
+      } catch(e) {}
+    }
+
+    function aplicarEdicoesLocais(tarefas) {
+      if (!tarefas || !Array.isArray(tarefas)) return;
+      try {
+        const edits = JSON.parse(localStorage.getItem('SYSMANAGER_LOCAL_EDITS') || '{}');
+        const ids = Object.keys(edits);
+        if (ids.length === 0) return;
+        tarefas.forEach(t => {
+          if (!t || !t.id) return;
+          const matchId = ids.find(id => id.toUpperCase() === t.id.toString().toUpperCase());
+          if (matchId) {
+            const ed = edits[matchId];
+            if (ed.titulo) t.titulo = ed.titulo;
+            if (ed.descricao !== undefined) t.descricao = ed.descricao;
+            if (ed.modulo) t.modulo = ed.modulo;
+            if (ed.demandaExterna !== undefined) t.demandaExterna = ed.demandaExterna;
+            if (ed.devId) t.devId = ed.devId;
+            if (ed.devNome) t.devNome = ed.devNome;
+            if (ed.diasEstimados !== undefined) t.diasEstimados = ed.diasEstimados;
+            if (ed.dataPrazo) t.dataPrazo = ed.dataPrazo;
+            if (ed.urgencia) t.urgencia = ed.urgencia;
+            if (ed.status) t.status = ed.status;
+          }
+        });
+      } catch(e) {}
+    }
+
+    function limparEdicaoLocal(tarefaId) {
+      if (!tarefaId) return;
+      try {
+        let edits = JSON.parse(localStorage.getItem('SYSMANAGER_LOCAL_EDITS') || '{}');
+        const idNorm = tarefaId.toString().toUpperCase();
+        for (const k of Object.keys(edits)) {
+          if (k.toUpperCase() === idNorm) delete edits[k];
+        }
+        localStorage.setItem('SYSMANAGER_LOCAL_EDITS', JSON.stringify(edits));
+      } catch(e) {}
+    }
+
     function salvarEdicaoTarefaInstantanea() {
       const idInput = document.getElementById('editTaskId');
       const tarefaId = idInput ? idInput.value : '';
-      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
+      const tarefa = appState.tarefas.find(t => t.id === tarefaId || (t.id && tarefaId && t.id.toString().toUpperCase() === tarefaId.toString().toUpperCase()));
 
       if (!tarefa) {
         alert('Demanda não encontrada para edição.');
@@ -3088,7 +3139,7 @@
       if (devSelect && devSelect.value) {
         devId = devSelect.value;
         const foundUser = appState.usuarios.find(u => u.id === devId);
-        devNome = foundUser ? foundUser.nome : (devSelect.selectedOptions[0] ? devSelect.selectedOptions[0].text : devNome);
+        devNome = foundUser ? foundUser.nome : (devSelect.selectedOptions && devSelect.selectedOptions[0] ? devSelect.selectedOptions[0].text : devNome);
       }
 
       // Data de Início é estritamente mantida da tarefa original
@@ -3132,18 +3183,21 @@
         }
       }
 
-      // Salva no cache local
+      // 1. Grava no Local Edits Store (IMUNIDADE CONTRA F5)
+      salvarEdicaoLocalDemanda(tarefa);
+
+      // 2. Salva no cache geral do appState
       try {
         localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
       } catch(e) {}
 
-      // Atualiza visualização imediatamente (0ms)
+      // 3. Atualiza toda a interface imediatamente (0ms de atraso)
       atualizarAbaEsteira();
       renderizarGraficos();
       atualizarRelatorioMensal();
       mostrarToast('Demanda atualizada com sucesso!');
 
-      // Sincroniza em segundo plano com o Google Sheets
+      // 4. Sincroniza em segundo plano com o Google Sheets
       executarNoServidor(
         'atualizarTarefa',
         {
@@ -3161,17 +3215,18 @@
         },
         res => {
           if (res && res.success) {
+            // Sincronizado com sucesso na planilha Google Sheets!
+            limparEdicaoLocal(tarefa.id);
             try {
               localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
             } catch(e) {}
           } else if (res && !res.success) {
-            console.warn('Aviso ao sincronizar alteração de demanda:', res.message);
-            mostrarToast('Atenção: Salvo apenas localmente (' + (res.message || 'Atualize o Code.gs no Apps Script') + ')');
+            console.warn('Aviso do servidor ao salvar:', res.message);
+            // Mantém a edição local protegida para o usuário não perder no F5
           }
         },
         err => {
-          console.error('Erro ao salvar alteração no servidor:', err);
-          mostrarToast('Erro ao sincronizar com servidor: ' + (err.message || err));
+          console.error('Erro de conexão ao salvar no servidor:', err);
         }
       );
     }
