@@ -264,6 +264,21 @@
       box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
     }
 
+    /* Estilos do Drawer Lateral (Offcanvas) e Gatilhos de Acesso */
+    .hover-card-drawer {
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      cursor: pointer;
+    }
+    .hover-card-drawer:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08) !important;
+    }
+    .offcanvas-drawer-custom {
+      width: 700px !important;
+      max-width: 95vw !important;
+      box-shadow: -10px 0 35px rgba(0, 0, 0, 0.15) !important;
+    }
+
     /* Notificação flutuante de resposta instantânea (0ms de atraso percebido) */
     #toastFeedback {
       position: fixed;
@@ -586,73 +601,6 @@
       <!-- ========================================== -->
       <div class="tab-pane fade show active" id="tab-esteira" role="tabpanel">
         
-        <!-- DASHBOARD EXECUTIVO - 4 MÉTRICAS (CONCLUÍDAS, EM ANDAMENTO, NÃO INICIADAS, ATRASADAS) -->
-        <div class="row g-2 mb-3" id="cardsResumoEsteira">
-          <!-- 1º CONCLUÍDAS -->
-          <div class="col-xl-3 col-md-6 col-6">
-            <div class="metric-box metric-box-clickable" onclick="navegarParaLista('concluidas')" title="Clique para ver a lista de Demandas Concluídas" role="button" tabindex="0">
-              <div class="metric-icon bg-success-subtle text-success">
-                <i class="fa-solid fa-circle-check"></i>
-              </div>
-              <div style="min-width: 0; flex: 1;">
-                <div class="text-muted small fw-semibold" style="font-size: 0.72rem;">Concluídas</div>
-                <div class="d-flex align-items-center gap-2 mt-0">
-                  <h4 class="mb-0 fw-bold text-success" id="metricConcluidasQtd" style="font-size: 1.35rem; line-height: 1;">0</h4>
-                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 7px; letter-spacing: 0.2px;">Entregues ↓</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 2º EM ANDAMENTO -->
-          <div class="col-xl-3 col-md-6 col-6">
-            <div class="metric-box metric-box-clickable" onclick="navegarParaLista('emAndamento')" title="Clique para ver a lista de Demandas Em Andamento" role="button" tabindex="0">
-              <div class="metric-icon bg-primary-subtle text-primary">
-                <i class="fa-solid fa-bars-progress"></i>
-              </div>
-              <div style="min-width: 0; flex: 1;">
-                <div class="text-muted small fw-semibold" style="font-size: 0.72rem;">Em Andamento</div>
-                <div class="d-flex align-items-center gap-2 mt-0">
-                  <h4 class="mb-0 fw-bold text-primary" id="metricEmAndamentoQtd" style="font-size: 1.35rem; line-height: 1;">0</h4>
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 7px; letter-spacing: 0.2px;">Na Esteira ↓</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3º NÃO INICIADAS -->
-          <div class="col-xl-3 col-md-6 col-6">
-            <div class="metric-box metric-box-clickable" onclick="navegarParaLista('naoIniciadas')" title="Clique para ver a lista de Demandas Não Iniciadas" role="button" tabindex="0">
-              <div class="metric-icon bg-info-subtle text-info">
-                <i class="fa-solid fa-hourglass-start"></i>
-              </div>
-              <div style="min-width: 0; flex: 1;">
-                <div class="text-muted small fw-semibold" style="font-size: 0.72rem;">Não Iniciadas</div>
-                <div class="d-flex align-items-center gap-2 mt-0">
-                  <h4 class="mb-0 fw-bold text-info" id="metricNaoIniciadasQtd" style="font-size: 1.35rem; line-height: 1;">0</h4>
-                  <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 7px; letter-spacing: 0.2px;">Na Fila ↓</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4º ATRASADAS -->
-          <div class="col-xl-3 col-md-6 col-6">
-            <div class="metric-box metric-box-clickable" onclick="navegarParaLista('atrasadas')" title="Clique para ver a lista de Demandas Atrasadas" role="button" tabindex="0">
-              <div class="metric-icon bg-danger-subtle text-danger">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-              </div>
-              <div style="min-width: 0; flex: 1;">
-                <div class="text-muted small fw-semibold" style="font-size: 0.72rem;">Atrasadas</div>
-                <div class="d-flex align-items-center gap-2 mt-0">
-                  <h4 class="mb-0 fw-bold text-danger" id="metricAtrasadasQtd" style="font-size: 1.35rem; line-height: 1;">0</h4>
-                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill fw-bold" style="font-size: 0.68rem; padding: 2px 7px; letter-spacing: 0.2px;">Fora do Prazo ↓</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- DEMANDA ATUAL EM PRODUÇÃO (COMPACTO E HARMÔNICO) -->
         <div class="card card-custom hero-task mb-3 p-3 shadow-sm" id="cardDemandaAtual">
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
@@ -735,186 +683,142 @@
           </div>
         </div>
 
-        <!-- DIVISÃO EM 4 COLUNAS: 1) EM ANDAMENTO | 2) NÃO INICIADAS | 3) ATRASADAS | 4) CONCLUÍDAS -->
-        <!-- O align-items-start impede que as colunas fechadas estiquem verticalmente quando outra abrir -->
-        <div class="row g-3 mb-4 align-items-start">
+        <!-- BARRA HORIZONTAL DE ACESSO RÁPIDO: 4 CATEGORIAS EXECUTIVAS -->
+        <div class="row g-3 mb-4" id="gatilhosDrawerDemandas">
           
-          <!-- COLUNA 1: EM ANDAMENTO (INICIA FECHADA) -->
-          <div class="col-xxl-3 col-xl-3 col-lg-6 col-md-6 col-12" id="secaoListaEmAndamento">
-            <div class="card card-custom p-3 shadow-sm border-top border-primary border-3">
-              <div class="d-flex justify-content-between align-items-center mb-0">
-                <div style="cursor: pointer;" onclick="alternarLista('emAndamento')" title="Clique para abrir ou recolher a lista">
-                  <h6 class="fw-bold mb-0 d-flex align-items-center text-primary" style="font-size: 0.92rem;">
-                    <i class="fa-solid fa-spinner fa-spin me-2 text-primary"></i>Em Andamento
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2 font-monospace" id="badgeQtdEmAndamentoAba">0</span>
-                  </h6>
-                  <p class="text-muted small mb-0" style="font-size: 0.73rem;">Demandas em produção na esteira.</p>
-                </div>
+          <!-- 1. EM ANDAMENTO -->
+          <div class="col-xl-3 col-md-6 col-12">
+            <div class="card card-custom p-3 shadow-xs border-top border-primary border-3 hover-card-drawer h-100" 
+                 onclick="abrirDrawerLista('emAndamento')" role="button" tabindex="0" title="Clique para abrir o painel lateral com as demandas Em Andamento">
+              <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 small rounded-pill d-none d-sm-inline" style="font-size: 0.7rem;">
-                    <i class="fa-solid fa-bars-progress me-1"></i>Na Esteira
-                  </span>
-                  <button type="button" class="btn btn-sm btn-outline-primary rounded-circle p-0" id="btnToggle_emAndamento" onclick="alternarLista('emAndamento')" title="Abrir lista em andamento" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
-                    <i class="fa-solid fa-chevron-down" id="iconeToggle_emAndamento"></i>
-                  </button>
+                  <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                    <i class="fa-solid fa-spinner fa-spin fs-5"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold mb-0 text-primary" style="font-size: 0.95rem;">Em Andamento</h6>
+                    <small class="text-muted" style="font-size: 0.74rem;">Na esteira de produção</small>
+                  </div>
                 </div>
-              </div>
-
-              <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
-              <div id="corpoLista_emAndamento" class="d-none mt-3">
-                <!-- BARRA DE PESQUISA COM LUPA (EM ANDAMENTO) -->
-                <div class="input-group input-group-sm mb-3 shadow-xs">
-                  <span class="input-group-text bg-white border-end-0 text-primary">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                  </span>
-                  <input type="text" class="form-control border-start-0 ps-1" id="pesquisaEmAndamento" 
-                         placeholder="Pesquisar demandas em andamento..." 
-                         oninput="filtrarEmAndamentoAoDigitar()" autocomplete="off">
-                  <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaEmAndamento" 
-                          onclick="limparPesquisaEmAndamento()" title="Limpar pesquisa">
-                    <i class="fa-solid fa-xmark"></i>
-                  </button>
-                </div>
-
-                <!-- CONTÊINER DA LISTA DE EM ANDAMENTO -->
-                <div id="listaEmAndamento" style="max-height: 520px; overflow-y: auto;">
+                <div class="text-end">
+                  <span class="badge bg-primary text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdEmAndamentoAba">0</span>
+                  <div class="small text-primary fw-semibold mt-1" style="font-size: 0.72rem;">Ver lista &rarr;</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- COLUNA 2: NÃO INICIADAS / FILA (INICIA FECHADA) -->
-          <div class="col-xxl-3 col-xl-3 col-lg-6 col-md-6 col-12" id="secaoListaNaoIniciadas">
-            <div class="card card-custom p-3 shadow-sm border-top border-info border-3">
-              <div class="d-flex justify-content-between align-items-center mb-0">
-                <div style="cursor: pointer;" onclick="alternarLista('naoIniciadas')" title="Clique para abrir ou recolher a lista">
-                  <h6 class="fw-bold mb-0 d-flex align-items-center text-info-emphasis" style="font-size: 0.92rem;">
-                    <i class="fa-solid fa-hourglass-start me-2 text-info"></i>Não Iniciadas
-                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill ms-2 font-monospace" id="badgeQtdNaoIniciadasAba">0</span>
-                  </h6>
-                  <p class="text-muted small mb-0" style="font-size: 0.73rem;">Fila de espera aguardando início.</p>
-                </div>
+          <!-- 2. NÃO INICIADAS -->
+          <div class="col-xl-3 col-md-6 col-12">
+            <div class="card card-custom p-3 shadow-xs border-top border-info border-3 hover-card-drawer h-100" 
+                 onclick="abrirDrawerLista('naoIniciadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com a fila de Não Iniciadas">
+              <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                  <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-2 py-1 shadow-xs" onclick="abrirModalNovaDemanda()" style="font-size: 0.75rem;">
-                    <i class="fa-solid fa-plus me-1"></i> Nova
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-info rounded-circle p-0" id="btnToggle_naoIniciadas" onclick="alternarLista('naoIniciadas')" title="Abrir lista não iniciadas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
-                    <i class="fa-solid fa-chevron-down" id="iconeToggle_naoIniciadas"></i>
-                  </button>
+                  <div class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                    <i class="fa-solid fa-hourglass-start fs-5"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold mb-0 text-info-emphasis" style="font-size: 0.95rem;">Não Iniciadas</h6>
+                    <small class="text-muted" style="font-size: 0.74rem;">Fila de espera aguardando</small>
+                  </div>
                 </div>
-              </div>
-
-              <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
-              <div id="corpoLista_naoIniciadas" class="d-none mt-3">
-                <!-- BARRA DE PESQUISA COM LUPA (NÃO INICIADAS) -->
-                <div class="input-group input-group-sm mb-3 shadow-xs">
-                  <span class="input-group-text bg-white border-end-0 text-info">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                  </span>
-                  <input type="text" class="form-control border-start-0 ps-1" id="pesquisaNaoIniciadas" 
-                         placeholder="Pesquisar demandas na fila..." 
-                         oninput="filtrarNaoIniciadasAoDigitar()" autocomplete="off">
-                  <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaNaoIniciadas" 
-                          onclick="limparPesquisaNaoIniciadas()" title="Limpar pesquisa">
-                    <i class="fa-solid fa-xmark"></i>
-                  </button>
-                </div>
-
-                <!-- CONTÊINER DA LISTA DE NÃO INICIADAS -->
-                <div id="listaNaoIniciadas" style="max-height: 520px; overflow-y: auto;">
+                <div class="text-end">
+                  <span class="badge bg-info text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdNaoIniciadasAba">0</span>
+                  <div class="small text-info-emphasis fw-semibold mt-1" style="font-size: 0.72rem;">Ver fila &rarr;</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- COLUNA 3: DEMANDAS ATRASADAS (INICIA FECHADA) -->
-          <div class="col-xxl-3 col-xl-3 col-lg-6 col-md-6 col-12" id="secaoListaAtrasadas">
-            <div class="card card-custom p-3 shadow-sm border-top border-danger border-3">
-              <div class="d-flex justify-content-between align-items-center mb-0">
-                <div style="cursor: pointer;" onclick="alternarLista('atrasadas')" title="Clique para abrir ou recolher a lista">
-                  <h6 class="fw-bold mb-0 d-flex align-items-center text-danger" style="font-size: 0.92rem;">
-                    <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>Demandas Atrasadas
-                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill ms-2 font-monospace" id="badgeQtdAtrasadasAba">0</span>
-                  </h6>
-                  <p class="text-muted small mb-0" style="font-size: 0.73rem;">Tarefas que excederam a data de término prevista.</p>
-                </div>
+          <!-- 3. ATRASADAS -->
+          <div class="col-xl-3 col-md-6 col-12">
+            <div class="card card-custom p-3 shadow-xs border-top border-danger border-3 hover-card-drawer h-100" 
+                 onclick="abrirDrawerLista('atrasadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Atrasadas">
+              <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small rounded-pill d-none d-sm-inline" style="font-size: 0.7rem;">
-                    <i class="fa-solid fa-clock-rotate-left me-1"></i>Atraso
-                  </span>
-                  <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-0" id="btnToggle_atrasadas" onclick="alternarLista('atrasadas')" title="Abrir lista de atrasadas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
-                    <i class="fa-solid fa-chevron-down" id="iconeToggle_atrasadas"></i>
-                  </button>
+                  <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                    <i class="fa-solid fa-triangle-exclamation fs-5"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold mb-0 text-danger" style="font-size: 0.95rem;">Atrasadas</h6>
+                    <small class="text-muted" style="font-size: 0.74rem;">Fora do prazo previsto</small>
+                  </div>
                 </div>
-              </div>
-
-              <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
-              <div id="corpoLista_atrasadas" class="d-none mt-3">
-                <!-- BARRA DE PESQUISA COM LUPA (ATRASADAS) -->
-                <div class="input-group input-group-sm mb-3 shadow-xs">
-                  <span class="input-group-text bg-white border-end-0 text-danger">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                  </span>
-                  <input type="text" class="form-control border-start-0 ps-1" id="pesquisaAtrasadas" 
-                         placeholder="Pesquisar demandas atrasadas..." 
-                         oninput="filtrarAtrasadasAoDigitar()" autocomplete="off">
-                  <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaAtrasadas" 
-                          onclick="limparPesquisaAtrasadas()" title="Limpar pesquisa">
-                    <i class="fa-solid fa-xmark"></i>
-                  </button>
-                </div>
-
-                <!-- CONTÊINER DA LISTA DE ATRASADAS -->
-                <div id="listaAtrasadasDemandas" style="max-height: 520px; overflow-y: auto;">
+                <div class="text-end">
+                  <span class="badge bg-danger text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdAtrasadasAba">0</span>
+                  <div class="small text-danger fw-semibold mt-1" style="font-size: 0.72rem;">Ver atrasos &rarr;</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- COLUNA 4: DEMANDAS CONCLUÍDAS (INICIA FECHADA) -->
-          <div class="col-xxl-3 col-xl-3 col-lg-6 col-md-6 col-12" id="secaoListaConcluidas">
-            <div class="card card-custom p-3 shadow-sm border-top border-success border-3">
-              <div class="d-flex justify-content-between align-items-center mb-0">
-                <div style="cursor: pointer;" onclick="alternarLista('concluidas')" title="Clique para abrir ou recolher a lista">
-                  <h6 class="fw-bold mb-0 d-flex align-items-center text-success" style="font-size: 0.92rem;">
-                    <i class="fa-solid fa-circle-check me-2 text-success"></i>Demandas Concluídas
-                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-2 font-monospace" id="badgeQtdConcluidasAba">0</span>
-                  </h6>
-                  <p class="text-muted small mb-0" style="font-size: 0.73rem;">Histórico de entregas finalizadas na esteira.</p>
-                </div>
+          <!-- 4. CONCLUÍDAS -->
+          <div class="col-xl-3 col-md-6 col-12">
+            <div class="card card-custom p-3 shadow-xs border-top border-success border-3 hover-card-drawer h-100" 
+                 onclick="abrirDrawerLista('concluidas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Concluídas">
+              <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small rounded-pill d-none d-sm-inline" style="font-size: 0.7rem;">
-                    <i class="fa-solid fa-check-double me-1"></i>Finalizadas
-                  </span>
-                  <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0" id="btnToggle_concluidas" onclick="alternarLista('concluidas')" title="Abrir lista de concluídas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.78rem;">
-                    <i class="fa-solid fa-chevron-down" id="iconeToggle_concluidas"></i>
-                  </button>
+                  <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                    <i class="fa-solid fa-circle-check fs-5"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold mb-0 text-success" style="font-size: 0.95rem;">Concluídas</h6>
+                    <small class="text-muted" style="font-size: 0.74rem;">Histórico de entregas</small>
+                  </div>
                 </div>
-              </div>
-
-              <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
-              <div id="corpoLista_concluidas" class="d-none mt-3">
-                <!-- BARRA DE PESQUISA COM LUPA (CONCLUÍDAS) -->
-                <div class="input-group input-group-sm mb-3 shadow-xs">
-                  <span class="input-group-text bg-white border-end-0 text-success">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                  </span>
-                  <input type="text" class="form-control border-start-0 ps-1" id="pesquisaConcluidas" 
-                         placeholder="Pesquisar demandas concluídas..." 
-                         oninput="filtrarConcluidasAoDigitar()" autocomplete="off">
-                  <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaConcluidas" 
-                          onclick="limparPesquisaConcluidas()" title="Limpar pesquisa">
-                    <i class="fa-solid fa-xmark"></i>
-                  </button>
-                </div>
-
-                <!-- CONTÊINER DA LISTA DE CONCLUÍDAS -->
-                <div id="listaConcluidasDemandas" style="max-height: 520px; overflow-y: auto;">
+                <div class="text-end">
+                  <span class="badge bg-success text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdConcluidasAba">0</span>
+                  <div class="small text-success fw-semibold mt-1" style="font-size: 0.72rem;">Ver histórico &rarr;</div>
                 </div>
               </div>
             </div>
           </div>
 
+        </div>
+
+        <!-- DRAWER LATERAL (OFFCANVAS) PARA VISUALIZAÇÃO AMPLA DAS LISTAS -->
+        <div class="offcanvas offcanvas-end offcanvas-drawer-custom" tabindex="-1" id="drawerLateralDemandas" aria-labelledby="drawerTitulo">
+          <div class="offcanvas-header border-bottom py-3 px-4 d-flex align-items-center justify-content-between" id="drawerHeader" style="background-color: #ffffff;">
+            <div class="d-flex align-items-center gap-2">
+              <div class="rounded-circle d-flex align-items-center justify-content-center" id="drawerIconContainer" style="width: 38px; height: 38px;">
+                <i id="drawerIcon" class="fa-solid fa-list fs-5"></i>
+              </div>
+              <div>
+                <div class="d-flex align-items-center gap-2">
+                  <h5 class="offcanvas-title fw-bold mb-0" id="drawerTitulo">Lista de Demandas</h5>
+                  <span class="badge rounded-pill font-monospace" id="drawerBadgeQtd">0</span>
+                </div>
+                <small class="text-muted d-block" id="drawerSubtitulo" style="font-size: 0.74rem;">Detalhes das demandas</small>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3 py-1 shadow-xs d-none" id="drawerBtnNovaDemanda" onclick="abrirModalNovaDemanda()">
+                <i class="fa-solid fa-plus me-1"></i> Nova Demanda
+              </button>
+              <button type="button" class="btn-close text-reset shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+          </div>
+          
+          <div class="offcanvas-body p-4 d-flex flex-column" style="background-color: #f8fafc;">
+            <!-- BARRA DE PESQUISA COM LUPA DENTRO DO DRAWER -->
+            <div class="input-group input-group-sm mb-3 shadow-xs">
+              <span class="input-group-text bg-white border-end-0 text-secondary" id="drawerPesquisaIcon">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" class="form-control border-start-0 ps-1" id="drawerPesquisaInput" 
+                     placeholder="Pesquisar nesta lista..." 
+                     oninput="filtrarDrawerAoDigitar()" autocomplete="off">
+              <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="drawerBtnLimparPesquisa" 
+                      onclick="limparPesquisaDrawer()" title="Limpar pesquisa">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- CONTÊINER COM SCROLL VERTICAL DOS CARDS DE DEMANDAS -->
+            <div class="flex-grow-1 overflow-auto pe-1" id="drawerConteudoLista" style="max-height: calc(100vh - 180px);">
+              <!-- Renderizado via JavaScript -->
+            </div>
+          </div>
         </div>
 
       </div>
@@ -2539,7 +2443,7 @@
     window.alternarLista = alternarLista;
 
     /**
-     * 4º Navega com rolagem suave até a lista correspondente ao clicar no card de dashboard
+     * 4º Navega para a aba da esteira e abre o drawer lateral da categoria solicitada
      */
     function navegarParaLista(tipo) {
       const btnEsteira = document.getElementById('tab-esteira-btn');
@@ -2547,28 +2451,12 @@
         bootstrap.Tab.getOrCreateInstance(btnEsteira).show();
       }
       setTimeout(() => {
-        let el = null;
-        if (tipo === 'concluidas') {
-          abrirListaSeFechada('concluidas');
-          el = document.getElementById('secaoListaConcluidas');
-        } else if (tipo === 'atrasadas') {
-          abrirListaSeFechada('atrasadas');
-          el = document.getElementById('secaoListaAtrasadas');
-        } else if (tipo === 'naoIniciadas') {
-          abrirListaSeFechada('naoIniciadas');
-          el = document.getElementById('secaoListaNaoIniciadas');
-        } else {
-          abrirListaSeFechada('emAndamento');
-          el = document.getElementById('secaoListaEmAndamento');
+        if (typeof abrirDrawerLista === 'function') {
+          abrirDrawerLista(tipo);
         }
-
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          el.classList.add('secao-destacada-temporaria');
-          setTimeout(() => el.classList.remove('secao-destacada-temporaria'), 1800);
-        }
-      }, 100);
+      }, 120);
     }
+    window.navegarParaLista = navegarParaLista;
 
     /**
      * Permite concluir qualquer demanda (Em Andamento ou Atrasada) diretamente com 1 clique
@@ -2885,358 +2773,363 @@
         }
       }
 
-      // ==========================================
-      // 1. LISTA "EM ANDAMENTO" (ESTEIRA ATIVA)
-      // ==========================================
-      const divEmAndamento = document.getElementById('listaEmAndamento');
-      const termoBuscaEmAnd = (document.getElementById('pesquisaEmAndamento') ? document.getElementById('pesquisaEmAndamento').value : '').trim().toLowerCase();
-
-      const emAndamentoFiltradas = emAndamento.filter(task => {
-        if (!termoBuscaEmAnd) return true;
-        const tit = (task.titulo || '').toLowerCase();
-        const mod = (task.modulo || '').toLowerCase();
-        const desc = (task.descricao || '').toLowerCase();
-        const dev = (task.devNome || '').toLowerCase();
-        return tit.includes(termoBuscaEmAnd) || mod.includes(termoBuscaEmAnd) || desc.includes(termoBuscaEmAnd) || dev.includes(termoBuscaEmAnd);
-      });
-
-      if (divEmAndamento) {
-        divEmAndamento.innerHTML = '';
-        if (emAndamento.length === 0) {
-          divEmAndamento.innerHTML = `
-            <div class="text-center py-4 text-muted">
-              <i class="fa-solid fa-spinner fs-2 text-primary opacity-50 mb-2"></i>
-              <p class="mb-0 small fw-semibold text-primary">Nenhuma demanda em produção no momento.</p>
-              <small class="text-muted">Inicie uma demanda da fila para mover para a esteira.</small>
-            </div>
-          `;
-        } else if (emAndamentoFiltradas.length === 0) {
-          divEmAndamento.innerHTML = `
-            <div class="text-center py-4 text-muted">
-              <i class="fa-solid fa-magnifying-glass fs-2 text-secondary opacity-50 mb-2"></i>
-              <p class="mb-1 fw-semibold small">Nenhuma demanda encontrada para "${termoBuscaEmAnd}".</p>
-              <button type="button" class="btn btn-outline-primary btn-sm rounded-pill mt-1" onclick="limparPesquisaEmAndamento()">
-                <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
-              </button>
-            </div>
-          `;
-        } else {
-          emAndamentoFiltradas.forEach(task => {
-            const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
-            const diasProd = calcularDiasEmProducao(task.dataInicio, task.dataConclusao, task.status, true);
-
-            const item = document.createElement('div');
-            item.className = 'esteira-item border-start border-primary border-4 bg-primary bg-opacity-10 mb-2 p-3 rounded-3 shadow-xs';
-            item.innerHTML = `
-              <div class="d-flex align-items-start gap-2">
-                <div class="badge bg-primary text-white p-2 border mt-1 d-none d-sm-block">
-                  <i class="fa-solid fa-bars-progress"></i>
-                </div>
-                <div class="flex-grow-1" style="min-width: 0;">
-                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                    <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
-                    <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
-                  </div>
-                  ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
-                  <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
-                    <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
-                    <span class="badge bg-primary text-white"><i class="fa-solid fa-spinner fa-spin me-1"></i>Em Andamento</span>
-                    ${task.ativo ? '<span class="badge bg-success-subtle text-success border border-success-subtle small fw-bold"><i class="fa-solid fa-crosshairs me-1"></i>Em Foco no Painel</span>' : ''}
-                    ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar-check text-primary me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
-                    <span class="small text-muted"><i class="fa-solid fa-stopwatch me-1"></i>${diasProd} dia(s) em prod.</span>
-                  </div>
-                  <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
-                    <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold py-1 px-3 shadow-xs" onclick="finalizarDemandaPorId('${task.id}')">
-                      <i class="fa-solid fa-circle-check me-1"></i> Concluir
-                    </button>
-                    ${!task.ativo ? `
-                      <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-2 py-1" title="Colocar em foco no painel superior" onclick="alternarFocoProducao('${task.id}')">
-                        <i class="fa-solid fa-crosshairs me-1"></i> Focar no Painel
-                      </button>
-                    ` : ''}
-                    ${podeEditarOuExcluir ? `
-                      <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
-                        <i class="fa-solid fa-pen-to-square me-1"></i> Editar
-                      </button>
-                      <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
-                        <i class="fa-solid fa-trash-can me-1"></i> Excluir
-                      </button>
-                    ` : ''}
-                  </div>
-                </div>
-              </div>
-            `;
-            divEmAndamento.appendChild(item);
-          });
-        }
-      }
-
-      // ==========================================
-      // 2. LISTA "NÃO INICIADAS" (FILA / BACKLOG)
-      // ==========================================
-      const divNaoIniciadas = document.getElementById('listaNaoIniciadas');
-      const termoBuscaNaoIni = (document.getElementById('pesquisaNaoIniciadas') ? document.getElementById('pesquisaNaoIniciadas').value : '').trim().toLowerCase();
-
-      const naoIniciadasFiltradas = naoIniciadas.filter(task => {
-        if (!termoBuscaNaoIni) return true;
-        const tit = (task.titulo || '').toLowerCase();
-        const mod = (task.modulo || '').toLowerCase();
-        const desc = (task.descricao || '').toLowerCase();
-        const dev = (task.devNome || '').toLowerCase();
-        return tit.includes(termoBuscaNaoIni) || mod.includes(termoBuscaNaoIni) || desc.includes(termoBuscaNaoIni) || dev.includes(termoBuscaNaoIni);
-      });
-
-      if (divNaoIniciadas) {
-        divNaoIniciadas.innerHTML = '';
-        if (naoIniciadas.length === 0) {
-          divNaoIniciadas.innerHTML = `
-            <div class="text-center py-4 text-muted">
-              <i class="fa-solid fa-clipboard-check fs-2 text-info opacity-50 mb-2"></i>
-              <p class="mb-0 small fw-semibold text-info-emphasis">Nenhuma demanda na fila de espera.</p>
-              <button type="button" class="btn btn-outline-info btn-sm rounded-pill mt-2" onclick="abrirModalNovaDemanda()">
-                <i class="fa-solid fa-plus me-1"></i> Adicionar Nova Demanda
-              </button>
-            </div>
-          `;
-        } else if (naoIniciadasFiltradas.length === 0) {
-          divNaoIniciadas.innerHTML = `
-            <div class="text-center py-4 text-muted">
-              <i class="fa-solid fa-magnifying-glass fs-2 text-secondary opacity-50 mb-2"></i>
-              <p class="mb-1 fw-semibold small">Nenhuma demanda encontrada para "${termoBuscaNaoIni}".</p>
-              <button type="button" class="btn btn-outline-info btn-sm rounded-pill mt-1" onclick="limparPesquisaNaoIniciadas()">
-                <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
-              </button>
-            </div>
-          `;
-        } else {
-          naoIniciadasFiltradas.forEach((task) => {
-            const realIdx = naoIniciadas.findIndex(t => t.id === task.id);
-            const isPrimeira = realIdx === 0;
-            const isUltima = realIdx === naoIniciadas.length - 1;
-            const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
-
-            const item = document.createElement('div');
-            item.className = 'esteira-item d-flex align-items-center gap-3 mb-2';
-            item.innerHTML = `
-              <!-- Controles de Reordenação: Subir / Descer Prioridade -->
-              <div class="d-flex flex-column align-items-center justify-content-center me-1" style="min-width: 32px;">
-                <button type="button" class="btn-reorder mb-1" title="Subir na lista (Aumentar prioridade)" onclick="moverDemandaFutura('${task.id}', -1)" ${isPrimeira ? 'disabled' : ''}>
-                  <i class="fa-solid fa-chevron-up"></i>
-                </button>
-                <span class="badge bg-light text-secondary border font-monospace my-1" style="font-size: 0.68rem; padding: 2px 5px;" title="Posição na fila">
-                  #${realIdx + 1}
-                </span>
-                <button type="button" class="btn-reorder mt-1" title="Descer na lista (Diminuir prioridade)" onclick="moverDemandaFutura('${task.id}', 1)" ${isUltima ? 'disabled' : ''}>
-                  <i class="fa-solid fa-chevron-down"></i>
-                </button>
-              </div>
-
-              <!-- Conteúdo da Demanda Não Iniciada -->
-              <div class="flex-grow-1" style="min-width: 0;">
-                <div class="d-flex align-items-start gap-2">
-                  <div class="badge bg-light text-dark p-2 border mt-1 d-none d-sm-block">
-                    <i class="fa-solid fa-hourglass-start me-1 text-info"></i> ${task.diasEstimados ? `${task.diasEstimados}d` : 'Fila'}
-                  </div>
-                  <div class="flex-grow-1" style="min-width: 0;">
-                    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                      <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
-                      <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
-                    </div>
-                    ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
-                    <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
-                      <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
-                      <span class="badge bg-secondary-subtle text-secondary border font-monospace" style="font-size: 0.72rem;"><i class="fa-regular fa-circle-dot me-1 small"></i>Não Iniciada</span>
-                      ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
-                    </div>
-                  </div>
-                </div>
-                <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
-                  <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold py-1 px-3 shadow-sm" onclick="abrirModalIniciarDemanda('${task.id}')">
-                    <i class="fa-solid fa-play me-1"></i> Iniciar Agora
-                  </button>
-                  ${podeEditarOuExcluir ? `
-                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
-                      <i class="fa-solid fa-pen-to-square me-1"></i> Editar
-                    </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
-                      <i class="fa-solid fa-trash-can me-1"></i> Excluir
-                    </button>
-                  ` : ''}
-                </div>
-              </div>
-            `;
-            divNaoIniciadas.appendChild(item);
-          });
-        }
-      }
-
-      // ==========================================
-      // 2. LISTA "DEMANDAS ATRASADAS" (NOVA LISTA DEDICADA)
-      // ==========================================
-      const divAtrasadas = document.getElementById('listaAtrasadasDemandas');
-      const termoBuscaAtrasadas = (document.getElementById('pesquisaAtrasadas') ? document.getElementById('pesquisaAtrasadas').value : '').trim().toLowerCase();
-
-      const atrasadasFiltradas = atrasadas.filter(task => {
-        if (!termoBuscaAtrasadas) return true;
-        const tit = (task.titulo || '').toLowerCase();
-        const mod = (task.modulo || '').toLowerCase();
-        const desc = (task.descricao || '').toLowerCase();
-        const dev = (task.devNome || '').toLowerCase();
-        return tit.includes(termoBuscaAtrasadas) || mod.includes(termoBuscaAtrasadas) || desc.includes(termoBuscaAtrasadas) || dev.includes(termoBuscaAtrasadas);
-      });
-
-      if (divAtrasadas) {
-        divAtrasadas.innerHTML = '';
-        if (atrasadas.length === 0) {
-          divAtrasadas.innerHTML = `
-            <div class="text-center py-4 text-muted">
-              <i class="fa-solid fa-circle-check fs-2 text-success mb-2"></i>
-              <p class="mb-0 small fw-semibold text-success">Excelente! Nenhuma demanda em atraso.</p>
-              <small class="text-muted">Todas as entregas estão no prazo.</small>
-            </div>
-          `;
-        } else if (atrasadasFiltradas.length === 0) {
-          divAtrasadas.innerHTML = `
-            <div class="text-center py-4 text-muted">
-              <i class="fa-solid fa-magnifying-glass fs-2 text-secondary opacity-50 mb-2"></i>
-              <p class="mb-1 fw-semibold small">Nenhuma demanda atrasada encontrada para "${termoBuscaAtrasadas}".</p>
-              <button type="button" class="btn btn-outline-danger btn-sm rounded-pill mt-1" onclick="limparPesquisaAtrasadas()">
-                <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
-              </button>
-            </div>
-          `;
-        } else {
-          atrasadasFiltradas.forEach(task => {
-            const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
-            
-            let diasAtraso = 1;
-            if (task.dataPrazo) {
-              const dtPrazo = parseDataLocal(task.dataPrazo);
-              const hojeZero = new Date();
-              hojeZero.setHours(0, 0, 0, 0);
-              dtPrazo.setHours(0, 0, 0, 0);
-              diasAtraso = Math.max(1, Math.round((hojeZero.getTime() - dtPrazo.getTime()) / (1000 * 60 * 60 * 24)));
-            }
-
-            const item = document.createElement('div');
-            item.className = 'esteira-item d-flex align-items-center gap-3 border-start border-danger border-4 bg-danger bg-opacity-10 mb-2 p-3 rounded-3 shadow-xs';
-            item.innerHTML = `
-              <div class="badge bg-danger text-white p-2 border mt-1 d-none d-sm-block">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-              </div>
-              <div class="flex-grow-1" style="min-width: 0;">
-                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                  <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
-                  <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
-                </div>
-                ${task.descricao ? `<small class="text-muted d-block mb-1 text-truncate" title="${task.descricao}">${task.descricao}</small>` : ''}
-                <div class="mt-1 d-flex flex-wrap align-items-center gap-2">
-                  <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
-                  <span class="badge bg-danger text-white"><i class="fa-solid fa-triangle-exclamation me-1"></i>Atrasada</span>
-                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle small fw-bold">
-                    <i class="fa-solid fa-clock-rotate-left me-1"></i>${diasAtraso} dia(s) de atraso
-                  </span>
-                  ${task.dataPrazo ? `<span class="small text-muted"><i class="fa-regular fa-calendar-xmark text-danger me-1"></i>Prazo: ${formatarData(task.dataPrazo)}</span>` : ''}
-                </div>
-                <div class="d-flex align-items-center gap-2 pt-2 mt-2 border-top border-light flex-wrap">
-                  <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold py-1 px-3 shadow-xs" onclick="finalizarDemandaPorId('${task.id}')">
-                    <i class="fa-solid fa-circle-check me-1"></i> Concluir
-                  </button>
-                  <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Ajustar Prazo de Entrega" onclick="abrirModalEditarTarefa('${task.id}')">
-                    <i class="fa-solid fa-calendar-pen me-1"></i> Ajustar Prazo
-                  </button>
-                  ${podeEditarOuExcluir ? `
-                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
-                      <i class="fa-solid fa-trash-can me-1"></i> Excluir
-                    </button>
-                  ` : ''}
-                </div>
-              </div>
-            `;
-            divAtrasadas.appendChild(item);
-          });
-        }
-      }
-
-      // ==========================================
-      // 3. LISTA "DEMANDAS CONCLUÍDAS"
-      // ==========================================
-      const divConcluidas = document.getElementById('listaConcluidasDemandas');
-      const termoBuscaConcluidas = (document.getElementById('pesquisaConcluidas') ? document.getElementById('pesquisaConcluidas').value : '').trim().toLowerCase();
-
-      const concluidasFiltradas = concluidas.filter(task => {
-        if (!termoBuscaConcluidas) return true;
-        const tit = (task.titulo || '').toLowerCase();
-        const mod = (task.modulo || '').toLowerCase();
-        const desc = (task.descricao || '').toLowerCase();
-        const dev = (task.devNome || '').toLowerCase();
-        return tit.includes(termoBuscaConcluidas) || mod.includes(termoBuscaConcluidas) || desc.includes(termoBuscaConcluidas) || dev.includes(termoBuscaConcluidas);
-      });
-
-      if (divConcluidas) {
-        divConcluidas.innerHTML = '';
-        if (concluidas.length === 0) {
-          divConcluidas.innerHTML = `
-            <div class="text-center py-4 text-muted">
-              <i class="fa-solid fa-clock-rotate-left fs-2 text-secondary opacity-50 mb-2"></i>
-              <p class="mb-0 small">Nenhuma demanda concluída ainda por este desenvolvedor.</p>
-            </div>
-          `;
-        } else if (concluidasFiltradas.length === 0) {
-          divConcluidas.innerHTML = `
-            <div class="text-center py-4 text-muted">
-              <i class="fa-solid fa-magnifying-glass fs-2 text-secondary opacity-50 mb-2"></i>
-              <p class="mb-1 fw-semibold small">Nenhuma demanda concluída encontrada para "${termoBuscaConcluidas}".</p>
-              <button type="button" class="btn btn-outline-success btn-sm rounded-pill mt-1" onclick="limparPesquisaConcluidas()">
-                <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
-              </button>
-            </div>
-          `;
-        } else {
-          concluidasFiltradas.forEach(task => {
-            const podeEditarOuExcluirConcluida = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
-
-            const item = document.createElement('div');
-            item.className = 'esteira-item d-flex flex-wrap justify-content-between align-items-center gap-3 border-start border-success border-4 mb-2';
-            item.innerHTML = `
-              <div class="d-flex align-items-center gap-3" style="min-width: 0; flex: 1;">
-                <div class="badge bg-success-subtle text-success p-2 border border-success-subtle d-none d-sm-block">
-                  <i class="fa-solid fa-check-double"></i>
-                </div>
-                <div style="min-width: 0; flex: 1;">
-                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                    <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small"><i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${task.modulo || 'SIOPLEEx'}</span>
-                    <h6 class="mb-0 fw-bold text-dark text-truncate" title="${task.titulo}">${task.titulo}</h6>
-                  </div>
-                  <small class="text-muted d-block text-truncate" title="${task.descricao || 'Demanda concluída com sucesso.'}">${task.descricao || 'Demanda concluída com sucesso.'}</small>
-                  <div class="mt-1 d-flex flex-wrap align-items-center gap-1">
-                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Concluída</span>
-                    <span class="badge bg-secondary-subtle text-secondary small">
-                      <i class="fa-solid fa-calendar-check me-1"></i>${formatarData(task.dataConclusao || task.dataPrazo)}
-                    </span>
-                    <span class="badge bg-warning-subtle text-dark small">
-                      <i class="fa-solid fa-stopwatch me-1"></i>${task.diasTrabalhados || 1} dia(s) em produção
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div class="d-flex align-items-center gap-2">
-                <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
-                ${podeEditarOuExcluirConcluida ? `
-                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-circle p-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
-                    <i class="fa-solid fa-pen-to-square" style="font-size: 0.75rem;"></i>
-                  </button>
-                  <button type="button" class="btn btn-outline-danger btn-sm rounded-circle p-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
-                    <i class="fa-solid fa-trash-can" style="font-size: 0.75rem;"></i>
-                  </button>
-                ` : ''}
-              </div>
-            `;
-            divConcluidas.appendChild(item);
-          });
-        }
+      // Se o Drawer Lateral estiver aberto, atualiza o conteúdo em tempo real (0ms)
+      const elDrawer = document.getElementById('drawerLateralDemandas');
+      if (elDrawer && elDrawer.classList.contains('show')) {
+        renderizarConteudoDrawer();
       }
     }
+
+    /**
+     * Sanitizador seguro de HTML para evitar quebras de layout ou injeção
+     */
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    /**
+     * CONTROLE DO DRAWER LATERAL (OFFCANVAS ~700px)
+     */
+    let drawerTipoAtual = 'emAndamento';
+
+    function abrirDrawerLista(tipo) {
+      if (tipo) drawerTipoAtual = tipo;
+      const inputPesquisa = document.getElementById('drawerPesquisaInput');
+      if (inputPesquisa) inputPesquisa.value = '';
+      const btnLimpar = document.getElementById('drawerBtnLimparPesquisa');
+      if (btnLimpar) btnLimpar.classList.add('d-none');
+      
+      renderizarConteudoDrawer();
+
+      const elDrawer = document.getElementById('drawerLateralDemandas');
+      if (elDrawer) {
+        const bsDrawer = bootstrap.Offcanvas.getOrCreateInstance(elDrawer);
+        bsDrawer.show();
+      }
+    }
+    window.abrirDrawerLista = abrirDrawerLista;
+
+    function filtrarDrawerAoDigitar() {
+      const input = document.getElementById('drawerPesquisaInput');
+      const btnLimpar = document.getElementById('drawerBtnLimparPesquisa');
+      if (input && btnLimpar) {
+        if (input.value.trim().length > 0) {
+          btnLimpar.classList.remove('d-none');
+        } else {
+          btnLimpar.classList.add('d-none');
+        }
+      }
+      renderizarConteudoDrawer();
+    }
+    window.filtrarDrawerAoDigitar = filtrarDrawerAoDigitar;
+
+    function limparPesquisaDrawer() {
+      const input = document.getElementById('drawerPesquisaInput');
+      const btnLimpar = document.getElementById('drawerBtnLimparPesquisa');
+      if (input) input.value = '';
+      if (btnLimpar) btnLimpar.classList.add('d-none');
+      renderizarConteudoDrawer();
+    }
+    window.limparPesquisaDrawer = limparPesquisaDrawer;
+
+    /**
+     * Renderização Dinâmica Ampla do Drawer Lateral (~700px)
+     */
+    function renderizarConteudoDrawer() {
+      const devSelect = document.getElementById('filtroDevEsteira');
+      const devId = (devSelect && devSelect.value) ? devSelect.value : (appState.currentUser ? appState.currentUser.id : null);
+      if (!devId) return;
+
+      const tarefasDev = appState.tarefas.filter(t => t.devId === devId);
+      const concluidas = tarefasDev.filter(t => t.status === 'Concluída');
+      const emAndamento = tarefasDev.filter(t => t.status === 'Em Andamento');
+      const naoIniciadas = tarefasDev.filter(t => t.status === 'Não Iniciada' || (!t.status && !t.ativo && t.status !== 'Concluída' && t.status !== 'Atrasada'));
+      const atrasadas = tarefasDev.filter(t => t.status === 'Atrasada');
+
+      const configs = {
+        emAndamento: {
+          titulo: 'Demandas Em Andamento',
+          subtitulo: 'Demandas atualmente em produção na esteira do desenvolvedor',
+          iconClass: 'fa-solid fa-spinner fa-spin fs-5',
+          iconContainerClass: 'rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle text-primary',
+          badgeClass: 'badge bg-primary text-white',
+          borderCor: 'border-primary',
+          btnNovaVisivel: false,
+          placeholder: 'Pesquisar demandas em andamento...',
+          listaBase: emAndamento,
+          emptyIcon: 'fa-solid fa-spinner fa-spin text-primary opacity-50',
+          emptyTitulo: 'Nenhuma demanda em produção no momento.',
+          emptySub: 'Inicie uma demanda da fila para mover para a esteira.'
+        },
+        naoIniciadas: {
+          titulo: 'Demandas Não Iniciadas',
+          subtitulo: 'Fila de espera de demandas aguardando início de produção',
+          iconClass: 'fa-solid fa-hourglass-start fs-5',
+          iconContainerClass: 'rounded-circle d-flex align-items-center justify-content-center bg-info-subtle text-info',
+          badgeClass: 'badge bg-info text-white',
+          borderCor: 'border-info',
+          btnNovaVisivel: true,
+          placeholder: 'Pesquisar demandas na fila de espera...',
+          listaBase: naoIniciadas,
+          emptyIcon: 'fa-solid fa-clipboard-check text-info opacity-50',
+          emptyTitulo: 'Nenhuma demanda na fila de espera.',
+          emptySub: 'Clique no botão "+ Nova Demanda" para adicionar.'
+        },
+        atrasadas: {
+          titulo: 'Demandas Atrasadas',
+          subtitulo: 'Demandas que excederam o prazo de entrega estipulado',
+          iconClass: 'fa-solid fa-triangle-exclamation fs-5',
+          iconContainerClass: 'rounded-circle d-flex align-items-center justify-content-center bg-danger-subtle text-danger',
+          badgeClass: 'badge bg-danger text-white',
+          borderCor: 'border-danger',
+          btnNovaVisivel: false,
+          placeholder: 'Pesquisar demandas atrasadas...',
+          listaBase: atrasadas,
+          emptyIcon: 'fa-solid fa-circle-check text-success opacity-75',
+          emptyTitulo: 'Excelente! Nenhuma demanda em atraso.',
+          emptySub: 'Todas as entregas estão rigorosamente dentro do prazo previsto.'
+        },
+        concluidas: {
+          titulo: 'Demandas Concluídas',
+          subtitulo: 'Histórico de entregas e demandas finalizadas na esteira',
+          iconClass: 'fa-solid fa-circle-check fs-5',
+          iconContainerClass: 'rounded-circle d-flex align-items-center justify-content-center bg-success-subtle text-success',
+          badgeClass: 'badge bg-success text-white',
+          borderCor: 'border-success',
+          btnNovaVisivel: false,
+          placeholder: 'Pesquisar histórico de demandas concluídas...',
+          listaBase: concluidas,
+          emptyIcon: 'fa-solid fa-clock-rotate-left text-secondary opacity-50',
+          emptyTitulo: 'Nenhuma demanda concluída ainda.',
+          emptySub: 'As demandas concluídas serão arquivadas e exibidas aqui.'
+        }
+      };
+
+      const config = configs[drawerTipoAtual] || configs.emAndamento;
+
+      // 1. Atualiza Cabeçalho do Drawer
+      const elTitulo = document.getElementById('drawerTitulo');
+      if (elTitulo) elTitulo.innerText = config.titulo;
+
+      const elSubtitulo = document.getElementById('drawerSubtitulo');
+      if (elSubtitulo) elSubtitulo.innerText = config.subtitulo;
+
+      const elIcon = document.getElementById('drawerIcon');
+      if (elIcon) elIcon.className = config.iconClass;
+
+      const elIconCont = document.getElementById('drawerIconContainer');
+      if (elIconCont) elIconCont.className = config.iconContainerClass;
+
+      const elBadgeQtd = document.getElementById('drawerBadgeQtd');
+      if (elBadgeQtd) {
+        elBadgeQtd.innerText = config.listaBase.length;
+        elBadgeQtd.className = config.badgeClass + ' font-monospace rounded-pill';
+      }
+
+      const elBtnNova = document.getElementById('drawerBtnNovaDemanda');
+      if (elBtnNova) {
+        if (config.btnNovaVisivel) elBtnNova.classList.remove('d-none');
+        else elBtnNova.classList.add('d-none');
+      }
+
+      const inputPesquisa = document.getElementById('drawerPesquisaInput');
+      if (inputPesquisa) {
+        inputPesquisa.placeholder = config.placeholder;
+      }
+
+      // 2. Filtragem por busca textual
+      const termo = (inputPesquisa ? inputPesquisa.value : '').trim().toLowerCase();
+      const itensFiltrados = config.listaBase.filter(task => {
+        if (!termo) return true;
+        const tit = (task.titulo || '').toLowerCase();
+        const mod = (task.modulo || '').toLowerCase();
+        const desc = (task.descricao || '').toLowerCase();
+        const dev = (task.devNome || '').toLowerCase();
+        return tit.includes(termo) || mod.includes(termo) || desc.includes(termo) || dev.includes(termo);
+      });
+
+      const divConteudo = document.getElementById('drawerConteudoLista');
+      if (!divConteudo) return;
+
+      divConteudo.innerHTML = '';
+
+      // Lista Vazia
+      if (config.listaBase.length === 0) {
+        divConteudo.innerHTML = `
+          <div class="card card-custom p-4 text-center text-muted bg-white border border-light-subtle shadow-xs my-3">
+            <i class="${config.emptyIcon} fs-1 mb-3"></i>
+            <h6 class="fw-bold text-dark mb-1">${config.emptyTitulo}</h6>
+            <p class="small text-muted mb-0">${config.emptySub}</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Nenhum resultado na busca
+      if (itensFiltrados.length === 0) {
+        divConteudo.innerHTML = `
+          <div class="card card-custom p-4 text-center text-muted bg-white border border-light-subtle shadow-xs my-3">
+            <i class="fa-solid fa-magnifying-glass fs-1 text-secondary opacity-50 mb-3"></i>
+            <h6 class="fw-bold text-dark mb-1">Nenhum resultado encontrado</h6>
+            <p class="small text-muted mb-3">Nenhuma demanda corresponde à pesquisa "<strong>${escapeHtml(termo)}</strong>".</p>
+            <div>
+              <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="limparPesquisaDrawer()">
+                <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 3. Renderiza cada Card de Demanda com Layout Amplo (~700px)
+      itensFiltrados.forEach((task) => {
+        const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || 
+          (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+
+        const realIdx = config.listaBase.findIndex(t => t.id === task.id);
+        const isPrimeira = realIdx === 0;
+        const isUltima = realIdx === config.listaBase.length - 1;
+
+        let diasProd = 0;
+        if (task.status === 'Em Andamento' || task.status === 'Concluída' || task.status === 'Atrasada') {
+          diasProd = calcularDiasEmProducao(task.dataInicio, task.dataConclusao, task.status, task.ativo);
+        }
+
+        let diasAtraso = 0;
+        if (task.status === 'Atrasada' && task.dataPrazo) {
+          const dtPrazo = parseDataLocal(task.dataPrazo);
+          const hojeZero = new Date();
+          hojeZero.setHours(0, 0, 0, 0);
+          dtPrazo.setHours(0, 0, 0, 0);
+          diasAtraso = Math.max(1, Math.round((hojeZero.getTime() - dtPrazo.getTime()) / (1000 * 60 * 60 * 24)));
+        }
+
+        const card = document.createElement('div');
+        card.className = `card card-custom border-start border-4 ${config.borderCor} mb-3 p-3 shadow-xs bg-white`;
+        card.style.transition = 'all 0.2s ease';
+
+        // Cabeçalho do Card: Origem, Urgência, Status, Foco e Posição
+        let topoHtml = `
+          <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge ${task.modulo === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small">
+                <i class="fa-solid ${task.modulo === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${escapeHtml(task.modulo || 'SIOPLEEx')}
+              </span>
+              <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
+              ${task.ativo ? '<span class="badge bg-success-subtle text-success border border-success-subtle fw-bold small"><i class="fa-solid fa-crosshairs me-1"></i>Em Foco no Painel</span>' : ''}
+              ${drawerTipoAtual === 'naoIniciadas' ? `<span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.74rem;">#${realIdx + 1} na fila</span>` : ''}
+            </div>
+        `;
+
+        if (drawerTipoAtual === 'naoIniciadas') {
+          topoHtml += `
+            <div class="d-flex align-items-center gap-1">
+              <button type="button" class="btn btn-outline-secondary btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Subir prioridade na fila" onclick="moverDemandaFutura('${task.id}', -1)" ${isPrimeira ? 'disabled' : ''}>
+                <i class="fa-solid fa-chevron-up" style="font-size: 0.72rem;"></i>
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm p-1 rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Descer prioridade na fila" onclick="moverDemandaFutura('${task.id}', 1)" ${isUltima ? 'disabled' : ''}>
+                <i class="fa-solid fa-chevron-down" style="font-size: 0.72rem;"></i>
+              </button>
+            </div>
+          `;
+        }
+        topoHtml += `</div>`;
+
+        // Título e Descrição Completa
+        let corpoHtml = `
+          <h6 class="fw-bold text-dark mb-1" style="font-size: 0.96rem; line-height: 1.4;">${escapeHtml(task.titulo)}</h6>
+          ${task.descricao ? `<p class="text-muted small mb-2" style="white-space: pre-wrap; line-height: 1.45;">${escapeHtml(task.descricao)}</p>` : ''}
+        `;
+
+        // Metadados (datas, estimativas, prazos, atraso, conclusão)
+        let metaHtml = `<div class="d-flex flex-wrap align-items-center gap-3 small text-muted mb-3 pt-1">`;
+        if (task.dataInicio) {
+          metaHtml += `<span><i class="fa-regular fa-calendar-plus text-secondary me-1"></i>Início: <strong>${formatarData(task.dataInicio)}</strong></span>`;
+        }
+        if (task.dataPrazo) {
+          metaHtml += `<span class="${task.status === 'Atrasada' ? 'text-danger fw-bold' : ''}"><i class="fa-regular fa-calendar-check ${task.status === 'Atrasada' ? 'text-danger' : 'text-primary'} me-1"></i>Prazo: <strong>${formatarData(task.dataPrazo)}</strong></span>`;
+        }
+        if (task.diasEstimados && drawerTipoAtual === 'naoIniciadas') {
+          metaHtml += `<span><i class="fa-regular fa-hourglass me-1 text-info"></i>Estimativa: <strong>${task.diasEstimados} dia(s)</strong></span>`;
+        }
+        if (diasProd > 0 && drawerTipoAtual !== 'naoIniciadas') {
+          metaHtml += `<span><i class="fa-solid fa-stopwatch text-warning me-1"></i><strong>${diasProd}</strong> dia(s) em prod.</span>`;
+        }
+        if (diasAtraso > 0) {
+          metaHtml += `<span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="fa-solid fa-clock-rotate-left me-1"></i><strong>${diasAtraso}</strong> dia(s) de atraso</span>`;
+        }
+        if (task.dataConclusao) {
+          metaHtml += `<span class="badge bg-success-subtle text-success border border-success-subtle"><i class="fa-solid fa-circle-check me-1"></i>Concluída em: <strong>${formatarData(task.dataConclusao)}</strong></span>`;
+        }
+        metaHtml += `</div>`;
+
+        // Botões de Ação
+        let botoesHtml = `<div class="d-flex align-items-center justify-content-between pt-2 border-top border-light-subtle flex-wrap gap-2">`;
+        botoesHtml += `<div class="d-flex align-items-center gap-2 flex-wrap">`;
+
+        if (drawerTipoAtual === 'emAndamento') {
+          botoesHtml += `
+            <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold px-3 py-1 shadow-xs" onclick="finalizarDemandaPorId('${task.id}')">
+              <i class="fa-solid fa-circle-check me-1"></i> Concluir Demanda
+            </button>
+          `;
+          if (!task.ativo) {
+            botoesHtml += `
+              <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-2 py-1" title="Colocar em foco no painel superior" onclick="alternarFocoProducao('${task.id}')">
+                <i class="fa-solid fa-crosshairs me-1"></i> Focar no Painel
+              </button>
+            `;
+          }
+        } else if (drawerTipoAtual === 'naoIniciadas') {
+          botoesHtml += `
+            <button type="button" class="btn btn-primary btn-sm rounded-pill fw-bold px-3 py-1 shadow-sm" onclick="abrirModalIniciarDemanda('${task.id}')">
+              <i class="fa-solid fa-play me-1"></i> Iniciar Agora
+            </button>
+          `;
+        } else if (drawerTipoAtual === 'atrasadas') {
+          botoesHtml += `
+            <button type="button" class="btn btn-success btn-sm rounded-pill fw-bold px-3 py-1 shadow-xs" onclick="finalizarDemandaPorId('${task.id}')">
+              <i class="fa-solid fa-circle-check me-1"></i> Concluir
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Ajustar Prazo de Entrega" onclick="abrirModalEditarTarefa('${task.id}')">
+              <i class="fa-solid fa-calendar-pen me-1"></i> Ajustar Prazo
+            </button>
+          `;
+        } else if (drawerTipoAtual === 'concluidas') {
+          botoesHtml += `
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-semibold">
+              <i class="fa-solid fa-check-double me-1"></i> Entrega Finalizada
+            </span>
+          `;
+        }
+
+        botoesHtml += `</div><div class="d-flex align-items-center gap-1">`;
+
+        if (podeEditarOuExcluir) {
+          botoesHtml += `
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda" onclick="abrirModalEditarTarefa('${task.id}')">
+              <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda" onclick="excluirDemandaConfirm('${task.id}')">
+              <i class="fa-solid fa-trash-can me-1"></i> Excluir
+            </button>
+          `;
+        }
+
+        botoesHtml += `</div></div>`;
+
+        card.innerHTML = topoHtml + corpoHtml + metaHtml + botoesHtml;
+        divConteudo.appendChild(card);
+      });
+    }
+    window.renderizarConteudoDrawer = renderizarConteudoDrawer;
 
     let tarefaSendoIniciadaId = null;
 
