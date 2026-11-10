@@ -263,15 +263,6 @@
       transform: translateY(-1px);
       box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
     }
-      border: none;
-      font-weight: 600;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-      cursor: pointer;
-    }
-    .btn-nova-atividade:hover {
-      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-      color: #ffffff;
-    }
 
     /* Notificação flutuante de resposta instantânea (0ms de atraso percebido) */
     #toastFeedback {
@@ -743,78 +734,130 @@
           <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaDemandas">
             <div class="card card-custom p-3 p-md-4 h-100 shadow-sm border-top border-primary border-3">
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
+                <div style="cursor: pointer;" onclick="alternarLista('demandas')" title="Clique para abrir ou recolher a lista">
                   <h5 class="fw-bold mb-1 d-flex align-items-center">
                     <i class="fa-solid fa-bars-staggered me-2 text-primary"></i>Demandas
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill ms-2 font-monospace" id="badgeQtdDemandasAba">0</span>
                   </h5>
                   <p class="text-muted small mb-0">Em andamento na esteira e próximas na fila.</p>
                 </div>
-                <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3 shadow-xs" onclick="abrirModalNovaDemanda()">
-                  <i class="fa-solid fa-plus me-1"></i> Nova Demanda
-                </button>
+                <div class="d-flex align-items-center gap-2">
+                  <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3 shadow-xs" onclick="abrirModalNovaDemanda()">
+                    <i class="fa-solid fa-plus me-1"></i> Nova Demanda
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary rounded-circle p-0" id="btnToggle_demandas" onclick="alternarLista('demandas')" title="Recolher lista" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-chevron-up" id="iconeToggle_demandas"></i>
+                  </button>
+                </div>
               </div>
 
-              <!-- BARRA DE PESQUISA COM LUPA -->
-              <div class="input-group input-group-sm mb-3 shadow-xs">
-                <span class="input-group-text bg-white border-end-0 text-primary">
-                  <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" class="form-control border-start-0 ps-1" id="pesquisaDemandas" 
-                       placeholder="Pesquisar por demanda ou módulo..." 
-                       oninput="filtrarDemandasAoDigitar()" autocomplete="off">
-                <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaDemandas" 
-                        onclick="limparPesquisaDemandas()" title="Limpar pesquisa">
-                  <i class="fa-solid fa-xmark"></i>
-                </button>
-              </div>
+              <!-- CORPO COLAPSÁVEL -->
+              <div id="corpoLista_demandas">
+                <!-- BARRA DE PESQUISA COM LUPA -->
+                <div class="input-group input-group-sm mb-3 shadow-xs">
+                  <span class="input-group-text bg-white border-end-0 text-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </span>
+                  <input type="text" class="form-control border-start-0 ps-1" id="pesquisaDemandas" 
+                         placeholder="Pesquisar por demanda ou origem..." 
+                         oninput="filtrarDemandasAoDigitar()" autocomplete="off">
+                  <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaDemandas" 
+                          onclick="limparPesquisaDemandas()" title="Limpar pesquisa">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
 
-              <!-- CONTÊINER DA LISTA DE DEMANDAS -->
-              <div id="listaDemandas" style="max-height: 520px; overflow-y: auto;">
+                <!-- CONTÊINER DA LISTA DE DEMANDAS -->
+                <div id="listaDemandas" style="max-height: 520px; overflow-y: auto;">
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- COLUNA 2: DEMANDAS ATRASADAS -->
+          <!-- COLUNA 2: DEMANDAS ATRASADAS (INICIA FECHADA) -->
           <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaAtrasadas">
             <div class="card card-custom p-3 p-md-4 h-100 shadow-sm border-top border-danger border-3">
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
+                <div style="cursor: pointer;" onclick="alternarLista('atrasadas')" title="Clique para abrir ou recolher a lista">
                   <h5 class="fw-bold mb-1 d-flex align-items-center text-danger">
                     <i class="fa-solid fa-triangle-exclamation me-2 text-danger"></i>Demandas Atrasadas
                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill ms-2 font-monospace" id="badgeQtdAtrasadasAba">0</span>
                   </h5>
                   <p class="text-muted small mb-0">Tarefas que excederam a data de término prevista.</p>
                 </div>
-                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small rounded-pill">
-                  <i class="fa-solid fa-clock-rotate-left me-1"></i>Atraso
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small rounded-pill d-none d-sm-inline">
+                    <i class="fa-solid fa-clock-rotate-left me-1"></i>Atraso
+                  </span>
+                  <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-0" id="btnToggle_atrasadas" onclick="alternarLista('atrasadas')" title="Abrir lista de atrasadas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-chevron-down" id="iconeToggle_atrasadas"></i>
+                  </button>
+                </div>
               </div>
 
-              <!-- CONTÊINER DA LISTA DE ATRASADAS -->
-              <div id="listaAtrasadasDemandas" style="max-height: 520px; overflow-y: auto;">
+              <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
+              <div id="corpoLista_atrasadas" class="d-none">
+                <!-- BARRA DE PESQUISA COM LUPA (ATRASADAS) -->
+                <div class="input-group input-group-sm mb-3 shadow-xs">
+                  <span class="input-group-text bg-white border-end-0 text-danger">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </span>
+                  <input type="text" class="form-control border-start-0 ps-1" id="pesquisaAtrasadas" 
+                         placeholder="Pesquisar demandas atrasadas..." 
+                         oninput="filtrarAtrasadasAoDigitar()" autocomplete="off">
+                  <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaAtrasadas" 
+                          onclick="limparPesquisaAtrasadas()" title="Limpar pesquisa">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+
+                <!-- CONTÊINER DA LISTA DE ATRASADAS -->
+                <div id="listaAtrasadasDemandas" style="max-height: 520px; overflow-y: auto;">
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- COLUNA 3: DEMANDAS CONCLUÍDAS -->
+          <!-- COLUNA 3: DEMANDAS CONCLUÍDAS (INICIA FECHADA) -->
           <div class="col-xl-4 col-lg-4 col-md-12" id="secaoListaConcluidas">
             <div class="card card-custom p-3 p-md-4 h-100 shadow-sm border-top border-success border-3">
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
+                <div style="cursor: pointer;" onclick="alternarLista('concluidas')" title="Clique para abrir ou recolher a lista">
                   <h5 class="fw-bold mb-1 d-flex align-items-center text-success">
                     <i class="fa-solid fa-circle-check me-2 text-success"></i>Demandas Concluídas
                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-2 font-monospace" id="badgeQtdConcluidasAba">0</span>
                   </h5>
                   <p class="text-muted small mb-0">Histórico de entregas finalizadas na esteira.</p>
                 </div>
-                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small rounded-pill">
-                  <i class="fa-solid fa-check-double me-1"></i>Finalizadas
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small rounded-pill d-none d-sm-inline">
+                    <i class="fa-solid fa-check-double me-1"></i>Finalizadas
+                  </span>
+                  <button type="button" class="btn btn-sm btn-outline-success rounded-circle p-0" id="btnToggle_concluidas" onclick="alternarLista('concluidas')" title="Abrir lista de concluídas" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-chevron-down" id="iconeToggle_concluidas"></i>
+                  </button>
+                </div>
               </div>
 
-              <!-- CONTÊINER DA LISTA DE CONCLUÍDAS -->
-              <div id="listaConcluidasDemandas" style="max-height: 520px; overflow-y: auto;">
+              <!-- CORPO COLAPSÁVEL (INICIA FECHADO) -->
+              <div id="corpoLista_concluidas" class="d-none">
+                <!-- BARRA DE PESQUISA COM LUPA (CONCLUÍDAS) -->
+                <div class="input-group input-group-sm mb-3 shadow-xs">
+                  <span class="input-group-text bg-white border-end-0 text-success">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </span>
+                  <input type="text" class="form-control border-start-0 ps-1" id="pesquisaConcluidas" 
+                         placeholder="Pesquisar demandas concluídas..." 
+                         oninput="filtrarConcluidasAoDigitar()" autocomplete="off">
+                  <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaConcluidas" 
+                          onclick="limparPesquisaConcluidas()" title="Limpar pesquisa">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+
+                <!-- CONTÊINER DA LISTA DE CONCLUÍDAS -->
+                <div id="listaConcluidasDemandas" style="max-height: 520px; overflow-y: auto;">
+                </div>
               </div>
             </div>
           </div>
@@ -2407,6 +2450,42 @@
     }
 
     /**
+     * Auxiliar para abrir uma lista colapsada caso esteja fechada
+     */
+    function abrirListaSeFechada(tipo) {
+      const corpo = document.getElementById(`corpoLista_${tipo}`);
+      const icone = document.getElementById(`iconeToggle_${tipo}`);
+      const btn = document.getElementById(`btnToggle_${tipo}`);
+      if (corpo && corpo.classList.contains('d-none')) {
+        corpo.classList.remove('d-none');
+        if (icone) icone.className = 'fa-solid fa-chevron-up';
+        if (btn) btn.title = 'Recolher lista';
+      }
+    }
+    window.abrirListaSeFechada = abrirListaSeFechada;
+
+    /**
+     * 3º Alterna a visibilidade (abrir/fechar) de uma lista com seta
+     */
+    function alternarLista(tipo) {
+      const corpo = document.getElementById(`corpoLista_${tipo}`);
+      const icone = document.getElementById(`iconeToggle_${tipo}`);
+      const btn = document.getElementById(`btnToggle_${tipo}`);
+      if (!corpo || !icone) return;
+      const estaFechado = corpo.classList.contains('d-none');
+      if (estaFechado) {
+        corpo.classList.remove('d-none');
+        icone.className = 'fa-solid fa-chevron-up';
+        if (btn) btn.title = 'Recolher lista';
+      } else {
+        corpo.classList.add('d-none');
+        icone.className = 'fa-solid fa-chevron-down';
+        if (btn) btn.title = 'Abrir lista';
+      }
+    }
+    window.alternarLista = alternarLista;
+
+    /**
      * 4º Navega com rolagem suave até a lista correspondente ao clicar no card de dashboard
      */
     function navegarParaLista(tipo) {
@@ -2417,10 +2496,13 @@
       setTimeout(() => {
         let el = null;
         if (tipo === 'concluidas') {
+          abrirListaSeFechada('concluidas');
           el = document.getElementById('secaoListaConcluidas');
         } else if (tipo === 'atrasadas') {
+          abrirListaSeFechada('atrasadas');
           el = document.getElementById('secaoListaAtrasadas');
         } else {
+          abrirListaSeFechada('demandas');
           el = document.getElementById('secaoListaDemandas');
         }
 
@@ -2490,6 +2572,58 @@
     }
     window.filtrarDemandasFuturasAoDigitar = filtrarDemandasAoDigitar;
     window.limparPesquisaDemandasFuturas = limparPesquisaDemandas;
+
+    /**
+     * Filtro dinâmico por digitação na lista de Demandas Atrasadas
+     */
+    function filtrarAtrasadasAoDigitar() {
+      const input = document.getElementById('pesquisaAtrasadas');
+      const btnLimpar = document.getElementById('btnLimparPesquisaAtrasadas');
+      if (input && btnLimpar) {
+        if (input.value.trim().length > 0) {
+          btnLimpar.classList.remove('d-none');
+        } else {
+          btnLimpar.classList.add('d-none');
+        }
+      }
+      atualizarAbaEsteira();
+    }
+    window.filtrarAtrasadasAoDigitar = filtrarAtrasadasAoDigitar;
+
+    function limparPesquisaAtrasadas() {
+      const input = document.getElementById('pesquisaAtrasadas');
+      const btnLimpar = document.getElementById('btnLimparPesquisaAtrasadas');
+      if (input) input.value = '';
+      if (btnLimpar) btnLimpar.classList.add('d-none');
+      atualizarAbaEsteira();
+    }
+    window.limparPesquisaAtrasadas = limparPesquisaAtrasadas;
+
+    /**
+     * Filtro dinâmico por digitação na lista de Demandas Concluídas
+     */
+    function filtrarConcluidasAoDigitar() {
+      const input = document.getElementById('pesquisaConcluidas');
+      const btnLimpar = document.getElementById('btnLimparPesquisaConcluidas');
+      if (input && btnLimpar) {
+        if (input.value.trim().length > 0) {
+          btnLimpar.classList.remove('d-none');
+        } else {
+          btnLimpar.classList.add('d-none');
+        }
+      }
+      atualizarAbaEsteira();
+    }
+    window.filtrarConcluidasAoDigitar = filtrarConcluidasAoDigitar;
+
+    function limparPesquisaConcluidas() {
+      const input = document.getElementById('pesquisaConcluidas');
+      const btnLimpar = document.getElementById('btnLimparPesquisaConcluidas');
+      if (input) input.value = '';
+      if (btnLimpar) btnLimpar.classList.add('d-none');
+      atualizarAbaEsteira();
+    }
+    window.limparPesquisaConcluidas = limparPesquisaConcluidas;
 
     function atualizarAbaEsteira() {
       verificarEAtualizarStatusTarefas();
@@ -2805,6 +2939,17 @@
       // 2. LISTA "DEMANDAS ATRASADAS" (NOVA LISTA DEDICADA)
       // ==========================================
       const divAtrasadas = document.getElementById('listaAtrasadasDemandas');
+      const termoBuscaAtrasadas = (document.getElementById('pesquisaAtrasadas') ? document.getElementById('pesquisaAtrasadas').value : '').trim().toLowerCase();
+
+      const atrasadasFiltradas = atrasadas.filter(task => {
+        if (!termoBuscaAtrasadas) return true;
+        const tit = (task.titulo || '').toLowerCase();
+        const mod = (task.modulo || '').toLowerCase();
+        const desc = (task.descricao || '').toLowerCase();
+        const dev = (task.devNome || '').toLowerCase();
+        return tit.includes(termoBuscaAtrasadas) || mod.includes(termoBuscaAtrasadas) || desc.includes(termoBuscaAtrasadas) || dev.includes(termoBuscaAtrasadas);
+      });
+
       if (divAtrasadas) {
         divAtrasadas.innerHTML = '';
         if (atrasadas.length === 0) {
@@ -2815,8 +2960,18 @@
               <small class="text-muted">Todas as entregas estão no prazo.</small>
             </div>
           `;
+        } else if (atrasadasFiltradas.length === 0) {
+          divAtrasadas.innerHTML = `
+            <div class="text-center py-4 text-muted">
+              <i class="fa-solid fa-magnifying-glass fs-2 text-secondary opacity-50 mb-2"></i>
+              <p class="mb-1 fw-semibold small">Nenhuma demanda atrasada encontrada para "${termoBuscaAtrasadas}".</p>
+              <button type="button" class="btn btn-outline-danger btn-sm rounded-pill mt-1" onclick="limparPesquisaAtrasadas()">
+                <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
+              </button>
+            </div>
+          `;
         } else {
-          atrasadas.forEach(task => {
+          atrasadasFiltradas.forEach(task => {
             const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
             
             let diasAtraso = 1;
@@ -2872,6 +3027,17 @@
       // 3. LISTA "DEMANDAS CONCLUÍDAS"
       // ==========================================
       const divConcluidas = document.getElementById('listaConcluidasDemandas');
+      const termoBuscaConcluidas = (document.getElementById('pesquisaConcluidas') ? document.getElementById('pesquisaConcluidas').value : '').trim().toLowerCase();
+
+      const concluidasFiltradas = concluidas.filter(task => {
+        if (!termoBuscaConcluidas) return true;
+        const tit = (task.titulo || '').toLowerCase();
+        const mod = (task.modulo || '').toLowerCase();
+        const desc = (task.descricao || '').toLowerCase();
+        const dev = (task.devNome || '').toLowerCase();
+        return tit.includes(termoBuscaConcluidas) || mod.includes(termoBuscaConcluidas) || desc.includes(termoBuscaConcluidas) || dev.includes(termoBuscaConcluidas);
+      });
+
       if (divConcluidas) {
         divConcluidas.innerHTML = '';
         if (concluidas.length === 0) {
@@ -2881,8 +3047,18 @@
               <p class="mb-0 small">Nenhuma demanda concluída ainda por este desenvolvedor.</p>
             </div>
           `;
+        } else if (concluidasFiltradas.length === 0) {
+          divConcluidas.innerHTML = `
+            <div class="text-center py-4 text-muted">
+              <i class="fa-solid fa-magnifying-glass fs-2 text-secondary opacity-50 mb-2"></i>
+              <p class="mb-1 fw-semibold small">Nenhuma demanda concluída encontrada para "${termoBuscaConcluidas}".</p>
+              <button type="button" class="btn btn-outline-success btn-sm rounded-pill mt-1" onclick="limparPesquisaConcluidas()">
+                <i class="fa-solid fa-xmark me-1"></i> Limpar pesquisa
+              </button>
+            </div>
+          `;
         } else {
-          concluidas.forEach(task => {
+          concluidasFiltradas.forEach(task => {
             const podeEditarOuExcluirConcluida = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
 
             const item = document.createElement('div');
@@ -4427,7 +4603,7 @@
           const diasTrabTexto = (t.status === 'Não Iniciada' && (!t.diasTrabalhados || t.diasTrabalhados === 0)) ? '-' : `${t.diasTrabalhados}d`;
 
           tr.innerHTML = `
-            <td class="font-monospace text-muted small fw-semibold">#${String(index + 1).padStart(2, '0')}</td>
+            <td class="font-monospace text-muted small fw-semibold">${String(index + 1).padStart(2, '0')}</td>
             <td>
               <span class="badge ${isExterna ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-light text-dark border'} font-monospace text-wrap" style="font-size: 0.74rem; word-break: break-word; line-height: 1.25; display: inline-block; padding: 4px 6px; border-radius: 6px;" title="${mod}">
                 <i class="fa-solid ${isExterna ? 'fa-arrow-up-right-from-square text-warning-emphasis' : 'fa-cube text-primary'} me-1"></i>${mod}
@@ -4588,7 +4764,7 @@
 
           linhasTabelaHtml += `
             <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; page-break-inside: avoid !important; break-inside: avoid !important;">
-              <td style="padding: 7px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700; color: #475569; font-size: 10px;">#${String(idx + 1).padStart(2, '0')}</td>
+              <td style="padding: 7px 6px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700; color: #475569; font-size: 10px;">${String(idx + 1).padStart(2, '0')}</td>
               <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: center;">
                 <span style="display: inline-block; padding: 2.5px 8px; border-radius: 4px; font-size: 9.5px; font-weight: 700; ${isExternaPdf ? 'background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;' : 'background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1;'}">
                   ${isExternaPdf ? 'Demanda Externa' : modPdf}
