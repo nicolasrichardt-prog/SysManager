@@ -2117,6 +2117,9 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      // 0. Auto-cura e restauração imediata de demandas não iniciadas no armazenamento local
+      sanitizarECorrigirDemandasNaoIniciadas();
+
       // 1. Inicializa tooltips Bootstrap e módulos
       inicializarTooltips();
       popularModulosUI();
@@ -2352,6 +2355,9 @@
       // Aplica edições locais preservadas (garante que F5 NUNCA reverta uma edição)
       aplicarEdicoesLocais(appState.tarefas);
 
+      // Sanitiza e restaura demandas não iniciadas (garante que demandas sem prazo permaneçam intocadas na fila)
+      sanitizarECorrigirDemandasNaoIniciadas();
+
       // Normaliza e verifica status das tarefas segundo as 4 regras oficiais
       verificarEAtualizarStatusTarefas();
 
@@ -2564,9 +2570,12 @@
       if (!task) return;
       const devId = task.devId || (appState.currentUser ? appState.currentUser.id : null);
       appState.tarefas.forEach(t => {
-        if (t.devId === devId && t.status !== 'Concluída') {
-          t.ativo = (t.id === task.id);
-          salvarEdicaoLocalDemanda(t);
+        if (t.devId === devId && (t.status === 'Em Andamento' || t.status === 'Atrasada' || t.id === task.id)) {
+          const novoAtivo = (t.id === task.id);
+          if (t.ativo !== novoAtivo) {
+            t.ativo = novoAtivo;
+            salvarEdicaoLocalDemanda(t);
+          }
         }
       });
       atualizarAbaEsteira();
@@ -3532,14 +3541,11 @@
       task.diasEstimados = diffDias;
       task.diasTrabalhados = 1;
 
-      // Desativa foco de outras demandas deste desenvolvedor que não estejam concluídas,
-      // MAS PRESERVA rigorosamente seu status "Em Andamento" (ou "Atrasada")
+      // Se outra demanda deste desenvolvedor estava ativa na produção, desativa apenas a flag "ativo"
+      // NUNCA altera o status de outras demandas (as Não Iniciadas permanecem intocadas na fila de espera!)
       appState.tarefas.forEach(other => {
-        if (other.devId === devId && other.id !== task.id && other.status !== 'Concluída') {
+        if (other.devId === devId && other.id !== task.id && other.ativo) {
           other.ativo = false;
-          if (other.status !== 'Atrasada') {
-            other.status = 'Em Andamento';
-          }
           salvarEdicaoLocalDemanda(other);
         }
       });
@@ -3900,27 +3906,35 @@
       // DATA DE INÍCIO: RIGOROSAMENTE BLOQUEADA E INALTERÁVEL
       const dtInicioExibicao = document.getElementById('editTaskDataInicioExibicao');
       const dtInicioHidden = document.getElementById('editTaskDataInicio');
-      const inicioRaw = tarefa.dataInicio || formatarDataIso(new Date());
-      if (dtInicioHidden) dtInicioHidden.value = inicioRaw;
-      if (dtInicioExibicao) dtInicioExibicao.value = formatarData(inicioRaw) + ' (Inalterável)';
-
-      // DATA DE TÉRMINO / PRAZO: SELECIONÁVEL VIA CALENDÁRIO
       const dtPrazoInput = document.getElementById('editTaskDataPrazo');
-      if (dtPrazoInput) {
-        let prazoVal = '';
-        if (tarefa.dataPrazo) {
-          const d = new Date(tarefa.dataPrazo);
-          if (!isNaN(d.getTime())) {
-            prazoVal = formatarDataIso(d);
+      const isNaoIniciada = (tarefa.status === 'Não Iniciada' || (!tarefa.dataPrazo && tarefa.status !== 'Concluída'));
+
+      if (isNaoIniciada) {
+        if (dtInicioHidden) dtInicioHidden.value = '';
+        if (dtInicioExibicao) dtInicioExibicao.value = 'A definir (ao iniciar na esteira)';
+        if (dtPrazoInput) dtPrazoInput.value = '';
+      } else {
+        const inicioRaw = tarefa.dataInicio || formatarDataIso(new Date());
+        if (dtInicioHidden) dtInicioHidden.value = inicioRaw;
+        if (dtInicioExibicao) dtInicioExibicao.value = formatarData(inicioRaw) + ' (Inalterável)';
+
+        // DATA DE TÉRMINO / PRAZO: SELECIONÁVEL VIA CALENDÁRIO
+        if (dtPrazoInput) {
+          let prazoVal = '';
+          if (tarefa.dataPrazo) {
+            const d = new Date(tarefa.dataPrazo);
+            if (!isNaN(d.getTime())) {
+              prazoVal = formatarDataIso(d);
+            }
           }
+          if (!prazoVal) {
+            const dIni = new Date(inicioRaw + 'T00:00:00');
+            const dPrazo = new Date(dIni);
+            dPrazo.setDate(dIni.getDate() + (tarefa.diasEstimados || 2));
+            prazoVal = formatarDataIso(dPrazo);
+          }
+          dtPrazoInput.value = prazoVal;
         }
-        if (!prazoVal) {
-          const dIni = new Date(inicioRaw + 'T00:00:00');
-          const dPrazo = new Date(dIni);
-          dPrazo.setDate(dIni.getDate() + (tarefa.diasEstimados || 2));
-          prazoVal = formatarDataIso(dPrazo);
-        }
-        dtPrazoInput.value = prazoVal;
       }
       atualizarDicaDuracaoEdicaoModal();
 
@@ -3935,6 +3949,80 @@
       const el = document.getElementById('modalEditarTarefa');
       bootstrap.Modal.getOrCreateInstance(el).show();
     }
+
+    /**
+     * Sanitiza e restaura rigorosamente as demandas que estão sem prazo de conclusão,
+     * garantindo que permaneçam como "Não Iniciadas" na fila, corrigindo qualquer corrupção em
+     * SYSMANAGER_LOCAL_EDITS, SYSMANAGER_CACHE e appState.tarefas.
+     */
+    function sanitizarECorrigirDemandasNaoIniciadas() {
+      try {
+        let editsAlterados = false;
+        const editsRaw = localStorage.getItem('SYSMANAGER_LOCAL_EDITS');
+        let edits = editsRaw ? JSON.parse(editsRaw) : {};
+
+        Object.keys(edits).forEach(id => {
+          const ed = edits[id];
+          if (!ed) return;
+          const semPrazo = !ed.dataPrazo || ed.dataPrazo.trim() === '' || ed.dataPrazo === '-' || ed.dataPrazo.toLowerCase() === 'a definir';
+          const naoConcluida = ed.status !== 'Concluída' && !(ed.status && String(ed.status).toLowerCase().includes('conclu'));
+          if (semPrazo && naoConcluida) {
+            if (ed.status !== 'Não Iniciada' || ed.ativo || (ed.diasTrabalhados && ed.diasTrabalhados > 0)) {
+              ed.status = 'Não Iniciada';
+              ed.ativo = false;
+              ed.dataInicio = '';
+              ed.diasTrabalhados = 0;
+              editsAlterados = true;
+            }
+          }
+        });
+        if (editsAlterados) {
+          localStorage.setItem('SYSMANAGER_LOCAL_EDITS', JSON.stringify(edits));
+        }
+
+        if (window.appState && Array.isArray(window.appState.tarefas)) {
+          window.appState.tarefas.forEach(t => {
+            if (!t) return;
+            const semPrazo = !t.dataPrazo || t.dataPrazo.trim() === '' || t.dataPrazo === '-' || t.dataPrazo.toLowerCase() === 'a definir';
+            const naoConcluida = t.status !== 'Concluída' && !(t.status && String(t.status).toLowerCase().includes('conclu'));
+            if (semPrazo && naoConcluida) {
+              t.status = 'Não Iniciada';
+              t.ativo = false;
+              t.dataInicio = '';
+              t.diasTrabalhados = 0;
+            }
+          });
+        }
+
+        const cacheRaw = localStorage.getItem('SYSMANAGER_CACHE');
+        if (cacheRaw) {
+          let cacheObj = JSON.parse(cacheRaw);
+          if (cacheObj && Array.isArray(cacheObj.tarefas)) {
+            let cacheAlterado = false;
+            cacheObj.tarefas.forEach(t => {
+              if (!t) return;
+              const semPrazo = !t.dataPrazo || t.dataPrazo.trim() === '' || t.dataPrazo === '-' || t.dataPrazo.toLowerCase() === 'a definir';
+              const naoConcluida = t.status !== 'Concluída' && !(t.status && String(t.status).toLowerCase().includes('conclu'));
+              if (semPrazo && naoConcluida) {
+                if (t.status !== 'Não Iniciada' || t.ativo || (t.diasTrabalhados && t.diasTrabalhados > 0)) {
+                  t.status = 'Não Iniciada';
+                  t.ativo = false;
+                  t.dataInicio = '';
+                  t.diasTrabalhados = 0;
+                  cacheAlterado = true;
+                }
+              }
+            });
+            if (cacheAlterado) {
+              localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(cacheObj));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Erro ao sanitizar demandas não iniciadas:', err);
+      }
+    }
+    window.sanitizarECorrigirDemandasNaoIniciadas = sanitizarECorrigirDemandasNaoIniciadas;
 
     // Persistência local blindada para edições de demandas (Imunidade contra F5)
     function salvarEdicaoLocalDemanda(tarefaEditada) {
@@ -4058,44 +4146,25 @@
           return;
         }
 
-        // 2. 6º Se extrapolar o prazo, fica como "Atrasada"
-        if (t.dataPrazo && t.dataPrazo.trim() !== '' && t.dataPrazo !== '-') {
-          const dtPrazo = parseDataLocal(t.dataPrazo);
-          dtPrazo.setHours(0, 0, 0, 0);
-          if (hoje.getTime() > dtPrazo.getTime()) {
-            t.status = 'Atrasada';
-            return;
-          }
-        }
-
-        // 3. Regra Fundamental da Esteira:
-        // A partir do momento que uma demanda entra na esteira (t.ativo, já 'Em Andamento', já 'Atrasada', ou possui dataInicio / dataPrazo):
-        // Ela se torna e permanece estritamente "Em Andamento"!
-        // O status dela JAMAIS retornará para "Não Iniciada".
-        const jaEntrouNaEsteira = Boolean(
-          t.ativo || 
-          t.status === 'Em Andamento' || 
-          t.status === 'Atrasada' || 
-          (t.dataInicio && t.dataInicio.trim() !== '' && t.dataInicio !== '-') ||
-          (t.dataPrazo && t.dataPrazo.trim() !== '' && t.dataPrazo !== '-') ||
-          (t.diasTrabalhados && t.diasTrabalhados > 0)
-        );
-
-        if (jaEntrouNaEsteira) {
-          t.status = 'Em Andamento';
-          // Auto-repara qualquer cache local antigo que tivesse marcado indevidamente como "Não Iniciada"
-          try {
-            const edits = JSON.parse(localStorage.getItem('SYSMANAGER_LOCAL_EDITS') || '{}');
-            if (edits[t.id] && edits[t.id].status === 'Não Iniciada') {
-              edits[t.id].status = 'Em Andamento';
-              localStorage.setItem('SYSMANAGER_LOCAL_EDITS', JSON.stringify(edits));
-            }
-          } catch(e) {}
+        // 2. Regra Fundamental: Se NÃO possui prazo de conclusão (vazio, '-' ou 'a definir'),
+        // a demanda NUNCA foi colocada na esteira de produção.
+        // Seu status é OBRIGATORIAMENTE "Não Iniciada" e não pode ser ativa nem ter dias trabalhados.
+        const semPrazo = !t.dataPrazo || t.dataPrazo.trim() === '' || t.dataPrazo === '-' || t.dataPrazo.toLowerCase() === 'a definir';
+        if (semPrazo) {
+          t.status = 'Não Iniciada';
+          t.ativo = false;
+          t.diasTrabalhados = 0;
           return;
         }
 
-        // 4. Ao cadastrar ou na fila sem nunca entrar na esteira, status é "Não Iniciada"
-        t.status = 'Não Iniciada';
+        // 3. Possui prazo de conclusão (está na esteira de produção):
+        const dtPrazo = parseDataLocal(t.dataPrazo);
+        dtPrazo.setHours(0, 0, 0, 0);
+        if (hoje.getTime() > dtPrazo.getTime()) {
+          t.status = 'Atrasada';
+        } else {
+          t.status = 'Em Andamento';
+        }
       });
     }
 
@@ -4173,12 +4242,18 @@
       // tarefa.dataInicio NUNCA É ALTERADA!
       tarefa.urgencia = urgSelect ? urgSelect.value : (tarefa.urgencia || 'Media');
 
-      // Se a tarefa não estiver concluída, recalcula seu status com base nas regras da esteira:
-      // Se já entrou na esteira (dataPrazo/dataInicio/ativo/Em Andamento), JAMAIS retorna para Não Iniciada!
+      // Se a tarefa não estiver concluída, recalcula seu status com base nas regras oficiais da esteira:
       if (tarefa.status !== 'Concluída') {
         const hojeObj = new Date();
         hojeObj.setHours(0, 0, 0, 0);
-        if (dataPrazoIso && dataPrazoIso.trim() !== '' && dataPrazoIso !== '-') {
+        const semPrazo = !dataPrazoIso || dataPrazoIso.trim() === '' || dataPrazoIso === '-' || dataPrazoIso.toLowerCase() === 'a definir';
+        if (semPrazo) {
+          tarefa.status = 'Não Iniciada';
+          tarefa.ativo = false;
+          tarefa.dataInicio = '';
+          tarefa.diasTrabalhados = 0;
+          tarefa.diasEstimados = 0;
+        } else {
           const prazoObj = parseDataLocal(dataPrazoIso);
           prazoObj.setHours(0, 0, 0, 0);
           if (prazoObj.getTime() < hojeObj.getTime()) {
@@ -4186,8 +4261,6 @@
           } else {
             tarefa.status = 'Em Andamento';
           }
-        } else {
-          tarefa.status = (tarefa.ativo || tarefa.dataInicio) ? 'Em Andamento' : 'Não Iniciada';
         }
       }
 
