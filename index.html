@@ -613,6 +613,36 @@
       color: #334155;
       word-break: break-word;
     }
+    .anotacao-corpo-texto strong {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .anotacao-corpo-texto em {
+      font-style: italic;
+    }
+    .anotacao-corpo-texto u {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .anotacao-corpo-texto mark {
+      background-color: #fef08a;
+      color: #713f12;
+      padding: 0.1em 0.35em;
+      border-radius: 4px;
+    }
+    .anotacao-corpo-texto big {
+      font-size: 1.16em;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    #toolbarEditorAnotacao .btn {
+      transition: all 0.15s ease;
+      font-size: 0.80rem;
+    }
+    #toolbarEditorAnotacao .btn:hover {
+      background-color: #e2e8f0;
+      transform: translateY(-1px);
+    }
     .anotacao-checklist-item {
       padding: 3px 0;
       font-size: 0.86rem;
@@ -1311,39 +1341,70 @@
             </div>
           </div>
 
+          <!-- BARRA DE ORDENAÇÃO MULTI-COLUNA (MULTI-SORT) -->
+          <div class="card card-custom p-2 mb-2 bg-white border shadow-2xs" id="barraMultiSortRelatorio" data-html2canvas-ignore="true">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div class="d-flex align-items-center flex-wrap gap-1">
+                <span class="text-dark fw-bold small d-inline-flex align-items-center gap-1 me-1" style="font-size: 0.78rem;">
+                  <i class="fa-solid fa-arrow-down-up-across-line text-primary"></i> Ordenação Combinada:
+                </span>
+                <!-- BADGES DINÂMICOS DOS CRITÉRIOS DE ORDENAÇÃO -->
+                <div class="d-flex align-items-center flex-wrap gap-1" id="containerBadgesMultiSort">
+                </div>
+              </div>
+
+              <!-- CONTROLES PARA ADICIONAR CRITÉRIO E REDEFINIR -->
+              <div class="d-flex align-items-center gap-2">
+                <!-- DROPDOWN: + ADICIONAR CRITÉRIO -->
+                <div class="dropdown">
+                  <button class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-2xs d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.75rem;">
+                    <i class="fa-solid fa-plus"></i> Adicionar Critério
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-1" id="dropdownOpcoesMultiSort" style="font-size: 0.80rem; min-width: 200px;">
+                  </ul>
+                </div>
+
+                <!-- BOTÃO REDEFINIR -->
+                <button class="btn btn-light btn-sm rounded-pill px-2 py-1 border text-secondary shadow-2xs d-inline-flex align-items-center gap-1" type="button" onclick="limparMultiSortRelatorio()" title="Redefinir ordenação para padrão (Desenvolvedor)" style="font-size: 0.75rem;">
+                  <i class="fa-solid fa-rotate-left"></i> Redefinir
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div class="table-responsive mb-4 rounded-3 border">
             <table class="table table-sm text-center align-middle mb-0" id="tabelaRelatorioDoc" style="table-layout: fixed; width: 100%;">
               <thead class="table-dark">
                 <tr>
-                  <th style="width: 3.5%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('num')" title="Ordenar por ID">
-                    ID <i class="fa-solid fa-sort ms-1 small" id="sortIcon_num"></i>
+                  <th style="width: 3.5%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('num', event)" title="Ordenar por ID (Shift+Clique para combinar)">
+                    ID <span id="sortIndicator_num"><i class="fa-solid fa-sort ms-1 small" id="sortIcon_num"></i></span>
                   </th>
-                  <th style="width: 9.5%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('modulo')" title="Ordenar por Origem">
-                    ORIGEM <i class="fa-solid fa-sort ms-1 small" id="sortIcon_modulo"></i>
+                  <th style="width: 9.5%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('modulo', event)" title="Ordenar por Origem (Shift+Clique para combinar)">
+                    ORIGEM <span id="sortIndicator_modulo"><i class="fa-solid fa-sort ms-1 small" id="sortIcon_modulo"></i></span>
                   </th>
-                  <th class="text-start" style="width: 20%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('titulo')" title="Ordenar por Demanda">
-                    Demanda <i class="fa-solid fa-sort ms-1 small" id="sortIcon_titulo"></i>
+                  <th class="text-start" style="width: 20%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('titulo', event)" title="Ordenar por Demanda (Shift+Clique para combinar)">
+                    Demanda <span id="sortIndicator_titulo"><i class="fa-solid fa-sort ms-1 small" id="sortIcon_titulo"></i></span>
                   </th>
-                  <th style="width: 12%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('devNome')" title="Ordenar por Desenvolvedor">
-                    Desenvolvedor <i class="fa-solid fa-sort ms-1 small" id="sortIcon_devNome"></i>
+                  <th style="width: 12%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('devNome', event)" title="Ordenar por Desenvolvedor (Shift+Clique para combinar)">
+                    Desenvolvedor <span id="sortIndicator_devNome"><i class="fa-solid fa-sort ms-1 small" id="sortIcon_devNome"></i></span>
                   </th>
-                  <th style="width: 8%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('dataInsercao')" title="Ordenar por Data de Inserção">
-                    Data Inserção <i class="fa-solid fa-sort ms-1 small" id="sortIcon_dataInsercao"></i>
+                  <th style="width: 8%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('dataInsercao', event)" title="Ordenar por Data de Inserção (Shift+Clique para combinar)">
+                    Data Inserção <span id="sortIndicator_dataInsercao"><i class="fa-solid fa-sort ms-1 small" id="sortIcon_dataInsercao"></i></span>
                   </th>
-                  <th style="width: 6%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('urgencia')" title="Ordenar por Urgência">
-                    Urgência <i class="fa-solid fa-sort ms-1 small" id="sortIcon_urgencia"></i>
+                  <th style="width: 6%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('urgencia', event)" title="Ordenar por Urgência (Shift+Clique para combinar)">
+                    Urgência <span id="sortIndicator_urgencia"><i class="fa-solid fa-sort ms-1 small" id="sortIcon_urgencia"></i></span>
                   </th>
-                  <th style="width: 5%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('diasEstimados')" title="Ordenar por Prazo Estimado">
-                    Estimado <i class="fa-solid fa-sort ms-1 small" id="sortIcon_diasEstimados"></i>
+                  <th style="width: 5%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('diasEstimados', event)" title="Ordenar por Prazo Estimado (Shift+Clique para combinar)">
+                    Estimado <span id="sortIndicator_diasEstimados"><i class="fa-solid fa-sort ms-1 small" id="sortIcon_diasEstimados"></i></span>
                   </th>
-                  <th style="width: 5%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('diasTrabalhados')" title="Ordenar por Dias Em Produção">
-                    Em Prod. <i class="fa-solid fa-sort ms-1 small" id="sortIcon_diasTrabalhados"></i>
+                  <th style="width: 5%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('diasTrabalhados', event)" title="Ordenar por Dias Em Produção (Shift+Clique para combinar)">
+                    Em Prod. <span id="sortIndicator_diasTrabalhados"><i class="fa-solid fa-sort ms-1 small" id="sortIcon_diasTrabalhados"></i></span>
                   </th>
-                  <th style="width: 11%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('status')" title="Ordenar por Status">
-                    Status <i class="fa-solid fa-sort ms-1 small" id="sortIcon_status"></i>
+                  <th style="width: 11%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('status', event)" title="Ordenar por Status (Shift+Clique para combinar)">
+                    Status <span id="sortIndicator_status"><i class="fa-solid fa-sort ms-1 small" id="sortIcon_status"></i></span>
                   </th>
-                  <th style="width: 9%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('prazoFinal')" title="Ordenar por Prazo Final">
-                    Prazo Final <i class="fa-solid fa-sort ms-1 small" id="sortIcon_prazoFinal"></i>
+                  <th style="width: 9%; cursor: pointer;" onclick="ordenarRelatorioPorColuna('prazoFinal', event)" title="Ordenar por Prazo Final (Shift+Clique para combinar)">
+                    Prazo Final <span id="sortIndicator_prazoFinal"><i class="fa-solid fa-sort ms-1 small" id="sortIcon_prazoFinal"></i></span>
                   </th>
                   <th id="thAcoesRelatorio" data-html2canvas-ignore="true" style="width: 11%; min-width: 96px;">Ações</th>
                 </tr>
@@ -1403,8 +1464,8 @@
 
           <!-- MINI DASHBOARD / KPIs DE ANOTAÇÕES -->
           <div class="row g-2 mt-2 pt-2 border-top">
-            <div class="col-sm-3 col-6">
-              <div class="bg-white border rounded-3 p-2 d-flex align-items-center justify-content-between shadow-2xs cursor-pointer" onclick="filtrarAnotacoesPorTag('TODAS')" title="Mostrar todas as anotações">
+            <div class="col-md-4 col-sm-6 col-12">
+              <div class="bg-white border rounded-3 p-2 d-flex align-items-center justify-content-between shadow-2xs cursor-pointer" onclick="filtrarAnotacoesPorTipo('TODAS')" title="Mostrar todas as anotações">
                 <div>
                   <small class="text-muted fw-bold d-block" style="font-size: 0.68rem; text-transform: uppercase;">Total de Notas</small>
                   <strong class="fs-5 text-dark" id="kpiTotalAnotacoes">0</strong>
@@ -1412,8 +1473,8 @@
                 <span class="badge bg-primary-subtle text-primary p-2 rounded-circle"><i class="fa-solid fa-book"></i></span>
               </div>
             </div>
-            <div class="col-sm-3 col-6">
-              <div class="bg-white border rounded-3 p-2 d-flex align-items-center justify-content-between shadow-2xs cursor-pointer" onclick="filtrarAnotacoesPorTag('FIXADAS')" title="Filtrar notas fixadas no topo">
+            <div class="col-md-4 col-sm-6 col-12">
+              <div class="bg-white border rounded-3 p-2 d-flex align-items-center justify-content-between shadow-2xs cursor-pointer" onclick="filtrarAnotacoesPorTipo('FIXADAS')" title="Filtrar notas fixadas no topo">
                 <div>
                   <small class="text-muted fw-bold d-block" style="font-size: 0.68rem; text-transform: uppercase;">Fixadas 📌</small>
                   <strong class="fs-5 text-warning-emphasis" id="kpiFixadasAnotacoes">0</strong>
@@ -1421,16 +1482,7 @@
                 <span class="badge bg-warning-subtle text-warning p-2 rounded-circle"><i class="fa-solid fa-thumbtack"></i></span>
               </div>
             </div>
-            <div class="col-sm-3 col-6">
-              <div class="bg-white border rounded-3 p-2 d-flex align-items-center justify-content-between shadow-2xs cursor-pointer" onclick="filtrarAnotacoesPorTag('CHECKLIST')" title="Filtrar notas com checklist">
-                <div>
-                  <small class="text-muted fw-bold d-block" style="font-size: 0.68rem; text-transform: uppercase;">Checklists ☑️</small>
-                  <strong class="fs-5 text-success" id="kpiChecklistsAnotacoes">0</strong>
-                </div>
-                <span class="badge bg-success-subtle text-success p-2 rounded-circle"><i class="fa-solid fa-list-check"></i></span>
-              </div>
-            </div>
-            <div class="col-sm-3 col-6">
+            <div class="col-md-4 col-sm-6 col-12">
               <div class="bg-white border rounded-3 p-2 d-flex align-items-center justify-content-between shadow-2xs cursor-pointer" onclick="abrirModalNovaAbaAnotacao()" title="Criar ou gerenciar abas de anotações">
                 <div>
                   <small class="text-muted fw-bold d-block" style="font-size: 0.68rem; text-transform: uppercase;">Abas Criadas</small>
@@ -1704,26 +1756,68 @@
               </div>
             </div>
 
-            <!-- CONTEÚDO PRINCIPAL (TEXTO & CHECKLIST INTEGRADO NO MEIO DO TEXTO) -->
+            <!-- CONTEÚDO PRINCIPAL (TEXTO & FORMATAÇÃO RICA) -->
             <div class="col-12">
-              <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
-                <label class="form-label small fw-bold mb-0"><i class="fa-solid fa-align-left text-primary me-1"></i>Conteúdo da Anotação:</label>
-                <div class="btn-group btn-group-sm">
-                  <button type="button" class="btn btn-outline-success btn-sm py-0 px-2 fw-semibold editor-toolbar-btn" onclick="inserirChecklistNoTextoModal()" title="Inserir caixa de checklist no meio do texto">
-                    <i class="fa-solid fa-square-check me-1"></i>+ Inserir Checklist
-                  </button>
-                  <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 editor-toolbar-btn" onclick="inserirMarcadorTextoModal()" title="Inserir marcador de lista">
-                    <i class="fa-solid fa-list-ul"></i> Marcador
-                  </button>
-                  <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 editor-toolbar-btn" onclick="inserirLinkNoTextoModal()" title="Inserir link URL">
-                    <i class="fa-solid fa-link"></i> Link
-                  </button>
+              <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                <label class="form-label small fw-bold mb-0 text-dark">
+                  <i class="fa-solid fa-align-left text-primary me-1"></i>Conteúdo da Anotação:
+                </label>
+
+                <!-- BARRA DE FORMATAÇÃO RICA DO EDITOR -->
+                <div class="d-flex align-items-center flex-wrap gap-1 p-1 bg-light rounded-3 border" id="toolbarEditorAnotacao">
+                  <!-- ESTILOS BÁSICOS (Negrito, Itálico, Sublinhado, Tachado) -->
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 fw-bold text-dark border shadow-2xs" onclick="aplicarFormatacaoTextoModal('negrito')" title="Negrito (Ctrl+B)">
+                      <strong>B</strong>
+                    </button>
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 fst-italic text-dark border shadow-2xs" onclick="aplicarFormatacaoTextoModal('italico')" title="Itálico (Ctrl+I)">
+                      <em>I</em>
+                    </button>
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 text-decoration-underline text-dark border shadow-2xs" onclick="aplicarFormatacaoTextoModal('sublinhado')" title="Sublinhado (Ctrl+U)">
+                      <u>U</u>
+                    </button>
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 text-decoration-line-through text-secondary border shadow-2xs" onclick="aplicarFormatacaoTextoModal('tachado')" title="Tachado (~~texto~~)">
+                      <s>S</s>
+                    </button>
+                  </div>
+
+                  <!-- TAMANHO E TÍTULOS (H1, H2, Aumentar Letra A+, Marca-texto) -->
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 fw-bold text-primary border shadow-2xs" onclick="aplicarFormatacaoTextoModal('h1')" title="Título Grande (# )">
+                      H1
+                    </button>
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 fw-bold text-primary border shadow-2xs" onclick="aplicarFormatacaoTextoModal('h2')" title="Subtítulo (## )">
+                      H2
+                    </button>
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 fw-bold text-dark border shadow-2xs" onclick="aplicarFormatacaoTextoModal('aumentar')" title="Aumentar Letra (<big>...<big>)">
+                      <span style="font-size: 0.95rem;">A<sup class="text-primary">+</sup></span>
+                    </button>
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 text-dark border shadow-2xs" onclick="aplicarFormatacaoTextoModal('destaque')" title="Marca-texto / Destaque Amarelo">
+                      <i class="fa-solid fa-highlighter text-warning"></i>
+                    </button>
+                  </div>
+
+                  <!-- ESTRUTURA (Checklist, Marcador, Link, Limpar) -->
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-success btn-sm py-1 px-2 fw-semibold shadow-2xs" onclick="aplicarFormatacaoTextoModal('checklist')" title="Inserir Caixa de Checklist ([ ])">
+                      <i class="fa-solid fa-square-check me-1"></i>Checklist
+                    </button>
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 text-dark border shadow-2xs" onclick="aplicarFormatacaoTextoModal('marcador')" title="Marcador de Lista (• )">
+                      <i class="fa-solid fa-list-ul"></i>
+                    </button>
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 text-dark border shadow-2xs" onclick="aplicarFormatacaoTextoModal('link')" title="Inserir Link URL">
+                      <i class="fa-solid fa-link text-primary"></i>
+                    </button>
+                    <button type="button" class="btn btn-white btn-sm py-1 px-2 text-danger border shadow-2xs" onclick="limparFormatacaoTextoModal()" title="Limpar formatação da seleção">
+                      <i class="fa-solid fa-eraser"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
-              <textarea class="form-control" id="anotacaoConteudoInput" rows="12" placeholder="Escreva sua anotação livremente aqui...&#10;&#10;Para colocar caixas de checklist no meio do texto, clique no botão [+ Inserir Checklist] acima ou digite [ ] antes de qualquer linha (ex: [ ] Minha tarefa pendente ou [x] Tarefa concluída)." style="font-size: 0.92rem; line-height: 1.6; min-height: 300px; resize: vertical;" onkeydown="aoPressionarTecladoConteudoAnotacao(event)"></textarea>
+              <textarea class="form-control" id="anotacaoConteudoInput" rows="12" placeholder="Escreva sua anotação livremente aqui...&#10;&#10;• Selecione o texto e use a barra de ferramentas acima (ou atalhos Ctrl+B, Ctrl+I, Ctrl+U) para formatar palavras em negrito, itálico, sublinhado, aumentar letra ou destacar.&#10;• Clique em [Checklist] para adicionar tarefas interativas marcáveis no cartão." style="font-size: 0.92rem; line-height: 1.6; min-height: 300px; resize: vertical;" onkeydown="aoPressionarTecladoConteudoAnotacao(event)"></textarea>
               <div class="d-flex justify-content-between align-items-center mt-1 flex-wrap gap-1">
-                <small class="text-muted" style="font-size: 0.72rem;">💡 Use <code>[ ]</code> para tarefas pendentes e <code>[x]</code> para concluídas. Elas viram checkboxes interativos no cartão.</small>
-                <small class="text-muted" style="font-size: 0.72rem;">Atalho: <strong>Ctrl + Enter</strong> para salvar.</small>
+                <small class="text-muted" style="font-size: 0.72rem;">💡 Atalhos: <strong>Ctrl+B</strong> (Negrito), <strong>Ctrl+I</strong> (Itálico), <strong>Ctrl+U</strong> (Sublinhado), <strong>Ctrl+Enter</strong> (Salvar).</small>
+                <small class="text-muted" style="font-size: 0.72rem;">Checklist: <code>[ ]</code> pendente, <code>[x]</code> concluída.</small>
               </div>
             </div>
 
@@ -2218,6 +2312,9 @@
       'SIOPLEEx_BD_Externo'
     ];
 
+    let relatorioMultiSort = [
+      { coluna: 'devNome', direcao: 'ASC' }
+    ];
     let relatorioSortColuna = 'devNome';
     let relatorioSortDirecao = 'ASC';
     let relatorioFiltradoAtual = [];
@@ -2372,19 +2469,261 @@
       atualizarAbaEsteira();
     }
 
-    function ordenarRelatorioPorColuna(coluna) {
-      if (relatorioSortColuna === coluna) {
-        relatorioSortDirecao = (relatorioSortDirecao === 'ASC') ? 'DESC' : 'ASC';
-      } else {
-        relatorioSortColuna = coluna;
-        if (['num', 'modulo', 'titulo', 'devNome', 'status'].includes(coluna)) {
-          relatorioSortDirecao = 'ASC';
+    /**
+     * Sistema de Multi-Ordenação do Relatório Mensal (Multi-Sort)
+     * Permite ordenar por múltiplos critérios simultâneos (ex: Desenvolvedor + Status + Data de Inserção).
+     */
+    function ordenarRelatorioPorColuna(coluna, event) {
+      const isShift = event && (event.shiftKey || event.ctrlKey || event.metaKey);
+      const idx = relatorioMultiSort.findIndex(c => c.coluna === coluna);
+
+      if (isShift) {
+        // Shift + Clique: Adiciona como critério composto ou alterna
+        if (idx !== -1) {
+          if (relatorioMultiSort[idx].direcao === 'ASC') {
+            relatorioMultiSort[idx].direcao = 'DESC';
+          } else {
+            if (relatorioMultiSort.length > 1) {
+              relatorioMultiSort.splice(idx, 1);
+            } else {
+              relatorioMultiSort[idx].direcao = 'ASC';
+            }
+          }
         } else {
-          relatorioSortDirecao = 'DESC';
+          const dirPadrao = ['num', 'modulo', 'titulo', 'devNome', 'status'].includes(coluna) ? 'ASC' : 'DESC';
+          relatorioMultiSort.push({ coluna: coluna, direcao: dirPadrao });
+        }
+      } else {
+        // Clique Normal
+        if (relatorioMultiSort.length === 1 && relatorioMultiSort[0].coluna === coluna) {
+          relatorioMultiSort[0].direcao = (relatorioMultiSort[0].direcao === 'ASC') ? 'DESC' : 'ASC';
+        } else if (idx !== -1 && relatorioMultiSort.length > 1) {
+          // Se clicou em uma das colunas já presentes no multi-sort, inverte apenas sua direção
+          relatorioMultiSort[idx].direcao = (relatorioMultiSort[idx].direcao === 'ASC') ? 'DESC' : 'ASC';
+        } else {
+          // Define a coluna clicada como critério primário
+          const dirPadrao = ['num', 'modulo', 'titulo', 'devNome', 'status'].includes(coluna) ? 'ASC' : 'DESC';
+          relatorioMultiSort = [{ coluna: coluna, direcao: dirPadrao }];
         }
       }
+
+      relatorioSortColuna = relatorioMultiSort[0].coluna;
+      relatorioSortDirecao = relatorioMultiSort[0].direcao;
       atualizarRelatorioMensal();
-      mostrarToast(`Ordenado por ${obterNomeAmigavelColuna(coluna)} (${relatorioSortDirecao === 'ASC' ? 'Crescente' : 'Decrescente'})`);
+
+      const resumoNomes = relatorioMultiSort.map((c, i) => `${i + 1}º ${obterNomeAmigavelColuna(c.coluna)} (${c.direcao === 'ASC' ? '▲' : '▼'})`).join(' → ');
+      mostrarToast(`Ordenação: ${resumoNomes}`);
+    }
+
+    function adicionarCriterioMultiSort(coluna) {
+      const idx = relatorioMultiSort.findIndex(c => c.coluna === coluna);
+      if (idx !== -1) {
+        relatorioMultiSort[idx].direcao = (relatorioMultiSort[idx].direcao === 'ASC') ? 'DESC' : 'ASC';
+      } else {
+        const dirPadrao = ['num', 'modulo', 'titulo', 'devNome', 'status'].includes(coluna) ? 'ASC' : 'DESC';
+        relatorioMultiSort.push({ coluna: coluna, direcao: dirPadrao });
+      }
+      relatorioSortColuna = relatorioMultiSort[0].coluna;
+      relatorioSortDirecao = relatorioMultiSort[0].direcao;
+      atualizarRelatorioMensal();
+      const resumoNomes = relatorioMultiSort.map((c, i) => `${i + 1}º ${obterNomeAmigavelColuna(c.coluna)} (${c.direcao === 'ASC' ? '▲' : '▼'})`).join(' → ');
+      mostrarToast(`Ordenação: ${resumoNomes}`);
+    }
+
+    function alternarDirecaoCriterioMultiSort(index) {
+      if (index >= 0 && index < relatorioMultiSort.length) {
+        relatorioMultiSort[index].direcao = (relatorioMultiSort[index].direcao === 'ASC') ? 'DESC' : 'ASC';
+        relatorioSortColuna = relatorioMultiSort[0].coluna;
+        relatorioSortDirecao = relatorioMultiSort[0].direcao;
+        atualizarRelatorioMensal();
+      }
+    }
+
+    function removerCriterioMultiSort(index) {
+      if (relatorioMultiSort.length > 1) {
+        relatorioMultiSort.splice(index, 1);
+      } else {
+        relatorioMultiSort = [{ coluna: 'devNome', direcao: 'ASC' }];
+      }
+      relatorioSortColuna = relatorioMultiSort[0].coluna;
+      relatorioSortDirecao = relatorioMultiSort[0].direcao;
+      atualizarRelatorioMensal();
+    }
+
+    function moverCriterioMultiSort(index, delta) {
+      const novoIdx = index + delta;
+      if (novoIdx < 0 || novoIdx >= relatorioMultiSort.length) return;
+      const temp = relatorioMultiSort[index];
+      relatorioMultiSort[index] = relatorioMultiSort[novoIdx];
+      relatorioMultiSort[novoIdx] = temp;
+      relatorioSortColuna = relatorioMultiSort[0].coluna;
+      relatorioSortDirecao = relatorioMultiSort[0].direcao;
+      atualizarRelatorioMensal();
+    }
+
+    function limparMultiSortRelatorio() {
+      relatorioMultiSort = [{ coluna: 'devNome', direcao: 'ASC' }];
+      relatorioSortColuna = 'devNome';
+      relatorioSortDirecao = 'ASC';
+      atualizarRelatorioMensal();
+      mostrarToast('Ordenação redefinida para Desenvolvedor (Crescente)');
+    }
+
+    function renderizarPainelMultiSort() {
+      const container = document.getElementById('containerBadgesMultiSort');
+      const dropdown = document.getElementById('dropdownOpcoesMultiSort');
+      if (!container) return;
+
+      const listaColunas = [
+        { id: 'devNome', nome: 'Desenvolvedor' },
+        { id: 'status', nome: 'Status' },
+        { id: 'dataInsercao', nome: 'Data de Inserção' },
+        { id: 'urgencia', nome: 'Urgência' },
+        { id: 'modulo', nome: 'Origem' },
+        { id: 'prazoFinal', nome: 'Prazo Final' },
+        { id: 'num', nome: 'ID' },
+        { id: 'titulo', nome: 'Demanda' },
+        { id: 'diasEstimados', nome: 'Estimado' },
+        { id: 'diasTrabalhados', nome: 'Em Produção' }
+      ];
+
+      let badgesHtml = '';
+      relatorioMultiSort.forEach((crit, i) => {
+        const isPrimary = (i === 0);
+        const bgClass = isPrimary ? 'bg-primary text-white shadow-2xs' : 'bg-white text-dark border shadow-2xs';
+        const numBadgeClass = isPrimary ? 'bg-white text-primary' : 'bg-primary-subtle text-primary';
+        const arrowIcon = (crit.direcao === 'ASC') ? 'fa-arrow-up-short-wide' : 'fa-arrow-down-wide-short';
+        const dirTexto = (crit.direcao === 'ASC') ? 'Crescente (A→Z / 0→9)' : 'Decrescente (Z→A / 9→0)';
+
+        const btnMoveLeft = (i > 0)
+          ? `<button type="button" class="btn btn-link p-0 ${isPrimary ? 'text-white' : 'text-muted'} me-1" style="font-size: 0.65rem; line-height: 1;" onclick="moverCriterioMultiSort(${i}, -1)" title="Aumentar prioridade (mover para a esquerda)"><i class="fa-solid fa-chevron-left"></i></button>`
+          : '';
+
+        const btnMoveRight = (i < relatorioMultiSort.length - 1)
+          ? `<button type="button" class="btn btn-link p-0 ${isPrimary ? 'text-white' : 'text-muted'} ms-1" style="font-size: 0.65rem; line-height: 1;" onclick="moverCriterioMultiSort(${i}, 1)" title="Diminuir prioridade (mover para a direita)"><i class="fa-solid fa-chevron-right"></i></button>`
+          : '';
+
+        const btnClose = (relatorioMultiSort.length > 1)
+          ? `<button type="button" class="btn-close ${isPrimary ? 'btn-close-white' : ''} ms-1" style="font-size: 0.52rem;" onclick="removerCriterioMultiSort(${i})" title="Remover este critério da ordenação"></button>`
+          : '';
+
+        badgesHtml += `
+          <span class="badge d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill ${bgClass}" style="font-size: 0.74rem; font-weight: 600;">
+            ${btnMoveLeft}
+            <span class="badge ${numBadgeClass} rounded-pill px-1 py-0 fw-bold" style="font-size: 0.66rem;">${i + 1}º</span>
+            <span class="cursor-pointer d-inline-flex align-items-center gap-1" onclick="alternarDirecaoCriterioMultiSort(${i})" title="Clique para alternar direção: ${dirTexto}">
+              ${obterNomeAmigavelColuna(crit.coluna)}
+              <i class="fa-solid ${arrowIcon} ${isPrimary ? 'text-warning' : 'text-primary'} ms-1"></i>
+            </span>
+            ${btnMoveRight}
+            ${btnClose}
+          </span>
+        `;
+      });
+      container.innerHTML = badgesHtml;
+
+      if (dropdown) {
+        let dropHtml = `
+          <li class="dropdown-header small text-muted text-uppercase fw-bold py-1 px-2" style="font-size: 0.68rem;">Adicionar coluna à ordenação:</li>
+        `;
+        listaColunas.forEach(col => {
+          const idx = relatorioMultiSort.findIndex(c => c.coluna === col.id);
+          const isAlready = (idx !== -1);
+          const checkIcon = isAlready 
+            ? `<span class="badge bg-primary-subtle text-primary ms-auto" style="font-size: 0.65rem;">${idx + 1}º (${relatorioMultiSort[idx].direcao === 'ASC' ? '▲' : '▼'})</span>` 
+            : '<span class="text-muted ms-auto small"><i class="fa-solid fa-plus"></i></span>';
+          
+          dropHtml += `
+            <li>
+              <a class="dropdown-item d-flex align-items-center justify-content-between py-1 px-2 rounded-2 cursor-pointer ${isAlready ? 'fw-bold bg-light' : ''}" onclick="adicionarCriterioMultiSort('${col.id}')">
+                <span>${col.nome}</span>
+                ${checkIcon}
+              </a>
+            </li>
+          `;
+        });
+        dropdown.innerHTML = dropHtml;
+      }
+    }
+
+    function atualizarIconesMultiSort() {
+      const colunas = ['num', 'modulo', 'titulo', 'devNome', 'dataInsercao', 'urgencia', 'diasEstimados', 'diasTrabalhados', 'status', 'prazoFinal'];
+      colunas.forEach(col => {
+        const span = document.getElementById(`sortIndicator_${col}`);
+        if (!span) return;
+
+        const idx = relatorioMultiSort.findIndex(c => c.coluna === col);
+        if (idx !== -1) {
+          const crit = relatorioMultiSort[idx];
+          const arrowIcon = (crit.direcao === 'ASC') ? 'fa-arrow-up-short-wide' : 'fa-arrow-down-wide-short';
+          if (relatorioMultiSort.length > 1) {
+            span.innerHTML = `<span class="badge bg-warning text-dark rounded-circle px-1 py-0 fw-bold shadow-2xs ms-1" style="font-size: 0.60rem; line-height: 1.2;">${idx + 1}</span><i class="fa-solid ${arrowIcon} text-warning small ms-1"></i>`;
+          } else {
+            span.innerHTML = `<i class="fa-solid ${arrowIcon} text-warning small ms-1"></i>`;
+          }
+        } else {
+          span.innerHTML = `<i class="fa-solid fa-sort small ms-1 text-white-50 opacity-50"></i>`;
+        }
+      });
+    }
+
+    function compararItemRelatorio(a, b, coluna, direcao) {
+      let valA, valB;
+      if (coluna === 'num') {
+        valA = parseDataLocal(a.dataInsercao || a.dataInicio).getTime();
+        valB = parseDataLocal(b.dataInsercao || b.dataInicio).getTime();
+        if (valA === valB) return 0;
+        return direcao === 'ASC' ? (valA - valB) : (valB - valA);
+      } else if (coluna === 'modulo') {
+        valA = ((a.demandaExterna || a.modulo === 'Demanda Externa') ? 'Demanda Externa' : (a.modulo || 'SIOPLEEx')).toLowerCase();
+        valB = ((b.demandaExterna || b.modulo === 'Demanda Externa') ? 'Demanda Externa' : (b.modulo || 'SIOPLEEx')).toLowerCase();
+        const cmp = valA.localeCompare(valB);
+        return direcao === 'ASC' ? cmp : -cmp;
+      } else if (coluna === 'titulo') {
+        valA = (a.titulo || '').toLowerCase();
+        valB = (b.titulo || '').toLowerCase();
+        const cmp = valA.localeCompare(valB);
+        return direcao === 'ASC' ? cmp : -cmp;
+      } else if (coluna === 'devNome') {
+        valA = limparNomeDev(a.devNome || '').toLowerCase();
+        valB = limparNomeDev(b.devNome || '').toLowerCase();
+        const cmp = valA.localeCompare(valB);
+        return direcao === 'ASC' ? cmp : -cmp;
+      } else if (coluna === 'dataInsercao') {
+        valA = parseDataLocal(a.dataInsercao || a.dataInicio).getTime();
+        valB = parseDataLocal(b.dataInsercao || b.dataInicio).getTime();
+        if (valA === valB) return 0;
+        return direcao === 'ASC' ? (valA - valB) : (valB - valA);
+      } else if (coluna === 'urgencia') {
+        const pesos = { 'Baixa': 1, 'Media': 2, 'Alta': 3, 'Urgente': 4 };
+        valA = pesos[a.urgencia] || 2;
+        valB = pesos[b.urgencia] || 2;
+        if (valA === valB) return 0;
+        return direcao === 'ASC' ? (valA - valB) : (valB - valA);
+      } else if (coluna === 'diasEstimados') {
+        valA = parseInt(a.diasEstimados) || 0;
+        valB = parseInt(b.diasEstimados) || 0;
+        if (valA === valB) return 0;
+        return direcao === 'ASC' ? (valA - valB) : (valB - valA);
+      } else if (coluna === 'diasTrabalhados') {
+        valA = parseInt(a.diasTrabalhados) || 0;
+        valB = parseInt(b.diasTrabalhados) || 0;
+        if (valA === valB) return 0;
+        return direcao === 'ASC' ? (valA - valB) : (valB - valA);
+      } else if (coluna === 'status') {
+        valA = (a.status || '').toLowerCase();
+        valB = (b.status || '').toLowerCase();
+        const cmp = valA.localeCompare(valB);
+        return direcao === 'ASC' ? cmp : -cmp;
+      } else if (coluna === 'prazoFinal') {
+        const pA = a.status === 'Concluída' ? (a.dataConclusao || a.dataPrazo) : a.dataPrazo;
+        const pB = b.status === 'Concluída' ? (b.dataConclusao || b.dataPrazo) : b.dataPrazo;
+        valA = parseDataLocal(pA).getTime();
+        valB = parseDataLocal(pB).getTime();
+        if (valA === valB) return 0;
+        return direcao === 'ASC' ? (valA - valB) : (valB - valA);
+      }
+      return 0;
     }
 
     function obterNomeAmigavelColuna(col) {
@@ -5409,70 +5748,19 @@
         }
       }
 
-      // 6º Reordenação em todas as colunas da lista
+      // 6º Reordenação Multi-Critério (Multi-Sort) em todas as colunas da lista
       filtradas.sort((a, b) => {
-        let valA, valB;
-        if (relatorioSortColuna === 'num') {
-          valA = parseDataLocal(a.dataInsercao || a.dataInicio).getTime();
-          valB = parseDataLocal(b.dataInsercao || b.dataInicio).getTime();
-          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
-        } else if (relatorioSortColuna === 'modulo') {
-          valA = ((a.demandaExterna || a.modulo === 'Demanda Externa') ? 'Demanda Externa' : (a.modulo || 'SIOPLEEx')).toLowerCase();
-          valB = ((b.demandaExterna || b.modulo === 'Demanda Externa') ? 'Demanda Externa' : (b.modulo || 'SIOPLEEx')).toLowerCase();
-          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        } else if (relatorioSortColuna === 'titulo') {
-          valA = (a.titulo || '').toLowerCase();
-          valB = (b.titulo || '').toLowerCase();
-          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        } else if (relatorioSortColuna === 'devNome') {
-          valA = (a.devNome || '').toLowerCase();
-          valB = (b.devNome || '').toLowerCase();
-          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        } else if (relatorioSortColuna === 'dataInsercao') {
-          valA = parseDataLocal(a.dataInsercao || a.dataInicio).getTime();
-          valB = parseDataLocal(b.dataInsercao || b.dataInicio).getTime();
-          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
-        } else if (relatorioSortColuna === 'urgencia') {
-          const pesos = { 'Baixa': 1, 'Media': 2, 'Alta': 3, 'Urgente': 4 };
-          valA = pesos[a.urgencia] || 2;
-          valB = pesos[b.urgencia] || 2;
-          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
-        } else if (relatorioSortColuna === 'diasEstimados') {
-          valA = parseInt(a.diasEstimados) || 0;
-          valB = parseInt(b.diasEstimados) || 0;
-          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
-        } else if (relatorioSortColuna === 'diasTrabalhados') {
-          valA = parseInt(a.diasTrabalhados) || 0;
-          valB = parseInt(b.diasTrabalhados) || 0;
-          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
-        } else if (relatorioSortColuna === 'status') {
-          valA = (a.status || '').toLowerCase();
-          valB = (b.status || '').toLowerCase();
-          return relatorioSortDirecao === 'ASC' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        } else if (relatorioSortColuna === 'prazoFinal') {
-          const pA = a.status === 'Concluída' ? (a.dataConclusao || a.dataPrazo) : a.dataPrazo;
-          const pB = b.status === 'Concluída' ? (b.dataConclusao || b.dataPrazo) : b.dataPrazo;
-          valA = parseDataLocal(pA).getTime();
-          valB = parseDataLocal(pB).getTime();
-          return relatorioSortDirecao === 'ASC' ? (valA - valB) : (valB - valA);
+        for (let i = 0; i < relatorioMultiSort.length; i++) {
+          const crit = relatorioMultiSort[i];
+          const res = compararItemRelatorio(a, b, crit.coluna, crit.direcao);
+          if (res !== 0) return res;
         }
         return 0;
       });
 
-      // Atualiza ícones visuais nos cabeçalhos da tabela
-      const colunasIcones = ['num', 'modulo', 'titulo', 'devNome', 'dataInsercao', 'urgencia', 'diasEstimados', 'diasTrabalhados', 'status', 'prazoFinal'];
-      colunasIcones.forEach(col => {
-        const icone = document.getElementById(`sortIcon_${col}`);
-        if (icone) {
-          if (col === relatorioSortColuna) {
-            icone.className = (relatorioSortDirecao === 'ASC')
-              ? 'fa-solid fa-arrow-up-short-wide ms-1 text-warning'
-              : 'fa-solid fa-arrow-down-wide-short ms-1 text-warning';
-          } else {
-            icone.className = 'fa-solid fa-sort ms-1 small text-white-50';
-          }
-        }
-      });
+      // Atualiza painel e ícones visuais nos cabeçalhos da tabela
+      renderizarPainelMultiSort();
+      atualizarIconesMultiSort();
 
       // Guarda métricas consolidadas do período filtrado conforme os 4 status oficiais
       const totalDemandas = filtradas.length;
@@ -6383,16 +6671,56 @@
     }
 
     /**
-     * Escapa caracteres HTML e converte URLs em links clicáveis.
+     * Escapa caracteres HTML e converte markdown e tags inline autorizadas:
+     * - Negrito: **palavra**
+     * - Itálico: *palavra*
+     * - Sublinhado: <u>palavra</u> ou __palavra__
+     * - Tachado: ~~palavra~~
+     * - Letra grande: <big>palavra</big>
+     * - Marca-texto: <mark>palavra</mark> ou ==palavra==
+     * - Markdown link: [texto](url)
+     * - URLs diretas: https://...
      */
-    function formatarLinksTexto(str) {
+    function formatarEstilosInline(str) {
       if (!str) return '';
-      const seguro = str
+      // 1. Escapa HTML para prevenir injeções não desejadas
+      let s = str
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
-      const comLinks = seguro.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-underline" onclick="event.stopPropagation()">$1</a>');
-      return comLinks;
+
+      // 2. Converte tags seguras de formatação
+      // Sublinhado: <u>...</u> ou __...__
+      s = s.replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/gi, '<span style="text-decoration: underline; text-underline-offset: 3px;">$1</span>');
+      s = s.replace(/__(.*?)__/g, '<span style="text-decoration: underline; text-underline-offset: 3px;">$1</span>');
+
+      // Aumentar letra: <big>...</big>
+      s = s.replace(/&lt;big&gt;(.*?)&lt;\/big&gt;/gi, '<big style="font-size: 1.16em; font-weight: 600;">$1</big>');
+
+      // Marca-texto: <mark>...</mark> ou ==...==
+      s = s.replace(/&lt;mark&gt;(.*?)&lt;\/mark&gt;/gi, '<mark style="background-color: #fef08a; color: #713f12; padding: 0.1em 0.35em; border-radius: 4px;">$1</mark>');
+      s = s.replace(/==(.*?)==/g, '<mark style="background-color: #fef08a; color: #713f12; padding: 0.1em 0.35em; border-radius: 4px;">$1</mark>');
+
+      // Negrito: **...**
+      s = s.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+      // Itálico: *...* (garantindo que não seja **)
+      s = s.replace(/(^|[^*])\*([^*]+)\*([^*]|$)/g, '$1<em>$2</em>$3');
+
+      // Tachado: ~~...~~
+      s = s.replace(/~~(.*?)~~/g, '<del class="text-muted">$1</del>');
+
+      // Markdown links: [texto](url)
+      s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary fw-semibold text-decoration-underline" onclick="event.stopPropagation()">$1</a>');
+
+      // URLs livres: https://...
+      s = s.replace(/(^|[^"'>])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-underline" onclick="event.stopPropagation()">$2</a>');
+
+      return s;
+    }
+
+    function formatarLinksTexto(str) {
+      return formatarEstilosInline(str);
     }
 
     /**
@@ -6554,7 +6882,7 @@
     }
 
     /**
-     * Renderiza os pills de filtros rápidos (Todas, Fixadas, Com Checklist).
+     * Renderiza os pills de filtros rápidos (Todas, Fixadas).
      */
     function renderizarPillsFiltrosRapidos(notasAbaAtiva) {
       const container = document.getElementById('containerPillsFiltrosAnotacoes');
@@ -6562,16 +6890,13 @@
 
       const total = notasAbaAtiva.length;
       const qtdFixadas = notasAbaAtiva.filter(n => n.fixado).length;
-      const qtdChecklist = notasAbaAtiva.filter(n => (n.conteudo || '').match(/\[[\sxX]\]/)).length;
 
       const actTodas = (anotacoesFiltroTipo === 'TODAS') ? 'active' : '';
       const actFix = (anotacoesFiltroTipo === 'FIXADAS') ? 'active' : '';
-      const actChk = (anotacoesFiltroTipo === 'CHECKLIST') ? 'active' : '';
 
       container.innerHTML = `
         <span class="pill-filtro-anotacao ${actTodas}" onclick="filtrarAnotacoesPorTipo('TODAS')">Todas <span class="badge bg-white text-dark ms-1">${total}</span></span>
         <span class="pill-filtro-anotacao ${actFix}" onclick="filtrarAnotacoesPorTipo('FIXADAS')">📌 Fixadas <span class="badge bg-white text-dark ms-1">${qtdFixadas}</span></span>
-        <span class="pill-filtro-anotacao ${actChk}" onclick="filtrarAnotacoesPorTipo('CHECKLIST')">☑️ Com Checklist <span class="badge bg-white text-dark ms-1">${qtdChecklist}</span></span>
       `;
     }
 
@@ -6581,57 +6906,54 @@
     }
 
     /**
-     * Renderiza o corpo da anotação com checklists no meio do texto interativos.
+     * Renderiza o corpo da anotação com checklists no meio do texto interativos e formatação rica.
      */
     function renderizarCorpoAnotacaoHtml(n) {
       if (!n.conteudo) return '';
       const linhas = n.conteudo.split('\n');
 
-      let totalCheck = 0;
-      let concluidosCheck = 0;
-
-      linhas.forEach(linha => {
-        const m = linha.match(/^(\s*[-*]?\s*)?\[([\sxX])\]\s*(.*)$/);
-        if (m) {
-          totalCheck++;
-          if (m[2].toLowerCase() === 'x') concluidosCheck++;
-        }
-      });
-
-      let miniBarraHtml = '';
-      if (totalCheck > 0) {
-        const pct = Math.round((concluidosCheck / totalCheck) * 100);
-        miniBarraHtml = `
-          <div class="d-flex align-items-center justify-content-between gap-2 mb-2 p-1 px-2 rounded-2 bg-light border" style="font-size: 0.73rem;">
-            <span class="text-muted fw-semibold"><i class="fa-solid fa-list-check text-success me-1"></i>Checklist: <strong>${concluidosCheck}/${totalCheck}</strong></span>
-            <div class="progress flex-grow-1 mx-2" style="height: 5px;">
-              <div class="progress-bar bg-success" style="width: ${pct}%;"></div>
-            </div>
-            <span class="fw-bold text-success">${pct}%</span>
-          </div>
-        `;
-      }
-
       const linhasHtml = linhas.map((linha, idx) => {
+        // 1. Checklist interativo no meio do texto ([ ] ou [x])
         const m = linha.match(/^(\s*[-*]?\s*)?\[([\sxX])\]\s*(.*)$/);
         if (m) {
           const isChecked = (m[2].toLowerCase() === 'x');
-          const textoItem = m[3] ? formatarLinksTexto(m[3]) : '';
+          const textoItem = m[3] ? formatarEstilosInline(m[3]) : '';
           return `
             <div class="anotacao-checklist-item ${isChecked ? 'concluido' : ''}">
               <input type="checkbox" class="form-check-input mt-0 cursor-pointer shadow-none" ${isChecked ? 'checked' : ''} onchange="alternarChecklistLinhaAnotacao('${n.id}', ${idx})" title="${isChecked ? 'Marcar como pendente' : 'Marcar como concluído'}">
               <span class="ms-1" style="word-break: break-word;">${textoItem || '<em class=\"text-muted\">(tarefa sem texto)</em>'}</span>
             </div>
           `;
-        } else {
-          if (!linha.trim()) {
-            return '<div style="height: 0.5em;"></div>';
-          }
-          return `<div style="word-break: break-word;">${formatarLinksTexto(linha)}</div>`;
         }
+
+        // 2. Linha vazia (espaçamento suave)
+        if (!linha.trim()) {
+          return '<div style="height: 0.45em;"></div>';
+        }
+
+        // 3. Título H1 (# Título)
+        const mH1 = linha.match(/^#\s+(.+)$/);
+        if (mH1) {
+          return `<h5 class="fw-bold text-dark mt-2 mb-1" style="font-size: 1.05rem; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 2px;">${formatarEstilosInline(mH1[1])}</h5>`;
+        }
+
+        // 4. Subtítulo H2 (## Subtítulo)
+        const mH2 = linha.match(/^##\s+(.+)$/);
+        if (mH2) {
+          return `<h6 class="fw-bold text-primary mt-2 mb-1" style="font-size: 0.92rem;">${formatarEstilosInline(mH2[1])}</h6>`;
+        }
+
+        // 5. Marcador de lista (• ou -)
+        const mLista = linha.match(/^(\s*)[•\-]\s+(.+)$/);
+        if (mLista) {
+          return `<div class="d-flex align-items-start gap-1 ps-1 mb-1" style="word-break: break-word;"><span class="text-primary fw-bold">•</span> <span>${formatarEstilosInline(mLista[2])}</span></div>`;
+        }
+
+        // 6. Linha normal formatada com estilos inline
+        return `<div style="word-break: break-word;">${formatarEstilosInline(linha)}</div>`;
       }).join('');
 
-      return miniBarraHtml + `<div class="anotacao-corpo-texto mb-2">${linhasHtml}</div>`;
+      return `<div class="anotacao-corpo-texto mb-2">${linhasHtml}</div>`;
     }
 
     /**
@@ -6703,15 +7025,12 @@
       // 6. Atualiza KPIs
       const kpiTotal = document.getElementById('kpiTotalAnotacoes');
       const kpiFixadas = document.getElementById('kpiFixadasAnotacoes');
-      const kpiCheck = document.getElementById('kpiChecklistsAnotacoes');
       const kpiAbas = document.getElementById('kpiAbasAnotacoes');
 
       const qtdFixadasAba = notasNaAba.filter(n => n.fixado).length;
-      const qtdCheckAba = notasNaAba.filter(n => (n.conteudo || '').match(/\[[\sxX]\]/)).length;
 
       if (kpiTotal) kpiTotal.innerText = todasNotas.length;
       if (kpiFixadas) kpiFixadas.innerText = qtdFixadasAba;
-      if (kpiCheck) kpiCheck.innerText = qtdCheckAba;
       if (kpiAbas) kpiAbas.innerText = abas.length;
 
       // 7. Renderiza pills de filtros rápidos
@@ -7094,85 +7413,189 @@
     }
 
     /**
-     * Insere caixa de checklist [ ] na posição do cursor no textarea do modal.
+     * Aplica estilos ricos de formatação no textarea do modal:
+     * - 'negrito': **...**
+     * - 'italico': *...*
+     * - 'sublinhado': <u>...</u>
+     * - 'tachado': ~~...~~
+     * - 'aumentar': <big>...</big>
+     * - 'destaque': <mark>...</mark>
+     * - 'h1': prefixo '# ' na linha
+     * - 'h2': prefixo '## ' na linha
+     * - 'checklist': prefixo '[ ] ' na linha
+     * - 'marcador': prefixo '• ' na linha
+     * - 'link': [texto](url) ou URL
      */
-    function inserirChecklistNoTextoModal() {
+    function aplicarFormatacaoTextoModal(tipo) {
       const textarea = document.getElementById('anotacaoConteudoInput');
       if (!textarea) return;
 
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const val = textarea.value;
+      const selecionado = val.substring(start, end);
+
+      const wrappers = {
+        'negrito': { open: '**', close: '**', placeholder: 'texto em negrito' },
+        'italico': { open: '*', close: '*', placeholder: 'texto em itálico' },
+        'sublinhado': { open: '<u>', close: '</u>', placeholder: 'texto sublinhado' },
+        'tachado': { open: '~~', close: '~~', placeholder: 'texto tachado' },
+        'aumentar': { open: '<big>', close: '</big>', placeholder: 'texto grande' },
+        'destaque': { open: '<mark>', close: '</mark>', placeholder: 'texto destacado' }
+      };
+
+      // 1. Prefixo de linha (H1, H2, Checklist, Marcador)
+      if (tipo === 'h1' || tipo === 'h2' || tipo === 'checklist' || tipo === 'marcador') {
+        const prefixo = (tipo === 'h1') ? '# ' :
+                        (tipo === 'h2') ? '## ' :
+                        (tipo === 'checklist') ? '[ ] ' : '• ';
+
+        if (start !== end) {
+          const linhas = selecionado.split('\n');
+          const formatado = linhas.map(l => {
+            if (tipo === 'checklist') {
+              if (l.match(/^(\s*[-*]?\s*)?\[[\sxX]\]/)) return l;
+              return prefixo + l;
+            }
+            if (l.startsWith(prefixo)) return l.substring(prefixo.length);
+            return prefixo + l;
+          }).join('\n');
+          textarea.value = val.substring(0, start) + formatado + val.substring(end);
+          textarea.selectionStart = start;
+          textarea.selectionEnd = start + formatado.length;
+        } else {
+          const inicioLinha = val.lastIndexOf('\n', start - 1) + 1;
+          const fimLinha = val.indexOf('\n', start);
+          const linha = val.substring(inicioLinha, fimLinha === -1 ? val.length : fimLinha);
+
+          let novaLinha;
+          if (tipo === 'checklist') {
+            novaLinha = linha.match(/^(\s*[-*]?\s*)?\[[\sxX]\]/) ? linha : (prefixo + linha);
+          } else {
+            novaLinha = linha.startsWith(prefixo) ? linha.substring(prefixo.length) : (prefixo + linha);
+          }
+
+          const diff = novaLinha.length - linha.length;
+          textarea.value = val.substring(0, inicioLinha) + novaLinha + val.substring(fimLinha === -1 ? val.length : fimLinha);
+          textarea.selectionStart = textarea.selectionEnd = Math.max(inicioLinha, start + diff);
+        }
+        textarea.focus();
+        return;
+      }
+
+      // 2. Inserção de Link
+      if (tipo === 'link') {
+        const url = prompt('Digite ou cole a URL (ex: https://...):', 'https://');
+        if (!url) return;
+        const urlTrim = url.trim();
+        let insercao;
+        if (selecionado.trim()) {
+          insercao = `[${selecionado}](${urlTrim})`;
+        } else {
+          insercao = urlTrim;
+        }
+        textarea.value = val.substring(0, start) + insercao + val.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + insercao.length;
+        textarea.focus();
+        return;
+      }
+
+      // 3. Wrappers de texto (negrito, itálico, sublinhado, tachado, aumentar, destaque)
+      const cfg = wrappers[tipo];
+      if (!cfg) return;
 
       if (start !== end) {
-        const selecionado = val.substring(start, end);
-        const linhas = selecionado.split('\n');
-        const formatado = linhas.map(l => {
-          if (l.match(/^(\s*[-*]?\s*)?\[[\sxX]\]/)) return l;
-          return '[ ] ' + l;
-        }).join('\n');
-        textarea.value = val.substring(0, start) + formatado + val.substring(end);
-        textarea.selectionStart = start;
-        textarea.selectionEnd = start + formatado.length;
+        // Se já possui o wrapper, remove (toggle off)
+        if (selecionado.startsWith(cfg.open) && selecionado.endsWith(cfg.close) && selecionado.length >= (cfg.open.length + cfg.close.length)) {
+          const semWrapper = selecionado.substring(cfg.open.length, selecionado.length - cfg.close.length);
+          textarea.value = val.substring(0, start) + semWrapper + val.substring(end);
+          textarea.selectionStart = start;
+          textarea.selectionEnd = start + semWrapper.length;
+        } else {
+          const comWrapper = cfg.open + selecionado + cfg.close;
+          textarea.value = val.substring(0, start) + comWrapper + val.substring(end);
+          textarea.selectionStart = start;
+          textarea.selectionEnd = start + comWrapper.length;
+        }
       } else {
-        const antes = val.substring(0, start);
-        const depois = val.substring(end);
-        const precisaQuebra = (antes.length > 0 && !antes.endsWith('\n'));
-        const insercao = (precisaQuebra ? '\n[ ] ' : '[ ] ');
-        textarea.value = antes + insercao + depois;
-        textarea.selectionStart = textarea.selectionEnd = start + insercao.length;
+        const insercao = cfg.open + cfg.placeholder + cfg.close;
+        textarea.value = val.substring(0, start) + insercao + val.substring(end);
+        textarea.selectionStart = start + cfg.open.length;
+        textarea.selectionEnd = start + cfg.open.length + cfg.placeholder.length;
       }
       textarea.focus();
     }
 
     /**
-     * Insere marcador de lista no textarea do modal.
+     * Limpa formatações especiais do texto selecionado.
      */
+    function limparFormatacaoTextoModal() {
+      const textarea = document.getElementById('anotacaoConteudoInput');
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const val = textarea.value;
+
+      if (start === end) {
+        alert('Selecione primeiro o trecho de texto cuja formatação deseja limpar.');
+        return;
+      }
+
+      let sel = val.substring(start, end);
+      sel = sel
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/__(.*?)__/g, '$1')
+        .replace(/(^|[^*])\*([^*]+)\*([^*]|$)/g, '$1$2$3')
+        .replace(/~~(.*?)~~/g, '$1')
+        .replace(/==(.*?)==/g, '$1')
+        .replace(/<\/?(u|big|mark|strong|em|del|b|i)>/gi, '')
+        .replace(/^(\s*)#+\s+/gm, '$1')
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '$1');
+
+      textarea.value = val.substring(0, start) + sel + val.substring(end);
+      textarea.selectionStart = start;
+      textarea.selectionEnd = start + sel.length;
+      textarea.focus();
+    }
+
+    function inserirChecklistNoTextoModal() {
+      aplicarFormatacaoTextoModal('checklist');
+    }
+
     function inserirMarcadorTextoModal() {
-      const textarea = document.getElementById('anotacaoConteudoInput');
-      if (!textarea) return;
-
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const val = textarea.value;
-
-      const antes = val.substring(0, start);
-      const depois = val.substring(end);
-      const precisaQuebra = (antes.length > 0 && !antes.endsWith('\n'));
-      const insercao = (precisaQuebra ? '\n• ' : '• ');
-
-      textarea.value = antes + insercao + depois;
-      textarea.selectionStart = textarea.selectionEnd = start + insercao.length;
-      textarea.focus();
+      aplicarFormatacaoTextoModal('marcador');
     }
 
-    /**
-     * Insere URL no textarea do modal.
-     */
     function inserirLinkNoTextoModal() {
-      const textarea = document.getElementById('anotacaoConteudoInput');
-      if (!textarea) return;
-      const url = prompt('Digite ou cole a URL (ex: https://...):', 'https://');
-      if (!url) return;
-
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const val = textarea.value;
-      const insercao = url.trim();
-
-      textarea.value = val.substring(0, start) + insercao + val.substring(end);
-      textarea.selectionStart = textarea.selectionEnd = start + insercao.length;
-      textarea.focus();
+      aplicarFormatacaoTextoModal('link');
     }
 
     /**
-     * Permite atalho Ctrl+Enter para salvar e continuação inteligente de checklists ao teclar Enter.
+     * Permite atalhos de teclado (Ctrl+B, Ctrl+I, Ctrl+U, Ctrl+Enter) e continuação inteligente de checklists.
      */
     function aoPressionarTecladoConteudoAnotacao(e) {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        salvarAnotacaoInstantanea();
-        return;
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          salvarAnotacaoInstantanea();
+          return;
+        }
+        if (e.key === 'b' || e.key === 'B') {
+          e.preventDefault();
+          aplicarFormatacaoTextoModal('negrito');
+          return;
+        }
+        if (e.key === 'i' || e.key === 'I') {
+          e.preventDefault();
+          aplicarFormatacaoTextoModal('italico');
+          return;
+        }
+        if (e.key === 'u' || e.key === 'U') {
+          e.preventDefault();
+          aplicarFormatacaoTextoModal('sublinhado');
+          return;
+        }
       }
 
       // Continuação automática de checklist ao teclar Enter
