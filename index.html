@@ -374,6 +374,10 @@
       border-top: 3px solid #2563eb;
       background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%);
     }
+    .report-kpi-card.kpi-naoiniciada {
+      border-top: 3px solid #0891b2;
+      background: linear-gradient(180deg, #ecfeff 0%, #ffffff 100%);
+    }
     .report-kpi-card.kpi-atrasadas {
       border-top: 3px solid #dc2626;
       background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%);
@@ -547,6 +551,120 @@
       background: #ffffff;
       overflow: hidden;
     }
+
+    /* ESTILOS DA ABA ANOTAÇÕES PESSOAIS */
+    .card-anotacao {
+      border-radius: 14px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 200px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    .card-anotacao:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.08);
+    }
+    .card-anotacao-padrao {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+    }
+    .card-anotacao-azul {
+      background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
+      border: 1px solid #bfdbfe;
+    }
+    .card-anotacao-verde {
+      background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+      border: 1px solid #bbf7d0;
+    }
+    .card-anotacao-amarelo {
+      background: linear-gradient(180deg, #fefce8 0%, #ffffff 100%);
+      border: 1px solid #fef08a;
+    }
+    .card-anotacao-roxo {
+      background: linear-gradient(180deg, #faf5ff 0%, #ffffff 100%);
+      border: 1px solid #e9d5ff;
+    }
+    .card-anotacao-rosa {
+      background: linear-gradient(180deg, #fff1f2 0%, #ffffff 100%);
+      border: 1px solid #fecdd3;
+    }
+    .btn-pin-anotacao {
+      background: transparent;
+      border: none;
+      padding: 3px 6px;
+      border-radius: 6px;
+      color: #94a3b8;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .btn-pin-anotacao:hover {
+      background: rgba(0,0,0,0.05);
+      color: #eab308;
+    }
+    .btn-pin-anotacao.is-pinned {
+      color: #eab308;
+    }
+    .anotacao-corpo-texto {
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: #334155;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .anotacao-checklist-item {
+      padding: 3px 0;
+      font-size: 0.84rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .anotacao-checklist-item.concluido span {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+    .btn-seletor-cor {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      outline: none;
+      padding: 0;
+    }
+    .btn-seletor-cor:hover {
+      transform: scale(1.15);
+    }
+    .btn-seletor-cor.active {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 2px #0f172a !important;
+    }
+    .pill-categoria-anotacao {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      user-select: none;
+      background-color: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+    .pill-categoria-anotacao:hover {
+      background-color: #e2e8f0;
+      color: #1e293b;
+      transform: translateY(-1px);
+    }
+    .pill-categoria-anotacao.active {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #2563eb !important;
+      box-shadow: 0 2px 6px rgba(37,99,235,0.25);
+    }
   </style>
 </head>
 <body>
@@ -597,8 +715,14 @@
           </button>
         </li>
         <li class="nav-item">
-          <button class="nav-link" id="tab-relatorio-btn" data-bs-toggle="tab" data-bs-target="#tab-relatorio" type="button">
+          <button class="nav-link" id="tab-relatorio-btn" data-bs-toggle="tab" data-bs-target="#tab-relatorio" type="button" onclick="atualizarRelatorioMensal()">
             <i class="fa-solid fa-file-lines me-2"></i>Relatório Mensal
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" id="tab-anotacoes-btn" data-bs-toggle="tab" data-bs-target="#tab-anotacoes" type="button" onclick="atualizarAbaAnotacoes()">
+            <i class="fa-solid fa-note-sticky me-2"></i>Anotações
+            <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle ms-1 px-1 py-0" id="badgeQtdAnotacoesTab" style="font-size: 0.68rem;">0</span>
           </button>
         </li>
         <li class="nav-item">
@@ -1045,23 +1169,9 @@
             </div>
           </div>
 
-          <!-- DASHBOARD DO RELATÓRIO: 4 CARDS (TOTAL, CONCLUÍDAS, EM ANDAMENTO, ATRASADAS) CLICÁVEIS -->
+          <!-- DASHBOARD DO RELATÓRIO: 4 CARDS DOS 4 STATUS OFICIAIS (CONFORME REGRA OFICIAL) -->
           <div class="row g-2 mb-3">
-            <!-- 1. Total de Demandas -->
-            <div class="col-md-3 col-6">
-              <div class="report-kpi-card kpi-total" id="kpiCardRel_TODOS" onclick="filtrarRelatorioPorKpi('TODOS')" role="button" tabindex="0" title="Clique para ver todas as demandas">
-                <div class="kpi-label">
-                  <span>Geral de Demandas</span>
-                  <i class="fa-solid fa-layer-group text-secondary"></i>
-                </div>
-                <div class="kpi-number text-dark" id="relTotalDemandas">0</div>
-                <span class="kpi-badge bg-secondary-subtle text-secondary border border-secondary-subtle">
-                  demandas registradas
-                </span>
-              </div>
-            </div>
-
-            <!-- 2. Demandas Concluídas -->
+            <!-- 1. Demandas Concluídas -->
             <div class="col-md-3 col-6">
               <div class="report-kpi-card kpi-concluidas" id="kpiCardRel_Concluida" onclick="filtrarRelatorioPorKpi('Concluída')" role="button" tabindex="0" title="Clique para filtrar apenas Concluídas">
                 <div class="kpi-label text-success">
@@ -1075,7 +1185,7 @@
               </div>
             </div>
 
-            <!-- 3. Demandas Em Andamento -->
+            <!-- 2. Demandas Em Andamento -->
             <div class="col-md-3 col-6">
               <div class="report-kpi-card kpi-andamento" id="kpiCardRel_EmAndamento" onclick="filtrarRelatorioPorKpi('Em Andamento')" role="button" tabindex="0" title="Clique para filtrar apenas Em Andamento">
                 <div class="kpi-label text-primary">
@@ -1084,7 +1194,21 @@
                 </div>
                 <div class="kpi-number text-primary" id="relEmAndamento">0</div>
                 <span class="kpi-badge bg-primary-subtle text-primary border border-primary-subtle" id="relEmAndamentoDesc">
-                  em produção ativa
+                  0 em produção ativa
+                </span>
+              </div>
+            </div>
+
+            <!-- 3. Demandas Não Iniciadas -->
+            <div class="col-md-3 col-6">
+              <div class="report-kpi-card kpi-naoiniciada" id="kpiCardRel_NaoIniciada" onclick="filtrarRelatorioPorKpi('Não Iniciada')" role="button" tabindex="0" title="Clique para filtrar apenas Não Iniciadas">
+                <div class="kpi-label" style="color: #0891b2;">
+                  <span>Não Iniciadas</span>
+                  <i class="fa-solid fa-hourglass-start" style="color: #0891b2;"></i>
+                </div>
+                <div class="kpi-number" style="color: #0891b2;" id="relNaoIniciadas">0</div>
+                <span class="kpi-badge border" style="background-color: #cffafe; color: #0e7490; border-color: #a5f3fc;" id="relNaoIniciadasDesc">
+                  0 na fila de espera
                 </span>
               </div>
             </div>
@@ -1098,7 +1222,7 @@
                 </div>
                 <div class="kpi-number text-danger" id="relAtrasadas">0</div>
                 <span class="kpi-badge bg-danger-subtle text-danger border border-danger-subtle" id="relAtrasadasDesc">
-                  fora do prazo
+                  nenhum atraso
                 </span>
               </div>
             </div>
@@ -1107,8 +1231,11 @@
           <!-- DETALHAMENTO COM NUMERAÇÃO, MÓDULO, REORDENAÇÃO E BARRA DE BUSCA RÁPIDA -->
           <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
             <div>
-              <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+              <h5 class="fw-bold mb-0 text-dark d-flex align-items-center flex-wrap gap-2">
                 <i class="fa-solid fa-table-list text-primary"></i>Detalhamento das Demandas do Período
+                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 ms-1 cursor-pointer" id="kpiCardRel_TODOS" onclick="filtrarRelatorioPorKpi('TODOS')" title="Clique para exibir todas as demandas do período (sem filtro de status)" style="font-size: 0.74rem; font-weight: 600;">
+                  <i class="fa-solid fa-layer-group me-1"></i>Total: <strong id="relTotalDemandas">0</strong> demandas (Ver Todas)
+                </span>
               </h5>
               <div class="small text-muted" data-html2canvas-ignore="true" style="font-size: 0.74rem;">
                 <i class="fa-solid fa-arrow-down-up-across-line me-1 text-primary"></i> Clique em qualquer coluna para ordenar ou na linha para abrir o dossiê da demanda
@@ -1181,6 +1308,156 @@
             <div>
               Documento de acompanhamento
             </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- ABA 3: ANOTAÇÕES PRIVADAS DO USUÁRIO       -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-anotacoes" role="tabpanel">
+        
+        <!-- HEADER DO ESPAÇO PRIVADO DE ANOTAÇÕES -->
+        <div class="card card-custom p-3 mb-3 shadow-sm border-0" style="background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); border-left: 4px solid #2563eb !important;">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-3">
+              <div class="d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); font-size: 1.25rem;">
+                <i class="fa-solid fa-note-sticky"></i>
+              </div>
+              <div>
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                  <h5 class="fw-bold text-dark mb-0" style="letter-spacing: -0.3px;">Minhas Anotações & Caderno Pessoal</h5>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-semibold" style="font-size: 0.72rem;">
+                    <i class="fa-solid fa-lock me-1"></i>100% Privado e Individual
+                  </span>
+                </div>
+                <p class="text-muted small mb-0 mt-1" style="font-size: 0.78rem;">
+                  Espaço reservado exclusivamente para <strong id="lblNomeUsuarioAnotacoes" class="text-dark">-</strong>. Ninguém mais tem acesso às suas notas.
+                </p>
+              </div>
+            </div>
+
+            <!-- BOTÕES DE AÇÃO RÁPIDA NO HEADER -->
+            <div class="d-flex align-items-center gap-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-semibold shadow-2xs d-inline-flex align-items-center gap-1" onclick="exportarMinhasAnotacoes()" title="Exportar todas as minhas anotações em arquivo de texto">
+                <i class="fa-solid fa-file-arrow-down text-primary"></i> Exportar (.txt)
+              </button>
+              <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm d-inline-flex align-items-center gap-2" onclick="abrirModalNovaAnotacao()" style="font-size: 0.84rem;">
+                <i class="fa-solid fa-plus"></i> Nova Anotação
+              </button>
+            </div>
+          </div>
+
+          <!-- MINI DASHBOARD / KPIs DE ANOTAÇÕES -->
+          <div class="row g-2 mt-2 pt-2 border-top">
+            <div class="col-sm-3 col-6">
+              <div class="bg-white border rounded-3 p-2 d-flex align-items-center justify-content-between shadow-2xs cursor-pointer" onclick="filtrarAnotacoesPorTag('TODAS')" title="Mostrar todas as anotações">
+                <div>
+                  <small class="text-muted fw-bold d-block" style="font-size: 0.68rem; text-transform: uppercase;">Total de Notas</small>
+                  <strong class="fs-5 text-dark" id="kpiTotalAnotacoes">0</strong>
+                </div>
+                <span class="badge bg-primary-subtle text-primary p-2 rounded-circle"><i class="fa-solid fa-book"></i></span>
+              </div>
+            </div>
+            <div class="col-sm-3 col-6">
+              <div class="bg-white border rounded-3 p-2 d-flex align-items-center justify-content-between shadow-2xs cursor-pointer" onclick="filtrarAnotacoesPorTag('FIXADAS')" title="Filtrar notas fixadas no topo">
+                <div>
+                  <small class="text-muted fw-bold d-block" style="font-size: 0.68rem; text-transform: uppercase;">Fixadas 📌</small>
+                  <strong class="fs-5 text-warning-emphasis" id="kpiFixadasAnotacoes">0</strong>
+                </div>
+                <span class="badge bg-warning-subtle text-warning p-2 rounded-circle"><i class="fa-solid fa-thumbtack"></i></span>
+              </div>
+            </div>
+            <div class="col-sm-3 col-6">
+              <div class="bg-white border rounded-3 p-2 d-flex align-items-center justify-content-between shadow-2xs cursor-pointer" onclick="filtrarAnotacoesPorTag('CHECKLIST')" title="Filtrar notas com checklist">
+                <div>
+                  <small class="text-muted fw-bold d-block" style="font-size: 0.68rem; text-transform: uppercase;">Checklists ☑️</small>
+                  <strong class="fs-5 text-success" id="kpiChecklistsAnotacoes">0</strong>
+                </div>
+                <span class="badge bg-success-subtle text-success p-2 rounded-circle"><i class="fa-solid fa-list-check"></i></span>
+              </div>
+            </div>
+            <div class="col-sm-3 col-6">
+              <div class="bg-white border rounded-3 p-2 d-flex align-items-center justify-content-between shadow-2xs">
+                <div>
+                  <small class="text-muted fw-bold d-block" style="font-size: 0.68rem; text-transform: uppercase;">Categorias Ativas</small>
+                  <strong class="fs-5 text-secondary" id="kpiCategoriasAnotacoes">0</strong>
+                </div>
+                <span class="badge bg-secondary-subtle text-secondary p-2 rounded-circle"><i class="fa-solid fa-tags"></i></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BARRA DE PESQUISA, FILTROS E MODO DE VISUALIZAÇÃO -->
+        <div class="card card-custom p-3 mb-3 shadow-2xs border">
+          <div class="row g-2 align-items-center">
+            <!-- BUSCA TEXTUAL COM LUPA -->
+            <div class="col-lg-4 col-md-5 col-sm-12">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" class="form-control border-start-0 ps-1" id="pesquisaAnotacoesInput" placeholder="Pesquisar em títulos, notas ou checklists..." oninput="aoDigitarPesquisaAnotacoes()" autocomplete="off">
+                <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaAnotacoes" onclick="limparPesquisaAnotacoes()"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            </div>
+
+            <!-- FILTRO POR CATEGORIA -->
+            <div class="col-lg-5 col-md-4 col-sm-7">
+              <div class="d-flex align-items-center gap-1 overflow-auto py-1" id="containerPillsCategoriasAnotacoes" style="scrollbar-width: thin;">
+                <!-- Preenchido dinamicamente com pills interativos: Todas, Geral, Técnico, Ideias, etc. -->
+              </div>
+            </div>
+
+            <!-- ORDENAÇÃO E MODO DE VISUALIZAÇÃO -->
+            <div class="col-lg-3 col-md-3 col-sm-5 d-flex justify-content-end align-items-center gap-2">
+              <select class="form-select form-select-sm" id="ordemAnotacoesSelect" onchange="aoMudarOrdemAnotacoes()" style="max-width: 150px; font-size: 0.78rem;">
+                <option value="recente" selected>Mais recentes</option>
+                <option value="antiga">Mais antigas</option>
+                <option value="titulo">Título (A-Z)</option>
+                <option value="atualizada">Última edição</option>
+              </select>
+              <div class="btn-group btn-group-sm shadow-2xs" role="group">
+                <button type="button" class="btn btn-outline-secondary active" id="btnAnotacoesModoGrid" onclick="alternarModoVisualizacaoAnotacoes('grid')" title="Visualização em Grade de Cartões">
+                  <i class="fa-solid fa-table-cells-large"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="btnAnotacoesModoList" onclick="alternarModoVisualizacaoAnotacoes('list')" title="Visualização em Linhas / Compacta">
+                  <i class="fa-solid fa-bars"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ÁREA DE CARDS DE ANOTAÇÕES -->
+        <div id="containerAnotacoesFixadas" class="mb-3 d-none">
+          <div class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom">
+            <i class="fa-solid fa-thumbtack text-warning fs-6"></i>
+            <span class="fw-bold text-dark small text-uppercase" style="letter-spacing: 0.5px;">Fixadas no Topo</span>
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-0" id="badgeQtdFixadas">0</span>
+          </div>
+          <div class="row g-3" id="gradeAnotacoesFixadas"></div>
+        </div>
+
+        <div id="containerAnotacoesGerais">
+          <div class="d-flex align-items-center gap-2 mb-2 pb-1 border-bottom d-none" id="headerAnotacoesOutras">
+            <i class="fa-regular fa-note-sticky text-secondary fs-6"></i>
+            <span class="fw-bold text-dark small text-uppercase" style="letter-spacing: 0.5px;">Outras Anotações</span>
+          </div>
+          <div class="row g-3" id="gradeAnotacoesGerais"></div>
+        </div>
+
+        <!-- EMPTY STATE (Quando não há anotações ou filtro zerado) -->
+        <div id="emptyStateAnotacoes" class="card card-custom p-5 text-center d-none border-dashed my-3">
+          <div class="mb-3 text-secondary opacity-50">
+            <i class="fa-solid fa-book-open fa-3x"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-1">Nenhuma anotação encontrada</h5>
+          <p class="text-muted small mb-3">Você ainda não tem anotações gravadas ou o filtro aplicado não retornou resultados.</p>
+          <div>
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 py-2 fw-bold shadow-sm" onclick="abrirModalNovaAnotacao()">
+              <i class="fa-solid fa-plus me-1"></i> Criar Minha Primeira Anotação
+            </button>
           </div>
         </div>
 
@@ -1305,6 +1582,110 @@
           <button type="button" class="btn btn-primary fw-semibold" onclick="salvarEdicaoUsuarioRapido()">
             <i class="fa-solid fa-check me-1"></i> Salvar Alterações
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVA / EDITAR ANOTAÇÃO PESSOAL -->
+  <div class="modal fade" id="modalAnotacao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="modal-header text-white" id="modalAnotacaoHeader" style="background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-pen-to-square fs-5"></i>
+            <h5 class="modal-title fw-bold mb-0" id="modalAnotacaoTituloPrincipal">Nova Anotação Pessoal</h5>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="anotacaoEditId" value="">
+          
+          <div class="row g-3">
+            <!-- TÍTULO -->
+            <div class="col-md-8 col-sm-12">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-heading text-primary me-1"></i>Título da Anotação:</label>
+              <input type="text" class="form-control form-control-sm" id="anotacaoTituloInput" placeholder="Ex: Regras da nova feature, Lembrete da reunião, etc." required autocomplete="off">
+            </div>
+
+            <!-- CATEGORIA -->
+            <div class="col-md-4 col-sm-12">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-tag text-primary me-1"></i>Categoria:</label>
+              <select class="form-select form-select-sm" id="anotacaoCategoriaSelect" onchange="aoMudarCategoriaSelectAnotacao()">
+                <option value="Geral" selected>🏷️ Geral</option>
+                <option value="Técnico">🛠️ Técnico / Dev</option>
+                <option value="Ideias">💡 Ideias / Inovações</option>
+                <option value="Reunião">👥 Reunião / Pauta</option>
+                <option value="Lembretes">⏰ Lembretes Importantes</option>
+                <option value="Pendências">📌 Pendências da Esteira</option>
+                <option value="__NOVA__">+ Nova Categoria...</option>
+              </select>
+              <input type="text" class="form-control form-control-sm mt-1 d-none" id="anotacaoNovaCategoriaInput" placeholder="Nome da nova categoria...">
+            </div>
+
+            <!-- PALETA DE CORES DO CARTÃO E FIXAR NO TOPO -->
+            <div class="col-md-8 col-sm-12">
+              <label class="form-label small fw-bold mb-1 d-block"><i class="fa-solid fa-palette text-primary me-1"></i>Cor de Destaque do Cartão:</label>
+              <div class="d-flex align-items-center gap-2" id="paletaCoresAnotacao">
+                <button type="button" class="btn-seletor-cor active" data-cor="padrao" style="background-color: #ffffff; border: 2px solid #cbd5e1;" title="Padrão / Branco" onclick="selecionarCorModalAnotacao('padrao')"></button>
+                <button type="button" class="btn-seletor-cor" data-cor="azul" style="background-color: #dbeafe; border: 2px solid #93c5fd;" title="Azul Suave" onclick="selecionarCorModalAnotacao('azul')"></button>
+                <button type="button" class="btn-seletor-cor" data-cor="verde" style="background-color: #dcfce7; border: 2px solid #86efac;" title="Verde Menta" onclick="selecionarCorModalAnotacao('verde')"></button>
+                <button type="button" class="btn-seletor-cor" data-cor="amarelo" style="background-color: #fef9c3; border: 2px solid #fde047;" title="Amarelo / Post-it" onclick="selecionarCorModalAnotacao('amarelo')"></button>
+                <button type="button" class="btn-seletor-cor" data-cor="roxo" style="background-color: #f3e8ff; border: 2px solid #d8b4fe;" title="Roxo Lavanda" onclick="selecionarCorModalAnotacao('roxo')"></button>
+                <button type="button" class="btn-seletor-cor" data-cor="rosa" style="background-color: #ffe4e6; border: 2px solid #fecdd3;" title="Rosa Coral" onclick="selecionarCorModalAnotacao('rosa')"></button>
+              </div>
+              <input type="hidden" id="anotacaoCorInput" value="padrao">
+            </div>
+
+            <div class="col-md-4 col-sm-12 d-flex align-items-end justify-content-md-end">
+              <div class="form-check form-switch mb-1">
+                <input class="form-check-input cursor-pointer" type="checkbox" role="switch" id="anotacaoFixadoCheck" style="width: 2.2em; height: 1.2em;">
+                <label class="form-check-label fw-semibold small cursor-pointer user-select-none text-dark ms-1" for="anotacaoFixadoCheck">
+                  <i class="fa-solid fa-thumbtack text-warning me-1"></i> Fixar no Topo
+                </label>
+              </div>
+            </div>
+
+            <!-- CONTEÚDO PRINCIPAL (TEXTO) -->
+            <div class="col-12">
+              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-align-left text-primary me-1"></i>Conteúdo / Texto:</label>
+              <textarea class="form-control" id="anotacaoConteudoInput" rows="5" placeholder="Escreva sua anotação aqui... Suporta quebras de linha, links e listas." style="font-size: 0.88rem; line-height: 1.5; resize: vertical;" onkeydown="aoPressionarTecladoConteudoAnotacao(event)"></textarea>
+              <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">Links como https://... tornam-se clicáveis automaticamente. Pressione <strong>Ctrl + Enter</strong> para salvar.</small>
+            </div>
+
+            <!-- CHECKLIST DE ITENS (OPCIONAL) -->
+            <div class="col-12">
+              <div class="border rounded-3 p-3 bg-light">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <label class="form-label small fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-list-check text-success me-1"></i> Checklist de Tarefas / Pendências (Opcional)
+                  </label>
+                  <span class="small text-muted" style="font-size: 0.72rem;">Itens marcáveis diretamente no cartão</span>
+                </div>
+                <div class="input-group input-group-sm mb-2">
+                  <input type="text" class="form-control" id="anotacaoNovoItemChecklistInput" placeholder="Adicionar item à lista (ex: Revisar query, Rodar migrations...)" onkeydown="aoPressionarEnterItemChecklist(event)">
+                  <button class="btn btn-outline-success fw-semibold" type="button" onclick="adicionarItemChecklistModal()">
+                    <i class="fa-solid fa-plus me-1"></i> Adicionar
+                  </button>
+                </div>
+                <ul class="list-group list-group-flush rounded-2 border" id="listaChecklistModal" style="max-height: 180px; overflow-y: auto;">
+                  <li class="list-group-item text-muted small fst-italic py-2" id="emptyChecklistModalMsg">Nenhum item adicionado ao checklist ainda.</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="modal-footer bg-light border-top d-flex justify-content-between py-2">
+          <small class="text-muted" style="font-size: 0.74rem;">
+            <i class="fa-solid fa-shield-halved text-success me-1"></i> Visível apenas na sua conta logada.
+          </small>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm" onclick="salvarAnotacaoInstantanea()">
+              <i class="fa-solid fa-floppy-disk me-1"></i> Salvar Anotação
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -2125,6 +2506,26 @@
       popularModulosUI();
       atualizarLabelStatusRelatorio();
 
+      // Sincronização automática ao alternar abas
+      const tabRelBtn = document.getElementById('tab-relatorio-btn');
+      if (tabRelBtn) {
+        tabRelBtn.addEventListener('shown.bs.tab', () => {
+          atualizarRelatorioMensal();
+        });
+      }
+      const tabEsteiraBtn = document.getElementById('tab-esteira-btn');
+      if (tabEsteiraBtn) {
+        tabEsteiraBtn.addEventListener('shown.bs.tab', () => {
+          atualizarAbaEsteira();
+        });
+      }
+      const tabAnotBtn = document.getElementById('tab-anotacoes-btn');
+      if (tabAnotBtn) {
+        tabAnotBtn.addEventListener('shown.bs.tab', () => {
+          atualizarAbaAnotacoes();
+        });
+      }
+
       // Ajusta ano padrão para o ano corrente se necessário
       const inputAno = document.getElementById('filtroRelatorioAno');
       if (inputAno && !inputAno.value) {
@@ -2421,6 +2822,7 @@
       renderizarGraficos();
       atualizarSelectsDev();
       atualizarRelatorioMensal();
+      atualizarAbaAnotacoes();
       atualizarTabelaUsuarios();
       inicializarTooltips();
     }
@@ -4657,11 +5059,11 @@
         kpiFiltroAtivoRelatorio = tipo;
       }
 
-      // Atualiza visual nos 4 cards
+      // Atualiza visual nos 4 cards de status + indicador de total
       const mapeamento = {
-        'TODOS': 'kpiCardRel_TODOS',
         'Concluída': 'kpiCardRel_Concluida',
         'Em Andamento': 'kpiCardRel_EmAndamento',
+        'Não Iniciada': 'kpiCardRel_NaoIniciada',
         'Atrasada': 'kpiCardRel_Atrasada'
       };
 
@@ -4675,6 +5077,17 @@
           }
         }
       });
+
+      const badgeTodos = document.getElementById('kpiCardRel_TODOS');
+      if (badgeTodos) {
+        if (!kpiFiltroAtivoRelatorio) {
+          badgeTodos.classList.add('border-primary', 'text-primary');
+          badgeTodos.classList.remove('text-secondary', 'border-secondary-subtle');
+        } else {
+          badgeTodos.classList.remove('border-primary', 'text-primary');
+          badgeTodos.classList.add('text-secondary', 'border-secondary-subtle');
+        }
+      }
 
       atualizarRelatorioMensal();
     }
@@ -4724,7 +5137,7 @@
       if (btnLimpar) btnLimpar.classList.add('d-none');
 
       kpiFiltroAtivoRelatorio = null;
-      ['kpiCardRel_TODOS', 'kpiCardRel_Concluida', 'kpiCardRel_EmAndamento', 'kpiCardRel_Atrasada'].forEach(id => {
+      ['kpiCardRel_TODOS', 'kpiCardRel_Concluida', 'kpiCardRel_EmAndamento', 'kpiCardRel_NaoIniciada', 'kpiCardRel_Atrasada'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('kpi-filtro-ativo');
       });
@@ -4851,36 +5264,39 @@
       document.getElementById('lblEmissaoRelatorio').innerText = `Emitido em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}`;
 
       // Filtragem ágil por período:
-      // 1. Demandas que entraram na esteira no período do filtro (dataInicio ou dataInsercao no intervalo);
-      // 2. + Demandas atrasadas (qualquer demanda com status 'Atrasada' que já existia até o fim do período);
-      // 3. + Demandas concluídas nesse período (com dataConclusao no intervalo);
-      // 4. + Demandas Não Iniciadas cadastradas nesse período (com dataInsercao no intervalo).
+      // 1. Demandas ativas em produção/em andamento no período (iniciadas até dataFimFiltro e não concluídas antes de dataInicioFiltro)
+      // 2. + Demandas atrasadas (qualquer demanda com status 'Atrasada' que já existia até dataFimFiltro)
+      // 3. + Demandas concluídas nesse período (com dataConclusao no intervalo)
+      // 4. + Demandas Não Iniciadas existentes na fila de espera até o fim do período (cadastradas até dataFimFiltro)
       let filtradas = appState.tarefas.filter(t => {
         const dCriacao = parseDataLocal(t.dataInsercao || t.dataInicio);
         dCriacao.setHours(0, 0, 0, 0);
 
-        // a) Demandas em andamento que entraram na esteira nesse período
+        // a) Demandas em andamento / em produção durante o período:
+        //    Estão na esteira, iniciadas até o fim do período e não concluídas antes do início do período.
         const dInicioEsteira = parseDataLocal(t.dataInicio || t.dataInsercao);
         dInicioEsteira.setHours(0, 0, 0, 0);
+        const dConclusaoObj = t.dataConclusao ? parseDataLocal(t.dataConclusao) : null;
+        if (dConclusaoObj) dConclusaoObj.setHours(0, 0, 0, 0);
+
         const emAndamentoNoPeriodo = (t.status === 'Em Andamento' || t.ativo) &&
-                                    (!dataInicioFiltro || dInicioEsteira.getTime() >= dataInicioFiltro.getTime()) &&
-                                    (!dataFimFiltro || dInicioEsteira.getTime() <= dataFimFiltro.getTime());
+          (!dataFimFiltro || dInicioEsteira.getTime() <= dataFimFiltro.getTime()) &&
+          (!dataInicioFiltro || !dConclusaoObj || dConclusaoObj.getTime() >= dataInicioFiltro.getTime());
 
         // b) + Demandas atrasadas (qualquer demanda com status 'Atrasada' que já existia até o fim do período)
         const isAtrasada = (t.status === 'Atrasada') &&
-                           (!dataFimFiltro || dCriacao.getTime() <= dataFimFiltro.getTime());
+          (!dataFimFiltro || dCriacao.getTime() <= dataFimFiltro.getTime());
 
         // c) + Demandas concluídas nesse período
         const dConclusao = parseDataLocal(t.dataConclusao || t.dataPrazo || t.dataInicio || t.dataInsercao);
         dConclusao.setHours(0, 0, 0, 0);
         const concluidaNoPeriodo = (t.status === 'Concluída') &&
-                                   (!dataInicioFiltro || dConclusao.getTime() >= dataInicioFiltro.getTime()) &&
-                                   (!dataFimFiltro || dConclusao.getTime() <= dataFimFiltro.getTime());
+          (!dataInicioFiltro || dConclusao.getTime() >= dataInicioFiltro.getTime()) &&
+          (!dataFimFiltro || dConclusao.getTime() <= dataFimFiltro.getTime());
 
-        // d) + Demandas Não Iniciadas cadastradas no período
+        // d) + Demandas Não Iniciadas que existiam na fila de espera até o fim do período
         const naoIniciadaNoPeriodo = (t.status === 'Não Iniciada') &&
-                                     (!dataInicioFiltro || dCriacao.getTime() >= dataInicioFiltro.getTime()) &&
-                                     (!dataFimFiltro || dCriacao.getTime() <= dataFimFiltro.getTime());
+          (!dataFimFiltro || dCriacao.getTime() <= dataFimFiltro.getTime());
 
         return emAndamentoNoPeriodo || isAtrasada || concluidaNoPeriodo || naoIniciadaNoPeriodo;
       });
@@ -4979,17 +5395,14 @@
         }
       });
 
-      // Guarda métricas consolidadas do período filtrado
+      // Guarda métricas consolidadas do período filtrado conforme os 4 status oficiais
       const totalDemandas = filtradas.length;
       const totalConcluidas = filtradas.filter(t => t.status === 'Concluída').length;
-      const totalAtrasadas = filtradas.filter(t => t.status === 'Atrasada').length;
       const totalEmAndamento = filtradas.filter(t => t.status === 'Em Andamento').length;
+      const totalNaoIniciadas = filtradas.filter(t => t.status === 'Não Iniciada').length;
+      const totalAtrasadas = filtradas.filter(t => t.status === 'Atrasada').length;
 
-      // 1. Total de Demandas
-      const elTotal = document.getElementById('relTotalDemandas');
-      if (elTotal) elTotal.innerText = totalDemandas;
-
-      // 2. Demandas Concluídas
+      // 1. Demandas Concluídas
       const elConcluidas = document.getElementById('relConcluidas');
       if (elConcluidas) elConcluidas.innerText = totalConcluidas;
 
@@ -4999,21 +5412,33 @@
         elConcluidasPct.innerText = `${pct}% entregues no período`;
       }
 
-      // 3. Demandas Em Andamento (2º Solicitado)
+      // 2. Demandas Em Andamento (Em Produção)
       const elEmAndamento = document.getElementById('relEmAndamento');
       if (elEmAndamento) elEmAndamento.innerText = totalEmAndamento;
       const elEmAndamentoDesc = document.getElementById('relEmAndamentoDesc');
       if (elEmAndamentoDesc) {
-        elEmAndamentoDesc.innerText = totalEmAndamento === 1 ? '1 demanda em produção' : `${totalEmAndamento} demandas em produção`;
+        elEmAndamentoDesc.innerText = totalEmAndamento === 1 ? '1 em produção ativa' : `${totalEmAndamento} em produção ativa`;
       }
 
-      // 4. Demandas Atrasadas (2º Solicitado)
+      // 3. Demandas Não Iniciadas (Fila de espera)
+      const elNaoIniciadas = document.getElementById('relNaoIniciadas');
+      if (elNaoIniciadas) elNaoIniciadas.innerText = totalNaoIniciadas;
+      const elNaoIniciadasDesc = document.getElementById('relNaoIniciadasDesc');
+      if (elNaoIniciadasDesc) {
+        elNaoIniciadasDesc.innerText = totalNaoIniciadas === 1 ? '1 na fila de espera' : `${totalNaoIniciadas} na fila de espera`;
+      }
+
+      // 4. Demandas Atrasadas
       const elAtrasadas = document.getElementById('relAtrasadas');
       if (elAtrasadas) elAtrasadas.innerText = totalAtrasadas;
       const elAtrasadasDesc = document.getElementById('relAtrasadasDesc');
       if (elAtrasadasDesc) {
         elAtrasadasDesc.innerText = totalAtrasadas === 0 ? 'nenhum atraso' : `${totalAtrasadas} fora do prazo`;
       }
+
+      // Indicador Total Geral de Demandas
+      const elTotal = document.getElementById('relTotalDemandas');
+      if (elTotal) elTotal.innerText = totalDemandas;
 
       // Aplica Filtro Rápido de KPI clicado e Barra de Pesquisa Textual da Tabela
       let exibidasNaTabela = [...filtradas];
@@ -5386,17 +5811,10 @@
                 </div>
               </div>
 
-              <!-- 4 CARDS RESUMO EXECUTIVO SOFISTICADOS -->
+              <!-- 4 CARDS RESUMO EXECUTIVO SOFISTICADOS (4 STATUS OFICIAIS CONFORME REGRA OFICIAL) -->
               <div style="display: table; width: 100%; margin-bottom: 12px; border-collapse: separate; border-spacing: 8px 0;">
                 <div style="display: table-row;">
-                  <!-- 1. Geral de Demandas -->
-                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); border: 1px solid #e2e8f0; border-top: 3px solid #64748b; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                    <div style="font-size: 9px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Geral de Demandas</div>
-                    <div style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 2px 0; line-height: 1.1;">${totalDemandas}</div>
-                    <div style="font-size: 9px; color: #64748b; font-weight: 600;">${totalDemandas === 1 ? '1 demanda registrada' : `${totalDemandas} demandas registradas`}</div>
-                  </div>
-
-                  <!-- 2. Demandas Concluídas -->
+                  <!-- 1. Demandas Concluídas -->
                   <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); border: 1px solid #bbf7d0; border-top: 3px solid #16a34a; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(22,163,74,0.03);">
                     <div style="font-size: 9px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Concluídas</div>
                     <div style="font-size: 24px; font-weight: 800; color: #16a34a; margin: 2px 0; line-height: 1.1;">${concluidas}</div>
@@ -5405,11 +5823,18 @@
                     </div>
                   </div>
 
-                  <!-- 3. Demandas Em Andamento -->
+                  <!-- 2. Demandas Em Andamento -->
                   <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; border-top: 3px solid #2563eb; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(37,99,235,0.03);">
                     <div style="font-size: 9px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">Em Andamento</div>
                     <div style="font-size: 24px; font-weight: 800; color: #2563eb; margin: 2px 0; line-height: 1.1;">${emAndamento}</div>
                     <div style="font-size: 9px; color: #1d4ed8; font-weight: 700;">produção ativa na esteira</div>
+                  </div>
+
+                  <!-- 3. Demandas Não Iniciadas -->
+                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #ecfeff 0%, #ffffff 100%); border: 1px solid #a5f3fc; border-top: 3px solid #0891b2; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(8,145,178,0.03);">
+                    <div style="font-size: 9px; font-weight: 800; color: #0e7490; text-transform: uppercase; letter-spacing: 0.5px;">Não Iniciadas</div>
+                    <div style="font-size: 24px; font-weight: 800; color: #0891b2; margin: 2px 0; line-height: 1.1;">${naoIniciadas}</div>
+                    <div style="font-size: 9px; color: #0891b2; font-weight: 700;">aguardando na fila</div>
                   </div>
 
                   <!-- 4. Demandas Atrasadas -->
@@ -5432,6 +5857,7 @@
                   <span style="display: inline-block; background: #e2e8f0; color: #334155; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Total: ${totalDemandas}</span>
                   <span style="display: inline-block; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Concluídas: ${concluidas}</span>
                   <span style="display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Em Produção: ${emAndamento}</span>
+                  <span style="display: inline-block; background: #cffafe; color: #0e7490; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Não Iniciadas: ${naoIniciadas}</span>
                   <span style="display: inline-block; background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Atrasadas: ${atrasadas}</span>
                 </div>
               </div>
@@ -5722,6 +6148,909 @@
           selectModal.value = appState.currentUser.id;
         }
       }
+    }
+
+    // =========================================================================
+    // MÓDULO: ANOTAÇÕES PRIVADAS DO USUÁRIO & CADERNO PESSOAL
+    // Cada usuário possui seu próprio armazenamento estritamente isolado
+    // =========================================================================
+
+    let anotacoesFiltroTag = 'TODAS';
+    let anotacoesModoVisualizacao = 'grid'; // 'grid' | 'list'
+    let anotacoesChecklistTemp = []; // [{ id: string, texto: string, concluido: boolean }]
+
+    /**
+     * Retorna a chave do localStorage específica para o usuário conectado,
+     * garantindo isolamento total e privacidade estrita entre membros da equipe.
+     */
+    function obterChaveStorageUsuarioAnotacoes() {
+      const user = appState.currentUser;
+      if (!user) return 'SYSMANAGER_ANOTACOES_GUEST';
+      const idStr = (user.id || user.email || user.nome || 'padrao').toString().toLowerCase().trim().replace(/[^a-z0-9_-]/g, '_');
+      return `SYSMANAGER_ANOTACOES_${idStr}`;
+    }
+
+    /**
+     * Gera anotações de boas-vindas demonstrando os recursos avançados
+     * (Fixar no topo, paleta de cores, links e checklists interativos).
+     */
+    function criarAnotacoesIniciaisExemplo() {
+      const agora = new Date().toISOString();
+      return [
+        {
+          id: 'NOTE-INIT-1',
+          titulo: 'Bem-vindo ao seu Caderno de Anotações 🚀',
+          categoria: 'Geral',
+          cor: 'azul',
+          fixado: true,
+          conteudo: 'Este é o seu espaço 100% pessoal e confidencial.\n\n🔒 Apenas você tem acesso ao que for registrado aqui. Nenhum outro membro da equipe tem permissão para visualizar suas anotações.\n\n💡 Dicas rápidas:\n• Clique no ícone de alfinete 📌 para fixar suas notas mais importantes no topo.\n• Use checklists interativos para não esquecer detalhes da sua rotina.\n• Organize por cores e categorias.\n• Use a busca em tempo real e exporte para arquivo (.txt) quando quiser.',
+          checklist: [],
+          dataCriacao: agora,
+          dataAtualizacao: agora
+        },
+        {
+          id: 'NOTE-INIT-2',
+          titulo: 'Checklist de Produtividade Diária 🎯',
+          categoria: 'Técnico',
+          cor: 'verde',
+          fixado: false,
+          conteudo: 'Acompanhamento rápido de tarefas e rotina diária na esteira:',
+          checklist: [
+            { id: 'chk_1', texto: 'Verificar novas demandas na esteira ágil', concluido: true },
+            { id: 'chk_2', texto: 'Conferir prazos e datas de entrega da semana', concluido: true },
+            { id: 'chk_3', texto: 'Revisar pendências de código e testes de regressão', concluido: false },
+            { id: 'chk_4', texto: 'Registrar alinhamentos da reunião com a equipe', concluido: false }
+          ],
+          dataCriacao: agora,
+          dataAtualizacao: agora
+        },
+        {
+          id: 'NOTE-INIT-3',
+          titulo: 'Ideias & Melhorias Futuras 💡',
+          categoria: 'Ideias',
+          cor: 'amarelo',
+          fixado: false,
+          conteudo: 'Ideias para avaliar em sprints futuras:\n• Atalhos rápidos de teclado para alternar abas\n• Relatórios gráficos comparativos de desempenho\n• Melhorias nas notificações automáticas',
+          checklist: [],
+          dataCriacao: agora,
+          dataAtualizacao: agora
+        }
+      ];
+    }
+
+    /**
+     * Carrega as anotações do usuário ativo.
+     * Se for o primeiro acesso, cria as anotações de boas-vindas.
+     */
+    function carregarMinhasAnotacoes() {
+      const chave = obterChaveStorageUsuarioAnotacoes();
+      try {
+        const raw = localStorage.getItem(chave);
+        if (raw === null) {
+          const iniciais = criarAnotacoesIniciaisExemplo();
+          salvarAnotacoesStorage(iniciais);
+          return iniciais;
+        }
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.error('Erro ao ler anotações do localStorage:', e);
+        return [];
+      }
+    }
+
+    /**
+     * Salva a lista de anotações no localStorage sob a chave privada do usuário.
+     */
+    function salvarAnotacoesStorage(lista) {
+      const chave = obterChaveStorageUsuarioAnotacoes();
+      try {
+        localStorage.setItem(chave, JSON.stringify(lista));
+      } catch (e) {
+        console.error('Erro ao gravar anotações no localStorage:', e);
+      }
+    }
+
+    /**
+     * Escapa caracteres HTML e converte URLs em links clicáveis.
+     */
+    function formatarLinksTexto(str) {
+      if (!str) return '';
+      const seguro = str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      const comLinks = seguro.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-underline" onclick="event.stopPropagation()">$1</a>');
+      return comLinks;
+    }
+
+    /**
+     * Formata data e hora legível para os cartões de anotações.
+     */
+    function formatarDataHoraAnotacao(isoStr) {
+      if (!isoStr) return '-';
+      try {
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return isoStr;
+        const dia = String(d.getDate()).padStart(2, '0');
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const ano = d.getFullYear();
+        const hora = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        return `${dia}/${mes}/${ano} às ${hora}:${min}`;
+      } catch (e) {
+        return isoStr;
+      }
+    }
+
+    /**
+     * Renderiza os pills de categorias e tags no topo da aba Anotações.
+     */
+    function renderizarPillsCategoriasAnotacoes(todasNotas) {
+      const container = document.getElementById('containerPillsCategoriasAnotacoes');
+      if (!container) return;
+
+      const totalNotas = todasNotas.length;
+      const qtdFixadas = todasNotas.filter(n => n.fixado).length;
+      const qtdChecklists = todasNotas.filter(n => n.checklist && n.checklist.length > 0).length;
+
+      // Conta categorias individuais
+      const mapaCategorias = {};
+      todasNotas.forEach(n => {
+        const cat = (n.categoria || 'Geral').trim();
+        mapaCategorias[cat] = (mapaCategorias[cat] || 0) + 1;
+      });
+
+      let html = '';
+
+      // Pill: Todas
+      const activeTodas = (anotacoesFiltroTag === 'TODAS') ? 'active' : '';
+      html += `<span class="pill-categoria-anotacao ${activeTodas}" onclick="filtrarAnotacoesPorTag('TODAS')">Todas <span class="badge bg-white text-dark ms-1">${totalNotas}</span></span>`;
+
+      // Pill: Fixadas 📌
+      if (qtdFixadas > 0) {
+        const activeFix = (anotacoesFiltroTag === 'FIXADAS') ? 'active' : '';
+        html += `<span class="pill-categoria-anotacao ${activeFix}" onclick="filtrarAnotacoesPorTag('FIXADAS')">📌 Fixadas <span class="badge bg-white text-dark ms-1">${qtdFixadas}</span></span>`;
+      }
+
+      // Pill: Checklists ☑️
+      if (qtdChecklists > 0) {
+        const activeChk = (anotacoesFiltroTag === 'CHECKLIST') ? 'active' : '';
+        html += `<span class="pill-categoria-anotacao ${activeChk}" onclick="filtrarAnotacoesPorTag('CHECKLIST')">☑️ Checklists <span class="badge bg-white text-dark ms-1">${qtdChecklists}</span></span>`;
+      }
+
+      // Demais categorias
+      Object.keys(mapaCategorias).sort().forEach(cat => {
+        const count = mapaCategorias[cat];
+        const isActive = (anotacoesFiltroTag === cat) ? 'active' : '';
+        html += `<span class="pill-categoria-anotacao ${isActive}" onclick="filtrarAnotacoesPorTag('${cat}')">${cat} <span class="badge bg-white text-dark ms-1">${count}</span></span>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    /**
+     * Atualiza toda a aba de Anotações:
+     * - Identificação do usuário logado e privacidade
+     * - Contadores de KPIs
+     * - Filtros de busca e categoria
+     * - Ordenação e renderização de notas fixadas e gerais
+     */
+    function atualizarAbaAnotacoes() {
+      // 1. Atualiza identificação no cabeçalho
+      const lblUser = document.getElementById('lblNomeUsuarioAnotacoes');
+      if (lblUser) {
+        if (appState.currentUser && appState.currentUser.nome) {
+          lblUser.innerText = `${appState.currentUser.nome} (${appState.currentUser.cargo || 'Membro'})`;
+        } else {
+          lblUser.innerText = 'Usuário';
+        }
+      }
+
+      // 2. Carrega lista do usuário ativo
+      const todasNotas = carregarMinhasAnotacoes();
+
+      // 3. Atualiza badge na barra de navegação
+      const badgeTab = document.getElementById('badgeQtdAnotacoesTab');
+      if (badgeTab) {
+        badgeTab.innerText = todasNotas.length;
+      }
+
+      // 4. Atualiza KPIs mini-dashboard
+      const kpiTotal = document.getElementById('kpiTotalAnotacoes');
+      const kpiFixadas = document.getElementById('kpiFixadasAnotacoes');
+      const kpiCheck = document.getElementById('kpiChecklistsAnotacoes');
+      const kpiCats = document.getElementById('kpiCategoriasAnotacoes');
+
+      const qtdFixadasTotal = todasNotas.filter(n => n.fixado).length;
+      const qtdCheckTotal = todasNotas.filter(n => n.checklist && n.checklist.length > 0).length;
+      const categoriasUnicas = new Set(todasNotas.map(n => (n.categoria || 'Geral').trim()));
+
+      if (kpiTotal) kpiTotal.innerText = todasNotas.length;
+      if (kpiFixadas) kpiFixadas.innerText = qtdFixadasTotal;
+      if (kpiCheck) kpiCheck.innerText = qtdCheckTotal;
+      if (kpiCats) kpiCats.innerText = categoriasUnicas.size;
+
+      // 5. Renderiza pills de categorias
+      renderizarPillsCategoriasAnotacoes(todasNotas);
+
+      // 6. Aplica filtro de busca por texto
+      const campoBusca = document.getElementById('pesquisaAnotacoesInput');
+      const termoBusca = (campoBusca ? campoBusca.value : '').toLowerCase().trim();
+
+      const btnLimpar = document.getElementById('btnLimparPesquisaAnotacoes');
+      if (btnLimpar) {
+        if (termoBusca.length > 0) {
+          btnLimpar.classList.remove('d-none');
+        } else {
+          btnLimpar.classList.add('d-none');
+        }
+      }
+
+      let notasFiltradas = todasNotas.filter(n => {
+        // Filtro de tag / categoria
+        if (anotacoesFiltroTag === 'FIXADAS') {
+          if (!n.fixado) return false;
+        } else if (anotacoesFiltroTag === 'CHECKLIST') {
+          if (!n.checklist || n.checklist.length === 0) return false;
+        } else if (anotacoesFiltroTag !== 'TODAS') {
+          if ((n.categoria || 'Geral').trim() !== anotacoesFiltroTag) return false;
+        }
+
+        // Filtro de texto
+        if (termoBusca) {
+          const noTitulo = (n.titulo || '').toLowerCase().includes(termoBusca);
+          const noConteudo = (n.conteudo || '').toLowerCase().includes(termoBusca);
+          const naCategoria = (n.categoria || '').toLowerCase().includes(termoBusca);
+          const noChecklist = n.checklist && n.checklist.some(c => (c.texto || '').toLowerCase().includes(termoBusca));
+          if (!noTitulo && !noConteudo && !naCategoria && !noChecklist) {
+            return false;
+          }
+        }
+        return true;
+      });
+
+      // 7. Aplica ordenação
+      const selectOrdem = document.getElementById('ordemAnotacoesSelect');
+      const criterioOrdem = selectOrdem ? selectOrdem.value : 'recente';
+
+      notasFiltradas.sort((a, b) => {
+        if (criterioOrdem === 'antiga') {
+          return new Date(a.dataCriacao || 0) - new Date(b.dataCriacao || 0);
+        } else if (criterioOrdem === 'titulo') {
+          return (a.titulo || '').localeCompare(b.titulo || '');
+        } else if (criterioOrdem === 'atualizada') {
+          const dtA = new Date(a.dataAtualizacao || a.dataCriacao || 0);
+          const dtB = new Date(b.dataAtualizacao || b.dataCriacao || 0);
+          return dtB - dtA;
+        } else {
+          // 'recente' (padrão)
+          return new Date(b.dataCriacao || 0) - new Date(a.dataCriacao || 0);
+        }
+      });
+
+      // 8. Separação em Fixadas e Gerais
+      const containerFixadas = document.getElementById('containerAnotacoesFixadas');
+      const gradeFixadas = document.getElementById('gradeAnotacoesFixadas');
+      const badgeFixadas = document.getElementById('badgeQtdFixadas');
+      const headerOutras = document.getElementById('headerAnotacoesOutras');
+      const gradeGerais = document.getElementById('gradeAnotacoesGerais');
+      const emptyState = document.getElementById('emptyStateAnotacoes');
+
+      if (!gradeGerais) return;
+
+      // Se o filtro for especificamente 'FIXADAS', exibe todas na grade principal
+      let notasFixadas = [];
+      let notasGerais = [];
+
+      if (anotacoesFiltroTag === 'FIXADAS') {
+        notasGerais = notasFiltradas;
+      } else {
+        notasFixadas = notasFiltradas.filter(n => n.fixado);
+        notasGerais = notasFiltradas.filter(n => !n.fixado);
+      }
+
+      // Renderiza Fixadas
+      if (containerFixadas && gradeFixadas) {
+        if (notasFixadas.length > 0) {
+          containerFixadas.classList.remove('d-none');
+          if (badgeFixadas) badgeFixadas.innerText = notasFixadas.length;
+          gradeFixadas.innerHTML = notasFixadas.map(n => renderizarCardAnotacaoHtml(n, anotacoesModoVisualizacao)).join('');
+        } else {
+          containerFixadas.classList.add('d-none');
+          gradeFixadas.innerHTML = '';
+        }
+      }
+
+      // Renderiza Gerais
+      if (headerOutras) {
+        if (notasFixadas.length > 0 && notasGerais.length > 0) {
+          headerOutras.classList.remove('d-none');
+        } else {
+          headerOutras.classList.add('d-none');
+        }
+      }
+
+      gradeGerais.innerHTML = notasGerais.map(n => renderizarCardAnotacaoHtml(n, anotacoesModoVisualizacao)).join('');
+
+      // Empty State
+      if (emptyState) {
+        if (notasFiltradas.length === 0) {
+          emptyState.classList.remove('d-none');
+        } else {
+          emptyState.classList.add('d-none');
+        }
+      }
+    }
+
+    /**
+     * Gera o código HTML completo de um cartão de anotação com ações interativas.
+     */
+    function renderizarCardAnotacaoHtml(n, modo) {
+      const colClass = (modo === 'list') ? 'col-12' : 'col-xl-4 col-md-6 col-12';
+      const corClass = `card-anotacao-${n.cor || 'padrao'}`;
+      const isPinnedClass = n.fixado ? 'is-pinned' : '';
+      const pinTitle = n.fixado ? 'Desafixar do topo' : 'Fixar no topo';
+      const pinIcon = n.fixado ? 'fa-solid fa-thumbtack text-warning' : 'fa-solid fa-thumbtack';
+
+      // Checklist HTML
+      let checklistHtml = '';
+      if (n.checklist && n.checklist.length > 0) {
+        const total = n.checklist.length;
+        const concluidos = n.checklist.filter(c => c.concluido).length;
+        const pct = Math.round((concluidos / total) * 100);
+
+        const itensHtml = n.checklist.map((item, idx) => {
+          const checked = item.concluido ? 'checked' : '';
+          const checkedClass = item.concluido ? 'concluido' : '';
+          return `
+            <div class="anotacao-checklist-item ${checkedClass}">
+              <input type="checkbox" class="form-check-input mt-0 cursor-pointer shadow-none" ${checked} onchange="alternarChecklistItemAnotacao('${n.id}', ${idx})">
+              <span>${item.texto}</span>
+            </div>
+          `;
+        }).join('');
+
+        checklistHtml = `
+          <div class="mt-2 pt-2 border-top">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-bold small text-dark" style="font-size: 0.75rem;"><i class="fa-solid fa-list-check text-success me-1"></i>Checklist (${concluidos}/${total})</span>
+              <span class="small text-muted" style="font-size: 0.70rem;">${pct}%</span>
+            </div>
+            <div class="progress mb-2" style="height: 4px;">
+              <div class="progress-bar bg-success" style="width: ${pct}%;"></div>
+            </div>
+            <div class="checklist-items-scroll" style="max-height: 140px; overflow-y: auto;">
+              ${itensHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      const corpoTexto = formatarLinksTexto(n.conteudo || '');
+      const dataFormatada = formatarDataHoraAnotacao(n.dataAtualizacao || n.dataCriacao);
+
+      return `
+        <div class="${colClass}">
+          <div class="card card-anotacao ${corClass} p-3 shadow-2xs">
+            <!-- TOPO DO CARTÃO: CATEGORIA + AÇÕES DE PIN E CÓPIA -->
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+              <span class="badge bg-white text-secondary border px-2 py-1 fw-semibold shadow-2xs" style="font-size: 0.72rem;">
+                <i class="fa-solid fa-tag me-1 text-primary"></i>${n.categoria || 'Geral'}
+              </span>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="btn-pin-anotacao ${isPinnedClass}" onclick="alternarFixadoAnotacao('${n.id}')" title="${pinTitle}">
+                  <i class="${pinIcon}"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-link text-muted p-1 text-decoration-none" onclick="copiarTextoAnotacao('${n.id}')" title="Copiar texto da anotação">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- TÍTULO -->
+            <h6 class="fw-bold text-dark mb-2" style="font-size: 0.95rem; line-height: 1.35; letter-spacing: -0.2px;">
+              ${n.titulo || 'Sem Título'}
+            </h6>
+
+            <!-- CORPO DE TEXTO -->
+            ${corpoTexto ? `<div class="anotacao-corpo-texto mb-2">${corpoTexto}</div>` : ''}
+
+            <!-- CHECKLIST INTERATIVO -->
+            ${checklistHtml}
+
+            <!-- RODAPÉ: DATA E AÇÕES (EDITAR / BAIXAR / EXCLUIR) -->
+            <div class="d-flex justify-content-between align-items-center pt-2 mt-auto border-top gap-2">
+              <small class="text-muted text-truncate" style="font-size: 0.71rem;" title="Data: ${dataFormatada}">
+                <i class="fa-regular fa-clock me-1"></i>${dataFormatada}
+              </small>
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 rounded-pill fw-semibold shadow-2xs" onclick="abrirModalEditarAnotacao('${n.id}')" style="font-size: 0.74rem;">
+                  <i class="fa-solid fa-pen me-1"></i>Editar
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-pill shadow-2xs" onclick="exportarAnotacaoIndividual('${n.id}')" title="Baixar esta anotação em .txt" style="font-size: 0.74rem;">
+                  <i class="fa-solid fa-download"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm py-0 px-2 rounded-pill shadow-2xs" onclick="excluirAnotacaoConfirm('${n.id}')" title="Excluir anotação" style="font-size: 0.74rem;">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /**
+     * Alterna o status de fixação (📌) de uma anotação com feedback instantâneo de 0ms.
+     */
+    function alternarFixadoAnotacao(id) {
+      const notas = carregarMinhasAnotacoes();
+      const n = notas.find(x => x.id === id);
+      if (!n) return;
+
+      n.fixado = !n.fixado;
+      n.dataAtualizacao = new Date().toISOString();
+      salvarAnotacoesStorage(notas);
+      atualizarAbaAnotacoes();
+      mostrarToast(n.fixado ? '📌 Anotação fixada no topo!' : 'Anotação desafixada.');
+    }
+
+    /**
+     * Alterna item de checklist diretamente no cartão.
+     */
+    function alternarChecklistItemAnotacao(anotacaoId, itemIdx) {
+      const notas = carregarMinhasAnotacoes();
+      const n = notas.find(x => x.id === anotacaoId);
+      if (!n || !n.checklist || !n.checklist[itemIdx]) return;
+
+      n.checklist[itemIdx].concluido = !n.checklist[itemIdx].concluido;
+      n.dataAtualizacao = new Date().toISOString();
+      salvarAnotacoesStorage(notas);
+      atualizarAbaAnotacoes();
+    }
+
+    /**
+     * Copia o conteúdo da anotação formatado para a área de transferência.
+     */
+    function copiarTextoAnotacao(id) {
+      const notas = carregarMinhasAnotacoes();
+      const n = notas.find(x => x.id === id);
+      if (!n) return;
+
+      let texto = `[${n.categoria || 'Geral'}] ${n.titulo}\n`;
+      if (n.conteudo) {
+        texto += `\n${n.conteudo}\n`;
+      }
+      if (n.checklist && n.checklist.length > 0) {
+        texto += `\nChecklist:\n`;
+        n.checklist.forEach(c => {
+          texto += `${c.concluido ? '[x]' : '[ ]'} ${c.texto}\n`;
+        });
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(() => {
+          mostrarToast('📋 Copiado para a área de transferência!');
+        }).catch(() => {
+          mostrarToast('Texto copiado!');
+        });
+      } else {
+        mostrarToast('Texto copiado!');
+      }
+    }
+
+    /**
+     * Exclui uma anotação mediante confirmação do usuário.
+     */
+    function excluirAnotacaoConfirm(id) {
+      if (!confirm('Deseja realmente excluir esta anotação pessoal?')) return;
+
+      let notas = carregarMinhasAnotacoes();
+      notas = notas.filter(x => x.id !== id);
+      salvarAnotacoesStorage(notas);
+      atualizarAbaAnotacoes();
+      mostrarToast('🗑️ Anotação excluída!');
+    }
+
+    /**
+     * Exporta uma anotação individual para download em arquivo .txt.
+     */
+    function exportarAnotacaoIndividual(id) {
+      const notas = carregarMinhasAnotacoes();
+      const n = notas.find(x => x.id === id);
+      if (!n) return;
+
+      let conteudoTxt = `SYS MANAGER - ANOTAÇÃO PESSOAL\n`;
+      conteudoTxt += `====================================================\n`;
+      conteudoTxt += `Usuário: ${appState.currentUser ? appState.currentUser.nome : 'Privado'}\n`;
+      conteudoTxt += `Título: ${n.titulo}\n`;
+      conteudoTxt += `Categoria: ${n.categoria || 'Geral'}\n`;
+      conteudoTxt += `Data: ${formatarDataHoraAnotacao(n.dataAtualizacao || n.dataCriacao)}\n`;
+      conteudoTxt += `====================================================\n\n`;
+
+      if (n.conteudo) {
+        conteudoTxt += `CONTEÚDO:\n${n.conteudo}\n\n`;
+      }
+
+      if (n.checklist && n.checklist.length > 0) {
+        conteudoTxt += `CHECKLIST:\n`;
+        n.checklist.forEach(c => {
+          conteudoTxt += `${c.concluido ? '[X]' : '[ ]'} ${c.texto}\n`;
+        });
+        conteudoTxt += `\n`;
+      }
+
+      const blob = new Blob([conteudoTxt], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const nomeLimpo = (n.titulo || 'anotacao').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
+      a.href = url;
+      a.download = `Anotacao_${nomeLimpo}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      mostrarToast('📥 Download iniciado!');
+    }
+
+    /**
+     * Exporta todas as anotações do usuário ativo em um único arquivo .txt consolidado.
+     */
+    function exportarMinhasAnotacoes() {
+      const notas = carregarMinhasAnotacoes();
+      if (notas.length === 0) {
+        alert('Você não possui anotações para exportar.');
+        return;
+      }
+
+      let conteudoTxt = `SYS MANAGER - CADERNO DE ANOTAÇÕES PESSOAIS\n`;
+      conteudoTxt += `======================================================================\n`;
+      conteudoTxt += `Usuário: ${appState.currentUser ? appState.currentUser.nome : 'Privado'}\n`;
+      conteudoTxt += `Data de Exportação: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}\n`;
+      conteudoTxt += `Total de Anotações: ${notas.length}\n`;
+      conteudoTxt += `======================================================================\n\n`;
+
+      notas.forEach((n, idx) => {
+        conteudoTxt += `----------------------------------------------------------------------\n`;
+        conteudoTxt += `#${idx + 1} - [${n.categoria || 'Geral'}] ${n.titulo} ${n.fixado ? '📌 [FIXADA]' : ''}\n`;
+        conteudoTxt += `Data: ${formatarDataHoraAnotacao(n.dataAtualizacao || n.dataCriacao)}\n`;
+        conteudoTxt += `----------------------------------------------------------------------\n`;
+        if (n.conteudo) {
+          conteudoTxt += `${n.conteudo}\n\n`;
+        }
+        if (n.checklist && n.checklist.length > 0) {
+          conteudoTxt += `Checklist:\n`;
+          n.checklist.forEach(c => {
+            conteudoTxt += `  ${c.concluido ? '[X]' : '[ ]'} ${c.texto}\n`;
+          });
+          conteudoTxt += `\n`;
+        }
+        conteudoTxt += `\n`;
+      });
+
+      const blob = new Blob([conteudoTxt], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Minhas_Anotacoes_SysManager.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      mostrarToast('📥 Todas as suas anotações foram exportadas!');
+    }
+
+    /**
+     * Abre modal para criar nova anotação pessoal.
+     */
+    function abrirModalNovaAnotacao() {
+      document.getElementById('anotacaoEditId').value = '';
+      document.getElementById('modalAnotacaoTituloPrincipal').innerText = 'Nova Anotação Pessoal';
+      document.getElementById('anotacaoTituloInput').value = '';
+      document.getElementById('anotacaoConteudoInput').value = '';
+      document.getElementById('anotacaoFixadoCheck').checked = false;
+
+      // Reseta categoria
+      const selCat = document.getElementById('anotacaoCategoriaSelect');
+      if (selCat) selCat.value = 'Geral';
+      const inputNovaCat = document.getElementById('anotacaoNovaCategoriaInput');
+      if (inputNovaCat) {
+        inputNovaCat.value = '';
+        inputNovaCat.classList.add('d-none');
+      }
+
+      // Reseta cor
+      selecionarCorModalAnotacao('padrao');
+
+      // Reseta checklist temporário
+      anotacoesChecklistTemp = [];
+      renderizarListaChecklistModal();
+
+      const modalEl = document.getElementById('modalAnotacao');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+        setTimeout(() => {
+          const inp = document.getElementById('anotacaoTituloInput');
+          if (inp) inp.focus();
+        }, 200);
+      }
+    }
+
+    /**
+     * Abre modal para editar anotação existente.
+     */
+    function abrirModalEditarAnotacao(id) {
+      const notas = carregarMinhasAnotacoes();
+      const n = notas.find(x => x.id === id);
+      if (!n) return;
+
+      document.getElementById('anotacaoEditId').value = n.id;
+      document.getElementById('modalAnotacaoTituloPrincipal').innerText = 'Editar Anotação Pessoal';
+      document.getElementById('anotacaoTituloInput').value = n.titulo || '';
+      document.getElementById('anotacaoConteudoInput').value = n.conteudo || '';
+      document.getElementById('anotacaoFixadoCheck').checked = !!n.fixado;
+
+      // Configura categoria
+      const selCat = document.getElementById('anotacaoCategoriaSelect');
+      const inputNovaCat = document.getElementById('anotacaoNovaCategoriaInput');
+      let catEncontrada = false;
+      if (selCat) {
+        for (let i = 0; i < selCat.options.length; i++) {
+          if (selCat.options[i].value === n.categoria) {
+            selCat.selectedIndex = i;
+            catEncontrada = true;
+            break;
+          }
+        }
+        if (!catEncontrada) {
+          selCat.value = '__NOVA__';
+          if (inputNovaCat) {
+            inputNovaCat.value = n.categoria || '';
+            inputNovaCat.classList.remove('d-none');
+          }
+        } else {
+          if (inputNovaCat) inputNovaCat.classList.add('d-none');
+        }
+      }
+
+      // Configura cor
+      selecionarCorModalAnotacao(n.cor || 'padrao');
+
+      // Clona checklist
+      anotacoesChecklistTemp = JSON.parse(JSON.stringify(n.checklist || []));
+      renderizarListaChecklistModal();
+
+      const modalEl = document.getElementById('modalAnotacao');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+    }
+
+    /**
+     * Alterna a cor selecionada na paleta do modal.
+     */
+    function selecionarCorModalAnotacao(cor) {
+      const inpCor = document.getElementById('anotacaoCorInput');
+      if (inpCor) inpCor.value = cor;
+
+      const botoes = document.querySelectorAll('#paletaCoresAnotacao .btn-seletor-cor');
+      botoes.forEach(b => {
+        if (b.getAttribute('data-cor') === cor) {
+          b.classList.add('active');
+        } else {
+          b.classList.remove('active');
+        }
+      });
+    }
+
+    /**
+     * Trata mudança no select de categoria no modal.
+     */
+    function aoMudarCategoriaSelectAnotacao() {
+      const sel = document.getElementById('anotacaoCategoriaSelect');
+      const inputNova = document.getElementById('anotacaoNovaCategoriaInput');
+      if (!sel || !inputNova) return;
+
+      if (sel.value === '__NOVA__') {
+        inputNova.classList.remove('d-none');
+        inputNova.focus();
+      } else {
+        inputNova.classList.add('d-none');
+      }
+    }
+
+    /**
+     * Checklist no modal: adiciona novo item.
+     */
+    function adicionarItemChecklistModal() {
+      const input = document.getElementById('anotacaoNovoItemChecklistInput');
+      if (!input) return;
+      const texto = input.value.trim();
+      if (!texto) return;
+
+      anotacoesChecklistTemp.push({
+        id: 'chk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        texto: texto,
+        concluido: false
+      });
+
+      input.value = '';
+      renderizarListaChecklistModal();
+      input.focus();
+    }
+
+    /**
+     * Checklist no modal: remove item pelo índice.
+     */
+    function removerItemChecklistModal(idx) {
+      if (idx >= 0 && idx < anotacoesChecklistTemp.length) {
+        anotacoesChecklistTemp.splice(idx, 1);
+        renderizarListaChecklistModal();
+      }
+    }
+
+    /**
+     * Renderiza a lista interativa de itens do checklist dentro do modal.
+     */
+    function renderizarListaChecklistModal() {
+      const ul = document.getElementById('listaChecklistModal');
+      if (!ul) return;
+
+      if (anotacoesChecklistTemp.length === 0) {
+        ul.innerHTML = '<li class="list-group-item text-muted small fst-italic py-2" id="emptyChecklistModalMsg">Nenhum item adicionado ao checklist ainda.</li>';
+        return;
+      }
+
+      ul.innerHTML = anotacoesChecklistTemp.map((item, idx) => `
+        <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fa-regular fa-square-check text-success"></i>
+            <span class="small text-dark">${item.texto}</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none" onclick="removerItemChecklistModal(${idx})" title="Remover item">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </li>
+      `).join('');
+    }
+
+    /**
+     * Captura tecla Enter no input de checklist do modal.
+     */
+    function aoPressionarEnterItemChecklist(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        adicionarItemChecklistModal();
+      }
+    }
+
+    /**
+     * Permite atalho Ctrl+Enter no textarea para salvar rapidamente.
+     */
+    function aoPressionarTecladoConteudoAnotacao(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        salvarAnotacaoInstantanea();
+      }
+    }
+
+    /**
+     * Salva a anotação (nova ou edição) com persistência local instantânea.
+     */
+    function salvarAnotacaoInstantanea() {
+      const idEdit = document.getElementById('anotacaoEditId').value;
+      const tituloInput = document.getElementById('anotacaoTituloInput');
+      const titulo = tituloInput ? tituloInput.value.trim() : '';
+
+      if (!titulo) {
+        alert('Por favor, informe um título para a anotação.');
+        if (tituloInput) tituloInput.focus();
+        return;
+      }
+
+      // Categoria
+      const selCat = document.getElementById('anotacaoCategoriaSelect');
+      const inputNovaCat = document.getElementById('anotacaoNovaCategoriaInput');
+      let categoria = 'Geral';
+      if (selCat) {
+        if (selCat.value === '__NOVA__') {
+          categoria = (inputNovaCat ? inputNovaCat.value.trim() : '') || 'Geral';
+        } else {
+          categoria = selCat.value;
+        }
+      }
+
+      const cor = document.getElementById('anotacaoCorInput').value || 'padrao';
+      const fixado = document.getElementById('anotacaoFixadoCheck').checked;
+      const conteudo = document.getElementById('anotacaoConteudoInput').value;
+
+      const notas = carregarMinhasAnotacoes();
+      const agora = new Date().toISOString();
+
+      if (idEdit) {
+        // Edição
+        const n = notas.find(x => x.id === idEdit);
+        if (n) {
+          n.titulo = titulo;
+          n.categoria = categoria;
+          n.cor = cor;
+          n.fixado = fixado;
+          n.conteudo = conteudo;
+          n.checklist = JSON.parse(JSON.stringify(anotacoesChecklistTemp));
+          n.dataAtualizacao = agora;
+        }
+      } else {
+        // Nova Anotação
+        const nova = {
+          id: 'NOTE-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+          titulo: titulo,
+          categoria: categoria,
+          cor: cor,
+          fixado: fixado,
+          conteudo: conteudo,
+          checklist: JSON.parse(JSON.stringify(anotacoesChecklistTemp)),
+          dataCriacao: agora,
+          dataAtualizacao: agora
+        };
+        notas.unshift(nova);
+      }
+
+      salvarAnotacoesStorage(notas);
+
+      // Fecha modal
+      const modalEl = document.getElementById('modalAnotacao');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+      }
+
+      // Atualiza interface
+      atualizarAbaAnotacoes();
+      mostrarToast(idEdit ? '✏️ Anotação atualizada!' : '💾 Anotação salva com sucesso!');
+    }
+
+    /**
+     * Handlers de pesquisa e filtros
+     */
+    function aoDigitarPesquisaAnotacoes() {
+      atualizarAbaAnotacoes();
+    }
+
+    function limparPesquisaAnotacoes() {
+      const campo = document.getElementById('pesquisaAnotacoesInput');
+      if (campo) campo.value = '';
+      atualizarAbaAnotacoes();
+    }
+
+    function filtrarAnotacoesPorTag(tag) {
+      anotacoesFiltroTag = tag;
+      atualizarAbaAnotacoes();
+    }
+
+    function aoMudarOrdemAnotacoes() {
+      atualizarAbaAnotacoes();
+    }
+
+    function alternarModoVisualizacaoAnotacoes(modo) {
+      anotacoesModoVisualizacao = modo;
+
+      const btnGrid = document.getElementById('btnAnotacoesModoGrid');
+      const btnList = document.getElementById('btnAnotacoesModoList');
+
+      if (btnGrid && btnList) {
+        if (modo === 'grid') {
+          btnGrid.classList.add('active');
+          btnList.classList.remove('active');
+        } else {
+          btnList.classList.add('active');
+          btnGrid.classList.remove('active');
+        }
+      }
+
+      atualizarAbaAnotacoes();
     }
 
     function formatarData(dataStr) {
