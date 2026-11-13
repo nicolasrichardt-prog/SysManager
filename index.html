@@ -814,13 +814,20 @@
         </li>
       </ul>
 
-      <div class="pb-2">
+      <div class="pb-2 d-flex align-items-center gap-2 flex-wrap">
         <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm d-inline-flex align-items-center gap-2" 
                 onclick="abrirModalNovaDemanda()" 
                 title="Cadastrar Nova Demanda" 
                 id="btnCriarNovaDemandaTop"
                 style="font-size: 0.84rem; letter-spacing: 0.2px;">
           <i class="fa-solid fa-plus"></i> Nova Demanda
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm d-inline-flex align-items-center gap-2" 
+                onclick="abrirModalNovaDemandaFutura()" 
+                title="Cadastrar Nova Demanda Futura" 
+                id="btnCriarNovaDemandaFuturaTop"
+                style="font-size: 0.84rem; letter-spacing: 0.2px; background-color: #4f46e5; color: #ffffff; border: 1px solid #4338ca;">
+          <i class="fa-solid fa-plus"></i> Nova Demanda Futura
         </button>
       </div>
     </div>
@@ -914,100 +921,133 @@
           </div>
         </div>
 
-        <!-- BARRA HORIZONTAL DE ACESSO RÁPIDO: 4 CATEGORIAS EXECUTIVAS -->
-        <div class="row g-3 mb-4" id="gatilhosDrawerDemandas">
+        <!-- BARRA HORIZONTAL DE ACESSO RÁPIDO: 5 CATEGORIAS EXECUTIVAS -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-3 mb-4" id="gatilhosDrawerDemandas">
           
           <!-- 1. EM ANDAMENTO -->
-          <div class="col-xl-3 col-md-6 col-12">
+          <div class="col">
             <div class="card card-custom p-3 shadow-xs border-top border-primary border-3 hover-card-drawer h-100" 
                  onclick="abrirDrawerLista('emAndamento')" role="button" tabindex="0" title="Clique para abrir o painel lateral com as demandas Em Andamento">
               <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-                    <i class="fa-solid fa-spinner fa-spin fs-5"></i>
+                  <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-spinner fa-spin fs-6"></i>
                   </div>
                   <div>
-                    <h6 class="fw-bold mb-0 text-primary" style="font-size: 0.95rem;">Em Andamento</h6>
-                    <small class="text-muted" style="font-size: 0.74rem;">Na esteira de produção</small>
+                    <h6 class="fw-bold mb-0 text-primary" style="font-size: 0.9rem;">Em Andamento</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">Na esteira de produção</small>
                   </div>
                 </div>
                 <div class="text-end">
                   <span class="badge bg-primary text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdEmAndamentoAba">0</span>
-                  <div class="small text-primary fw-semibold mt-1" style="font-size: 0.72rem;">Ver lista &rarr;</div>
+                  <div class="small text-primary fw-semibold mt-1" style="font-size: 0.7rem;">Ver lista &rarr;</div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- 2. NÃO INICIADAS -->
-          <div class="col-xl-3 col-md-6 col-12">
+          <div class="col">
             <div class="card card-custom p-3 shadow-xs border-top border-info border-3 hover-card-drawer h-100" 
                  onclick="abrirDrawerLista('naoIniciadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com a fila de Não Iniciadas">
               <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-                    <i class="fa-solid fa-hourglass-start fs-5"></i>
+                  <div class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-hourglass-start fs-6"></i>
                   </div>
                   <div>
-                    <h6 class="fw-bold mb-0 text-info-emphasis" style="font-size: 0.95rem;">Não Iniciadas</h6>
-                    <small class="text-muted" style="font-size: 0.74rem;">Fila de espera aguardando</small>
+                    <h6 class="fw-bold mb-0 text-info-emphasis" style="font-size: 0.9rem;">Não Iniciadas</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">Fila de espera aguardando</small>
                   </div>
                 </div>
                 <div class="text-end">
                   <div class="d-flex align-items-center justify-content-end gap-1 mb-1">
                     <button type="button" class="btn btn-primary btn-sm rounded-pill px-2 py-0 fw-bold shadow-2xs" 
-                            style="font-size: 0.72rem; line-height: 1.5;" 
+                            style="font-size: 0.7rem; line-height: 1.5;" 
                             onclick="event.stopPropagation(); abrirModalNovaDemanda();" 
                             title="Cadastrar Nova Demanda">
                       <i class="fa-solid fa-plus me-1"></i>Nova
                     </button>
                     <span class="badge bg-info text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdNaoIniciadasAba">0</span>
                   </div>
-                  <div class="small text-info-emphasis fw-semibold" style="font-size: 0.72rem;">Ver fila &rarr;</div>
+                  <div class="small text-info-emphasis fw-semibold" style="font-size: 0.7rem;">Ver fila &rarr;</div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- 3. ATRASADAS -->
-          <div class="col-xl-3 col-md-6 col-12">
+          <div class="col">
             <div class="card card-custom p-3 shadow-xs border-top border-danger border-3 hover-card-drawer h-100" 
                  onclick="abrirDrawerLista('atrasadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Atrasadas">
               <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-                    <i class="fa-solid fa-triangle-exclamation fs-5"></i>
+                  <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-triangle-exclamation fs-6"></i>
                   </div>
                   <div>
-                    <h6 class="fw-bold mb-0 text-danger" style="font-size: 0.95rem;">Atrasadas</h6>
-                    <small class="text-muted" style="font-size: 0.74rem;">Fora do prazo previsto</small>
+                    <h6 class="fw-bold mb-0 text-danger" style="font-size: 0.9rem;">Atrasadas</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">Fora do prazo previsto</small>
                   </div>
                 </div>
                 <div class="text-end">
                   <span class="badge bg-danger text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdAtrasadasAba">0</span>
-                  <div class="small text-danger fw-semibold mt-1" style="font-size: 0.72rem;">Ver atrasos &rarr;</div>
+                  <div class="small text-danger fw-semibold mt-1" style="font-size: 0.7rem;">Ver atrasos &rarr;</div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- 4. CONCLUÍDAS -->
-          <div class="col-xl-3 col-md-6 col-12">
+          <div class="col">
             <div class="card card-custom p-3 shadow-xs border-top border-success border-3 hover-card-drawer h-100" 
                  onclick="abrirDrawerLista('concluidas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Concluídas">
               <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-                    <i class="fa-solid fa-circle-check fs-5"></i>
+                  <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-circle-check fs-6"></i>
                   </div>
                   <div>
-                    <h6 class="fw-bold mb-0 text-success" style="font-size: 0.95rem;">Concluídas</h6>
-                    <small class="text-muted" style="font-size: 0.74rem;">Histórico de entregas</small>
+                    <h6 class="fw-bold mb-0 text-success" style="font-size: 0.9rem;">Concluídas</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">Histórico de entregas</small>
                   </div>
                 </div>
                 <div class="text-end">
                   <span class="badge bg-success text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdConcluidasAba">0</span>
-                  <div class="small text-success fw-semibold mt-1" style="font-size: 0.72rem;">Ver histórico &rarr;</div>
+                  <div class="small text-success fw-semibold mt-1" style="font-size: 0.7rem;">Ver histórico &rarr;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. DEMANDA FUTURA -->
+          <div class="col">
+            <div class="card card-custom p-3 shadow-xs border-top border-3 hover-card-drawer h-100"
+                 style="border-top-color: #6366f1 !important;"
+                 id="cardListaDemandaFutura"
+                 onclick="abrirDrawerLista('demandasFuturas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com Demandas Futuras agendadas">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: #eef2ff; color: #4f46e5;">
+                    <i class="fa-solid fa-calendar-days fs-6"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold mb-0" style="font-size: 0.9rem; color: #4f46e5;">Demanda Futura</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">Agendadas p/ esteira</small>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <div class="d-flex align-items-center justify-content-end gap-1 mb-1">
+                    <button type="button" class="btn btn-sm rounded-pill px-2 py-0 fw-bold shadow-2xs"
+                            id="btnNovaDemandaFuturaCard"
+                            style="font-size: 0.7rem; line-height: 1.5; background-color: #4f46e5; color: #ffffff;"
+                            onclick="event.stopPropagation(); abrirModalNovaDemandaFutura();"
+                            title="Nova Demanda Futura">
+                      <i class="fa-solid fa-plus me-1"></i>Nova
+                    </button>
+                    <span class="badge text-white fs-6 font-monospace px-2 py-1 rounded-pill" style="background-color: #4f46e5;" id="badgeQtdDemandasFuturasAba">0</span>
+                  </div>
+                  <div class="small fw-semibold" style="font-size: 0.7rem; color: #4f46e5;">Ver agendadas &rarr;</div>
                 </div>
               </div>
             </div>
@@ -1353,14 +1393,19 @@
                 </div>
               </div>
 
-              <!-- CONTROLES PARA ADICIONAR CRITÉRIO E REDEFINIR -->
-              <div class="d-flex align-items-center gap-2">
+              <!-- CONTROLES PARA COMBINAR CLIQUES, ADICIONAR CRITÉRIO E REDEFINIR -->
+              <div class="d-flex align-items-center flex-wrap gap-2">
+                <div class="form-check form-switch mb-0 d-inline-flex align-items-center gap-1 bg-light border rounded-pill px-2 py-1" title="Quando ativado, clicar em outras colunas da tabela acumula critérios em ordem (ex: Desenvolvedor → Status)">
+                  <input class="form-check-input m-0 cursor-pointer" type="checkbox" role="switch" id="chkModoMultiSortCombinado" checked onchange="alternarModoMultiSortCombinado(this.checked)">
+                  <label class="form-check-label small fw-semibold text-dark cursor-pointer" for="chkModoMultiSortCombinado" style="font-size: 0.72rem; user-select: none;">Combinar cliques</label>
+                </div>
+
                 <!-- DROPDOWN: + ADICIONAR CRITÉRIO -->
                 <div class="dropdown">
                   <button class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-2xs d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.75rem;">
                     <i class="fa-solid fa-plus"></i> Adicionar Critério
                   </button>
-                  <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-1" id="dropdownOpcoesMultiSort" style="font-size: 0.80rem; min-width: 200px;">
+                  <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 p-1" id="dropdownOpcoesMultiSort" style="font-size: 0.80rem; min-width: 210px;">
                   </ul>
                 </div>
 
@@ -1939,6 +1984,95 @@
     </div>
   </div>
 
+  <!-- MODAL: CADASTRAR / EDITAR DEMANDA FUTURA -->
+  <div class="modal fade" id="modalNovaDemandaFutura" tabindex="-1" aria-labelledby="modalNovaDemandaFuturaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+        <div class="modal-header text-white" style="background: linear-gradient(135deg, #312e81 0%, #4f46e5 100%);">
+          <h5 class="modal-title fw-bold mb-0" id="modalNovaDemandaFuturaLabel">
+            <i class="fa-solid fa-calendar-days me-2"></i><span id="modalFuturoTituloHeader">Nova Demanda Futura</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="futuroId" value="">
+
+          <!-- MÓDULO / DEMANDA EXTERNA -->
+          <div class="mb-3 position-relative">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label class="form-label small fw-bold mb-0">
+                <i class="fa-solid fa-cube me-1" style="color: #4f46e5;"></i> Módulo / Demanda Externa:
+              </label>
+              <div class="form-check m-0 d-flex align-items-center">
+                <input class="form-check-input mt-0 me-1" type="checkbox" id="futuroDemandaExterna" onchange="aoAlternarDemandaExternaFutura()" style="cursor: pointer;">
+                <label class="form-check-label small fw-semibold text-dark user-select-none" for="futuroDemandaExterna" style="cursor: pointer;">
+                  Demanda Externa
+                </label>
+              </div>
+            </div>
+            <div class="input-group" id="inputGroupFuturoModulo">
+              <span class="input-group-text bg-white border-end-0" id="addonLupaFuturoModulo" style="color: #4f46e5;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" class="form-control border-start-0 ps-0" id="futuroModuloInput" list="listaModulosDatalist" placeholder="Pesquisar módulo..." value="SIOPLEEx" autocomplete="off" onfocus="this.select()">
+              <button class="btn btn-outline-secondary dropdown-toggle" id="btnDropdownFuturoModulo" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Ver lista de módulos"></button>
+              <ul class="dropdown-menu dropdown-menu-end shadow w-100" style="max-height: 240px; overflow-y: auto;" id="futuroModuloDropdownMenu">
+              </ul>
+            </div>
+          </div>
+
+          <!-- NOME DA DEMANDA -->
+          <div class="mb-3">
+            <label class="form-label small fw-bold" for="futuroTitulo">
+              <i class="fa-solid fa-list-check me-1" style="color: #4f46e5;"></i> Nome da Demanda:
+            </label>
+            <input type="text" class="form-control" id="futuroTitulo" placeholder="Ex: Implementar integração com módulo de Relatórios">
+          </div>
+
+          <!-- HORÁRIO (COM TOOLTIP OBRIGATÓRIO) -->
+          <div class="mb-3">
+            <label class="form-label small fw-bold d-inline-flex align-items-center gap-1"
+                   for="futuroDataHora"
+                   id="labelFuturoHorario"
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="top"
+                   data-bs-title="Nesse horário a Demanda entrará automaticamente na Esteira de Produção e 24 horas antes dessa Demanda será enviado um e-mail informando"
+                   title="Nesse horário a Demanda entrará automaticamente na Esteira de Produção e 24 horas antes dessa Demanda será enviado um e-mail informando"
+                   style="cursor: help;">
+              <i class="fa-regular fa-clock" style="color: #4f46e5;"></i>
+              <span style="border-bottom: 1px dotted #4f46e5;">Horário:</span>
+              <i class="fa-solid fa-circle-info ms-1" style="color: #4f46e5;" aria-hidden="true"></i>
+            </label>
+            <input type="datetime-local" class="form-control fw-semibold" id="futuroDataHora">
+          </div>
+
+          <!-- DESENVOLVEDOR RESPONSÁVEL -->
+          <div class="mb-3">
+            <label class="form-label small fw-bold" for="futuroDevSelect">
+              <i class="fa-solid fa-user me-1" style="color: #4f46e5;"></i> Desenvolvedor Responsável:
+            </label>
+            <select class="form-select" id="futuroDevSelect"></select>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 border">
+            <div class="d-flex align-items-start gap-2 text-muted small">
+              <i class="fa-solid fa-envelope-open-text mt-1 fs-6" style="color: #4f46e5;"></i>
+              <div>
+                Um aviso por e-mail será enviado automaticamente <strong>24 horas antes</strong> do horário agendado (via <code>sysmanager.sm@gmail.com</code>), e no horário definido a demanda entrará automaticamente na <strong>Esteira de Produção</strong>.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn fw-semibold text-white" id="btnConfirmarNovaDemandaFutura" onclick="salvarDemandaFuturaInstantanea()" style="background-color: #4f46e5; border-color: #4338ca;">
+            <i class="fa-solid fa-calendar-check me-1"></i> <span id="btnFuturoLabelSalvar">Agendar Demanda Futura</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: COLOCAR DEMANDA NA ESTEIRA (Define o prazo de conclusão) -->
   <div class="modal fade" id="modalIniciarDemandaNaEsteira" tabindex="-1" aria-labelledby="modalIniciarDemandaNaEsteiraLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -2283,7 +2417,8 @@
       currentUser: null,
       usuarios: [],
       tarefas: [],
-      solicitacoes: []
+      solicitacoes: [],
+      demandasFuturas: []
     };
 
     // 22 Módulos Oficiais do Sistema
@@ -2315,9 +2450,19 @@
     let relatorioMultiSort = [
       { coluna: 'devNome', direcao: 'ASC' }
     ];
+    let relatorioMultiSortCombinado = true;
     let relatorioSortColuna = 'devNome';
     let relatorioSortDirecao = 'ASC';
     let relatorioFiltradoAtual = [];
+
+    function alternarModoMultiSortCombinado(ativo) {
+      relatorioMultiSortCombinado = Boolean(ativo);
+      mostrarToast(
+        relatorioMultiSortCombinado
+          ? 'Modo Multi-Sort ativado: clicar em outras colunas acumula a ordenação (ex: Desenvolvedor → Status).'
+          : 'Modo critério único: clicar em outra coluna substitui a ordenação.'
+      );
+    }
 
     function limparNomeDev(nome) {
       if (!nome) return '';
@@ -2337,6 +2482,7 @@
       const datalist = document.getElementById('listaModulosDatalist');
       const dropdown = document.getElementById('taskModuloDropdownMenu');
       const editDropdown = document.getElementById('editTaskModuloDropdownMenu');
+      const futuroDropdown = document.getElementById('futuroModuloDropdownMenu');
       const selectModuloFiltro = document.getElementById('filtroRelatorioModulo');
 
       if (datalist && datalist.children.length === 0) {
@@ -2350,6 +2496,11 @@
       if (editDropdown && editDropdown.children.length === 0) {
         editDropdown.innerHTML = LISTA_MODULOS.map(m => `
           <li><a class="dropdown-item py-1 small" href="javascript:void(0)" onclick="selecionarModuloEdicao('${m}')"><i class="fa-solid fa-cube text-primary me-2"></i>${m}</a></li>
+        `).join('');
+      }
+      if (futuroDropdown && futuroDropdown.children.length === 0) {
+        futuroDropdown.innerHTML = LISTA_MODULOS.map(m => `
+          <li><a class="dropdown-item py-1 small" href="javascript:void(0)" onclick="selecionarModuloFuturo('${m}')"><i class="fa-solid fa-cube me-2" style="color: #4f46e5;"></i>${m}</a></li>
         `).join('');
       }
       if (selectModuloFiltro && selectModuloFiltro.options.length <= 1) {
@@ -2371,6 +2522,53 @@
       if (check && check.checked) return;
       const input = document.getElementById('editTaskModuloInput');
       if (input) input.value = mod;
+    }
+
+    function selecionarModuloFuturo(mod) {
+      const check = document.getElementById('futuroDemandaExterna');
+      if (check && check.checked) return;
+      const input = document.getElementById('futuroModuloInput');
+      if (input) input.value = mod;
+    }
+
+    function aoAlternarDemandaExternaFutura() {
+      const check = document.getElementById('futuroDemandaExterna');
+      const input = document.getElementById('futuroModuloInput');
+      const btnDropdown = document.getElementById('btnDropdownFuturoModulo');
+      const addonLupa = document.getElementById('addonLupaFuturoModulo');
+      const isChecked = check ? check.checked : false;
+
+      if (isChecked) {
+        if (input) {
+          if (!input.dataset.prevVal) {
+            input.dataset.prevVal = input.value || 'SIOPLEEx';
+          }
+          input.value = 'Demanda Externa';
+          input.disabled = true;
+          input.classList.add('bg-light', 'text-muted');
+        }
+        if (btnDropdown) {
+          btnDropdown.disabled = true;
+          btnDropdown.classList.add('disabled');
+        }
+        if (addonLupa) {
+          addonLupa.classList.add('bg-light', 'text-muted');
+        }
+      } else {
+        if (input) {
+          input.disabled = false;
+          input.value = input.dataset.prevVal || 'SIOPLEEx';
+          input.dataset.prevVal = '';
+          input.classList.remove('bg-light', 'text-muted');
+        }
+        if (btnDropdown) {
+          btnDropdown.disabled = false;
+          btnDropdown.classList.remove('disabled');
+        }
+        if (addonLupa) {
+          addonLupa.classList.remove('bg-light', 'text-muted');
+        }
+      }
     }
 
     function aoAlternarDemandaExterna() {
@@ -2475,33 +2673,26 @@
      */
     function ordenarRelatorioPorColuna(coluna, event) {
       const isShift = event && (event.shiftKey || event.ctrlKey || event.metaKey);
+      const modoCombinado = relatorioMultiSortCombinado || isShift;
       const idx = relatorioMultiSort.findIndex(c => c.coluna === coluna);
 
-      if (isShift) {
-        // Shift + Clique: Adiciona como critério composto ou alterna
+      if (modoCombinado) {
+        // Modo Multi-Sort Combinado (padrão ou Shift+Clique): acumula critérios em ordem ou alterna direção
         if (idx !== -1) {
-          if (relatorioMultiSort[idx].direcao === 'ASC') {
-            relatorioMultiSort[idx].direcao = 'DESC';
+          if (isShift && relatorioMultiSort[idx].direcao === 'DESC' && relatorioMultiSort.length > 1) {
+            relatorioMultiSort.splice(idx, 1);
           } else {
-            if (relatorioMultiSort.length > 1) {
-              relatorioMultiSort.splice(idx, 1);
-            } else {
-              relatorioMultiSort[idx].direcao = 'ASC';
-            }
+            relatorioMultiSort[idx].direcao = (relatorioMultiSort[idx].direcao === 'ASC') ? 'DESC' : 'ASC';
           }
         } else {
           const dirPadrao = ['num', 'modulo', 'titulo', 'devNome', 'status'].includes(coluna) ? 'ASC' : 'DESC';
           relatorioMultiSort.push({ coluna: coluna, direcao: dirPadrao });
         }
       } else {
-        // Clique Normal
+        // Modo critério único
         if (relatorioMultiSort.length === 1 && relatorioMultiSort[0].coluna === coluna) {
           relatorioMultiSort[0].direcao = (relatorioMultiSort[0].direcao === 'ASC') ? 'DESC' : 'ASC';
-        } else if (idx !== -1 && relatorioMultiSort.length > 1) {
-          // Se clicou em uma das colunas já presentes no multi-sort, inverte apenas sua direção
-          relatorioMultiSort[idx].direcao = (relatorioMultiSort[idx].direcao === 'ASC') ? 'DESC' : 'ASC';
         } else {
-          // Define a coluna clicada como critério primário
           const dirPadrao = ['num', 'modulo', 'titulo', 'devNome', 'status'].includes(coluna) ? 'ASC' : 'DESC';
           relatorioMultiSort = [{ coluna: coluna, direcao: dirPadrao }];
         }
@@ -2760,7 +2951,7 @@
         if (action === 'getAppData') runner.getAppData((data && data.email) || '');
         else if (action === 'verificarEmailLogin') runner.verificarEmailLogin((data && data.email) || '');
         else if (action === 'cadastrarTarefa') runner.cadastrarTarefa(data);
-        else if (action === 'selecionarTarefaAtiva') runner.selecionarTarefaAtiva(data.tarefaId, data.devId);
+        else if (action === 'selecionarTarefaAtiva') runner.selecionarTarefaAtiva(data.tarefaId, data.devId, data);
         else if (action === 'concluirTarefa' || action === 'finalizarTarefa') runner.concluirTarefa(data.tarefaId, data.devId);
         else if (action === 'solicitarNovoPrazo') runner.solicitarNovoPrazo(data);
         else if (action === 'darCientePrazo') runner.darCientePrazo(data.solicitacaoId, data.gerenteNome || '');
@@ -2770,6 +2961,10 @@
         else if (action === 'cadastrarUsuario') runner.cadastrarUsuario(data);
         else if (action === 'atualizarUsuario') runner.atualizarUsuario(data);
         else if (action === 'excluirUsuario') runner.excluirUsuario(data.usuarioId || data.id || data);
+        else if (action === 'cadastrarDemandaFutura') runner.cadastrarDemandaFutura(data);
+        else if (action === 'atualizarDemandaFutura') runner.atualizarDemandaFutura(data);
+        else if (action === 'excluirDemandaFutura') runner.excluirDemandaFutura(data.demandaFuturaId || data.id || data);
+        else if (action === 'processarDemandasFuturas') runner.processarDemandasFuturasAgendadas();
       } else if (APPS_SCRIPT_URL) {
         fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -2856,6 +3051,315 @@
       bootstrap.Modal.getOrCreateInstance(el).show();
     }
 
+    function parseDataHoraFuturoLocal(val) {
+      if (!val) return null;
+      const s = val.toString().trim().replace(' ', 'T');
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+      if (m) {
+        return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), 0, 0);
+      }
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatarDataHoraFuturoPtBr(val) {
+      const dt = parseDataHoraFuturoLocal(val);
+      if (!dt) return val || '-';
+      const dd = String(dt.getDate()).padStart(2, '0');
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const yyyy = dt.getFullYear();
+      const hh = String(dt.getHours()).padStart(2, '0');
+      const mi = String(dt.getMinutes()).padStart(2, '0');
+      return `${dd}/${mm}/${yyyy} às ${hh}:${mi}`;
+    }
+
+    function formatarInputDateTimeLocal(dt) {
+      const yyyy = dt.getFullYear();
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const dd = String(dt.getDate()).padStart(2, '0');
+      const hh = String(dt.getHours()).padStart(2, '0');
+      const mi = String(dt.getMinutes()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+    }
+
+    function obterDemandasFuturasLocais() {
+      try {
+        const raw = localStorage.getItem('SYSMANAGER_DEMANDAS_FUTURAS_LOCAIS');
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function salvarDemandasFuturasLocais(lista) {
+      try {
+        localStorage.setItem('SYSMANAGER_DEMANDAS_FUTURAS_LOCAIS', JSON.stringify(lista || []));
+      } catch (e) {}
+    }
+
+    function abrirModalNovaDemandaFutura(futuroId) {
+      popularModulosUI();
+      atualizarSelectsDev();
+
+      const el = document.getElementById('modalNovaDemandaFutura');
+      const inputId = document.getElementById('futuroId');
+      const headerTitulo = document.getElementById('modalFuturoTituloHeader');
+      const btnLabel = document.getElementById('btnFuturoLabelSalvar');
+      const checkExterna = document.getElementById('futuroDemandaExterna');
+      const moduloInput = document.getElementById('futuroModuloInput');
+      const tituloInput = document.getElementById('futuroTitulo');
+      const dataHoraInput = document.getElementById('futuroDataHora');
+      const devSelect = document.getElementById('futuroDevSelect');
+
+      const existente = futuroId
+        ? (appState.demandasFuturas || []).find(item => item.id === futuroId)
+        : null;
+
+      if (existente) {
+        if (inputId) inputId.value = existente.id;
+        if (headerTitulo) headerTitulo.innerText = 'Editar Demanda Futura';
+        if (btnLabel) btnLabel.innerText = 'Salvar Alterações';
+
+        const isExterna = Boolean(existente.demandaExterna || existente.modulo === 'Demanda Externa');
+        if (checkExterna) checkExterna.checked = isExterna;
+        if (moduloInput) moduloInput.dataset.prevVal = isExterna ? 'SIOPLEEx' : (existente.modulo || 'SIOPLEEx');
+        aoAlternarDemandaExternaFutura();
+        if (!isExterna && moduloInput) moduloInput.value = existente.modulo || 'SIOPLEEx';
+
+        if (tituloInput) tituloInput.value = existente.titulo || '';
+        if (dataHoraInput) dataHoraInput.value = (existente.dataHoraProgramada || '').slice(0, 16);
+        if (devSelect && existente.devId) devSelect.value = existente.devId;
+      } else {
+        if (inputId) inputId.value = '';
+        if (headerTitulo) headerTitulo.innerText = 'Nova Demanda Futura';
+        if (btnLabel) btnLabel.innerText = 'Agendar Demanda Futura';
+
+        if (checkExterna) checkExterna.checked = false;
+        if (moduloInput) moduloInput.dataset.prevVal = '';
+        aoAlternarDemandaExternaFutura();
+        if (moduloInput) moduloInput.value = 'SIOPLEEx';
+
+        if (tituloInput) tituloInput.value = '';
+        if (dataHoraInput) {
+          const padrao = new Date();
+          padrao.setDate(padrao.getDate() + 2);
+          padrao.setMinutes(0, 0, 0);
+          dataHoraInput.value = formatarInputDateTimeLocal(padrao);
+        }
+        if (devSelect && appState.currentUser) {
+          devSelect.value = appState.currentUser.id;
+        }
+      }
+
+      if (el) {
+        el.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(tipEl => {
+          bootstrap.Tooltip.getOrCreateInstance(tipEl);
+        });
+        bootstrap.Modal.getOrCreateInstance(el).show();
+      }
+    }
+
+    function salvarDemandaFuturaInstantanea() {
+      const futuroId = (document.getElementById('futuroId')?.value || '').trim();
+      const checkExterna = document.getElementById('futuroDemandaExterna');
+      const isExterna = checkExterna ? checkExterna.checked : false;
+      const moduloRaw = (document.getElementById('futuroModuloInput')?.value || 'SIOPLEEx').trim();
+      const modulo = isExterna ? 'Demanda Externa' : (moduloRaw || 'SIOPLEEx');
+      const titulo = (document.getElementById('futuroTitulo')?.value || '').trim();
+      const dataHoraProgramada = (document.getElementById('futuroDataHora')?.value || '').trim();
+
+      if (!titulo) {
+        alert('Informe o Nome da Demanda.');
+        return;
+      }
+      const dtProgramada = parseDataHoraFuturoLocal(dataHoraProgramada);
+      if (!dtProgramada) {
+        alert('Informe um Horário válido.');
+        return;
+      }
+
+      const devSelect = document.getElementById('futuroDevSelect');
+      let devId = appState.currentUser ? appState.currentUser.id : 'USR-1';
+      let devNome = appState.currentUser ? appState.currentUser.nome : 'Ten Nicolas';
+      let devEmail = appState.currentUser ? (appState.currentUser.email || '') : '';
+
+      if (devSelect && devSelect.value) {
+        devId = devSelect.value;
+        const usr = (appState.usuarios || []).find(u => u.id === devId);
+        if (usr) {
+          devNome = usr.nome;
+          devEmail = usr.email || '';
+        } else if (devSelect.selectedOptions && devSelect.selectedOptions[0]) {
+          devNome = devSelect.selectedOptions[0].innerText.replace(/\s*\(.*\)$/, '');
+        }
+      }
+
+      const isEdicao = Boolean(futuroId);
+      const idFinal = futuroId || ('DFU-TMP-' + Date.now());
+      const existente = isEdicao ? (appState.demandasFuturas || []).find(x => x.id === futuroId) : null;
+
+      const objFuturo = {
+        id: idFinal,
+        modulo: modulo,
+        demandaExterna: isExterna,
+        titulo: titulo,
+        dataHoraProgramada: dataHoraProgramada.slice(0, 16),
+        devId: devId,
+        devNome: devNome,
+        devEmail: devEmail,
+        status: 'Agendada',
+        email24hEnviado: (existente && existente.dataHoraProgramada === dataHoraProgramada.slice(0, 16)) ? Boolean(existente.email24hEnviado) : false,
+        dataEmail24h: (existente && existente.dataHoraProgramada === dataHoraProgramada.slice(0, 16)) ? (existente.dataEmail24h || '') : '',
+        tarefaGeradaId: '',
+        dataCriacao: (existente && existente.dataCriacao) || formatarInputDateTimeLocal(new Date())
+      };
+
+      if (!Array.isArray(appState.demandasFuturas)) appState.demandasFuturas = [];
+      if (isEdicao) {
+        appState.demandasFuturas = appState.demandasFuturas.map(item => item.id === idFinal ? objFuturo : item);
+      } else {
+        appState.demandasFuturas.push(objFuturo);
+      }
+      appState.demandasFuturas.sort((a, b) => (a.dataHoraProgramada || '').localeCompare(b.dataHoraProgramada || ''));
+
+      const locais = obterDemandasFuturasLocais().filter(x => x.id !== idFinal);
+      locais.push(objFuturo);
+      salvarDemandasFuturasLocais(locais);
+      try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
+
+      const modalEl = document.getElementById('modalNovaDemandaFutura');
+      if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+
+      verificarDemandasFuturasNoCliente();
+      atualizarAbaEsteira();
+      if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
+      mostrarToast(isEdicao ? 'Demanda Futura atualizada!' : 'Demanda Futura agendada!');
+
+      executarNoServidor(isEdicao ? 'atualizarDemandaFutura' : 'cadastrarDemandaFutura', objFuturo, (res) => {
+        if (res && res.success) {
+          if (!isEdicao && res.id) {
+            objFuturo.id = res.id;
+            const atual = obterDemandasFuturasLocais().filter(x => x.id !== idFinal && x.id !== res.id);
+            salvarDemandasFuturasLocais(atual);
+            try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
+            atualizarAbaEsteira();
+            if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
+          } else {
+            const atual = obterDemandasFuturasLocais().filter(x => x.id !== idFinal);
+            salvarDemandasFuturasLocais(atual);
+          }
+        }
+      }, () => {});
+    }
+
+    function excluirDemandaFuturaConfirm(futuroId) {
+      if (!futuroId) return;
+      if (!confirm('Deseja realmente excluir esta Demanda Futura agendada?')) return;
+
+      appState.demandasFuturas = (appState.demandasFuturas || []).filter(item => item.id !== futuroId);
+      const locais = obterDemandasFuturasLocais().filter(x => x.id !== futuroId);
+      salvarDemandasFuturasLocais(locais);
+
+      try {
+        const removidasRaw = localStorage.getItem('SYSMANAGER_DEMANDAS_FUTURAS_REMOVIDAS');
+        const removidas = removidasRaw ? JSON.parse(removidasRaw) : [];
+        if (Array.isArray(removidas) && !removidas.includes(futuroId)) {
+          removidas.push(futuroId);
+          localStorage.setItem('SYSMANAGER_DEMANDAS_FUTURAS_REMOVIDAS', JSON.stringify(removidas));
+        }
+        localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+      } catch (e) {}
+
+      atualizarAbaEsteira();
+      if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
+      mostrarToast('Demanda Futura excluída.');
+
+      executarNoServidor('excluirDemandaFutura', { demandaFuturaId: futuroId }, (res) => {
+        if (res && res.success) {
+          try {
+            const removidasRaw = localStorage.getItem('SYSMANAGER_DEMANDAS_FUTURAS_REMOVIDAS');
+            const removidas = removidasRaw ? JSON.parse(removidasRaw) : [];
+            if (Array.isArray(removidas)) {
+              localStorage.setItem('SYSMANAGER_DEMANDAS_FUTURAS_REMOVIDAS', JSON.stringify(removidas.filter(id => id !== futuroId)));
+            }
+          } catch (e) {}
+        }
+      }, () => {});
+    }
+
+    function verificarDemandasFuturasNoCliente() {
+      if (!Array.isArray(appState.demandasFuturas) || appState.demandasFuturas.length === 0) return false;
+      const agora = new Date();
+      let houvePromocao = false;
+      let precisaChamarServidor = false;
+
+      appState.demandasFuturas.forEach(df => {
+        if (!df || df.status !== 'Agendada') return;
+        const dtProg = parseDataHoraFuturoLocal(df.dataHoraProgramada);
+        if (!dtProg) return;
+
+        if (agora.getTime() >= dtProg.getTime()) {
+          df.status = 'Na Esteira';
+          const dtPrazo = new Date(dtProg.getTime());
+          dtPrazo.setDate(dtPrazo.getDate() + 1);
+
+          const taskIdGen = df.tarefaGeradaId || ('TSK-DF-' + Date.now() + '-' + Math.floor(Math.random() * 90 + 10));
+          df.tarefaGeradaId = taskIdGen;
+
+          const jaExisteNaLista = (appState.tarefas || []).some(t =>
+            t.id === taskIdGen ||
+            (t.demandaFuturaId && t.demandaFuturaId === df.id)
+          );
+
+          if (!jaExisteNaLista) {
+            const devHasActive = (appState.tarefas || []).some(t => t.devId === df.devId && t.status !== 'Concluída' && t.ativo);
+            const novaTask = {
+              id: taskIdGen,
+              demandaFuturaId: df.id,
+              modulo: df.demandaExterna ? 'Demanda Externa' : (df.modulo || 'SIOPLEEx'),
+              titulo: df.titulo,
+              descricao: `Entrada automática na Esteira de Produção via Demanda Futura (${formatarDataHoraFuturoPtBr(df.dataHoraProgramada)}).`,
+              devId: df.devId,
+              devNome: df.devNome,
+              diasEstimados: 1,
+              diasTrabalhados: 0,
+              dataInicio: formatarDataIso(dtProg),
+              dataInsercao: formatarDataIso(dtProg),
+              dataPrazo: formatarDataIso(dtPrazo),
+              status: 'Em Andamento',
+              ativo: !devHasActive,
+              urgencia: 'Media',
+              dataConclusao: ''
+            };
+            appState.tarefas.push(novaTask);
+          }
+
+          if (!String(df.id || '').startsWith('DFU-TMP-')) {
+            precisaChamarServidor = true;
+          }
+          houvePromocao = true;
+        }
+      });
+
+      if (houvePromocao) {
+        const locais = obterDemandasFuturasLocais().map(l => {
+          const match = appState.demandasFuturas.find(d => d.id === l.id);
+          return match ? match : l;
+        });
+        salvarDemandasFuturasLocais(locais);
+        try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
+
+        if (precisaChamarServidor) {
+          executarNoServidor('processarDemandasFuturas', {}, () => {}, () => {});
+        }
+        atualizarAbaEsteira();
+        if (drawerTipoAtual) renderizarConteudoDrawer();
+        mostrarToast('Demanda Futura entrou automaticamente na Esteira de Produção!');
+      }
+      return houvePromocao;
+    }
+
     function aoMudarDatasNovaDemanda() {
       const dtIniInput = document.getElementById('taskDataInicio');
       const dtFimInput = document.getElementById('taskDataPrazo');
@@ -2923,6 +3427,9 @@
       inicializarTooltips();
       popularModulosUI();
       atualizarLabelStatusRelatorio();
+      setInterval(() => {
+        verificarDemandasFuturasNoCliente();
+      }, 30000);
 
       // Sincronização automática ao alternar abas
       const tabRelBtn = document.getElementById('tab-relatorio-btn');
@@ -2959,7 +3466,11 @@
         const cache = localStorage.getItem('SYSMANAGER_CACHE');
         if (cache) {
           try {
-            renderizarDados(JSON.parse(cache));
+            const cacheParsed = JSON.parse(cache);
+            if (cacheParsed && typeof cacheParsed === 'object') {
+              cacheParsed.__fromCache = true;
+              renderizarDados(cacheParsed);
+            }
           } catch(e) {}
         }
       }
@@ -3148,6 +3659,7 @@
       if (confirm('Deseja realmente sair e trocar de conta Google?')) {
         localStorage.removeItem('SYSMANAGER_USER_EMAIL');
         localStorage.removeItem('SYSMANAGER_CACHE');
+        localStorage.removeItem('SYSMANAGER_LOCAL_EDITS');
         appState.currentUser = null;
         const input = document.getElementById('inputLoginEmail');
         if (input) input.value = '';
@@ -3167,12 +3679,45 @@
 
       fecharModalLogin();
 
+      const isAuthoritative = !(dados && dados.__fromCache);
+
       appState.usuarios = dados.usuarios || [];
-      appState.tarefas = dados.tarefas || [];
+      appState.tarefas = Array.isArray(dados.tarefas) ? dados.tarefas.map(t => ({ ...t })) : [];
       appState.solicitacoes = dados.solicitacoes || [];
 
-      // Aplica edições locais preservadas (garante que F5 NUNCA reverta uma edição)
-      aplicarEdicoesLocais(appState.tarefas);
+      // Reconcilia Demandas Futuras do servidor com pendências/edições locais
+      let servidorFuturas = Array.isArray(dados.demandasFuturas) ? dados.demandasFuturas.map(d => ({ ...d })) : [];
+      let removidasFuturas = [];
+      try {
+        const remRaw = localStorage.getItem('SYSMANAGER_DEMANDAS_FUTURAS_REMOVIDAS');
+        removidasFuturas = remRaw ? JSON.parse(remRaw) : [];
+        if (!Array.isArray(removidasFuturas)) removidasFuturas = [];
+      } catch (e) { removidasFuturas = []; }
+
+      servidorFuturas = servidorFuturas.filter(d => !removidasFuturas.includes(d.id));
+      const locaisFuturas = obterDemandasFuturasLocais();
+      const mapFuturas = new Map();
+      servidorFuturas.forEach(d => mapFuturas.set(d.id, d));
+      locaisFuturas.forEach(l => {
+        if (!removidasFuturas.includes(l.id)) {
+          // Mantém item local enquanto o servidor ainda não o devolveu ou se é edição recente
+          if (!mapFuturas.has(l.id) || String(l.id).startsWith('DFU-TMP-')) {
+            mapFuturas.set(l.id, { ...l });
+          } else if (isAuthoritative) {
+            // Servidor já possui esse ID, limpa cópia temporária depois
+          }
+        }
+      });
+      appState.demandasFuturas = Array.from(mapFuturas.values()).sort((a, b) =>
+        (a.dataHoraProgramada || '').localeCompare(b.dataHoraProgramada || '')
+      );
+      verificarDemandasFuturasNoCliente();
+
+      // Reconcilia e aplica apenas edições locais válidas/pendentes (remove fantasmas/duplicadas obsoletas)
+      aplicarEdicoesLocais(appState.tarefas, isAuthoritative);
+
+      // Remove eventuais duplicidades por ID ou demandas temporárias já refletidas pelo servidor
+      appState.tarefas = desduplicarTarefasEstado(appState.tarefas);
 
       // Sanitiza e restaura demandas não iniciadas (garante que demandas sem prazo permaneçam intocadas na fila)
       sanitizarECorrigirDemandasNaoIniciadas();
@@ -3357,10 +3902,12 @@
       salvarEdicaoLocalDemanda(tarefa);
 
       // Se a demanda concluída era a que estava em foco, promove outra em andamento para foco
+      let outraPromovidaId = null;
       if (eraAtiva) {
         const outraEmAndamento = appState.tarefas.find(t => t.devId === tarefa.devId && t.id !== tarefa.id && t.status === 'Em Andamento');
         if (outraEmAndamento) {
           outraEmAndamento.ativo = true;
+          outraPromovidaId = outraEmAndamento.id;
           salvarEdicaoLocalDemanda(outraEmAndamento);
         }
       }
@@ -3379,6 +3926,14 @@
         devId: tarefa.devId,
         dataConclusao: tarefa.dataConclusao,
         diasTrabalhados: tarefa.diasTrabalhados
+      }, res => {
+        if (res && res.success) {
+          limparEdicaoLocal(tarefa.id);
+          if (outraPromovidaId) limparEdicaoLocal(outraPromovidaId);
+          try {
+            localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+          } catch(e) {}
+        }
       });
     }
 
@@ -3530,6 +4085,10 @@
       const naoIniciadas = tarefasDev.filter(t => t.status === 'Não Iniciada' || (!t.status && !t.ativo && t.status !== 'Concluída' && t.status !== 'Atrasada'));
       // 4. Atrasadas
       const atrasadas = tarefasDev.filter(t => t.status === 'Atrasada');
+      // 5. Demandas Futuras (agendadas)
+      const demandasFuturas = (appState.demandasFuturas || []).filter(df =>
+        df.status === 'Agendada' && (df.devId === devId || !df.devId)
+      );
 
       // 4º Nos 4 Dashboard: Comece por "Concluídas"; "Em Andamento"; "Não Iniciadas"; "Atrasadas"
       const elConcluidasQtd = document.getElementById('metricConcluidasQtd');
@@ -3544,7 +4103,7 @@
       const elAtrasadasQtd = document.getElementById('metricAtrasadasQtd');
       if (elAtrasadasQtd) elAtrasadasQtd.innerText = atrasadas.length;
 
-      // Badges das 4 Listas
+      // Badges das 5 Listas
       const badgeEmAndamento = document.getElementById('badgeQtdEmAndamentoAba');
       if (badgeEmAndamento) badgeEmAndamento.innerText = emAndamento.length;
 
@@ -3556,6 +4115,9 @@
 
       const badgeConcluidas = document.getElementById('badgeQtdConcluidasAba');
       if (badgeConcluidas) badgeConcluidas.innerText = concluidas.length;
+
+      const badgeDemandasFuturas = document.getElementById('badgeQtdDemandasFuturasAba');
+      if (badgeDemandasFuturas) badgeDemandasFuturas.innerText = demandasFuturas.length;
 
       // HERO CARD: DEMANDA ATUAL EM PRODUÇÃO
       const demandaAtual = tarefasDev.find(t => t.ativo && t.status !== 'Concluída') || (emAndamento.length > 0 ? emAndamento[0] : (atrasadas.length > 0 ? atrasadas[0] : null));
@@ -3736,6 +4298,9 @@
       const emAndamento = tarefasDev.filter(t => t.status === 'Em Andamento');
       const naoIniciadas = tarefasDev.filter(t => t.status === 'Não Iniciada' || (!t.status && !t.ativo && t.status !== 'Concluída' && t.status !== 'Atrasada'));
       const atrasadas = tarefasDev.filter(t => t.status === 'Atrasada');
+      const demandasFuturas = (appState.demandasFuturas || []).filter(df =>
+        df.status === 'Agendada' && (df.devId === devId || !df.devId)
+      );
 
       const configs = {
         emAndamento: {
@@ -3760,6 +4325,8 @@
           badgeClass: 'badge bg-info text-white',
           borderCor: 'border-info',
           btnNovaVisivel: true,
+          btnNovaLabel: '<i class="fa-solid fa-plus me-1"></i> Nova Demanda',
+          btnNovaOnclick: 'abrirModalNovaDemanda()',
           placeholder: 'Pesquisar demandas na fila de espera...',
           listaBase: naoIniciadas,
           emptyIcon: 'fa-solid fa-clipboard-check text-info opacity-50',
@@ -3793,6 +4360,22 @@
           emptyIcon: 'fa-solid fa-clock-rotate-left text-secondary opacity-50',
           emptyTitulo: 'Nenhuma demanda concluída ainda.',
           emptySub: 'As demandas concluídas serão arquivadas e exibidas aqui.'
+        },
+        demandasFuturas: {
+          titulo: 'Demanda Futura',
+          subtitulo: 'Demandas programadas com aviso por e-mail 24h antes e entrada automática na Esteira',
+          iconClass: 'fa-solid fa-calendar-days fs-5',
+          iconContainerClass: 'rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle text-primary',
+          badgeClass: 'badge bg-primary text-white',
+          borderCor: 'border-primary',
+          btnNovaVisivel: true,
+          btnNovaLabel: '<i class="fa-solid fa-plus me-1"></i> Nova Demanda Futura',
+          btnNovaOnclick: 'abrirModalNovaDemandaFutura()',
+          placeholder: 'Pesquisar demandas futuras agendadas...',
+          listaBase: demandasFuturas,
+          emptyIcon: 'fa-solid fa-calendar-plus text-primary opacity-50',
+          emptyTitulo: 'Nenhuma Demanda Futura agendada.',
+          emptySub: 'Clique em "+ Nova Demanda Futura" para programar uma entrada automática na esteira.'
         }
       };
 
@@ -3819,8 +4402,13 @@
 
       const elBtnNova = document.getElementById('drawerBtnNovaDemanda');
       if (elBtnNova) {
-        if (config.btnNovaVisivel) elBtnNova.classList.remove('d-none');
-        else elBtnNova.classList.add('d-none');
+        if (config.btnNovaVisivel) {
+          elBtnNova.classList.remove('d-none');
+          if (config.btnNovaLabel) elBtnNova.innerHTML = config.btnNovaLabel;
+          if (config.btnNovaOnclick) elBtnNova.setAttribute('onclick', config.btnNovaOnclick);
+        } else {
+          elBtnNova.classList.add('d-none');
+        }
       }
 
       const inputPesquisa = document.getElementById('drawerPesquisaInput');
@@ -3850,7 +4438,16 @@
           <div class="card card-custom p-4 text-center text-muted bg-white border border-light-subtle shadow-xs my-3">
             <i class="${config.emptyIcon} fs-1 mb-3"></i>
             <h6 class="fw-bold text-dark mb-1">${config.emptyTitulo}</h6>
-            <p class="small text-muted mb-0">${config.emptySub}</p>
+            <p class="small text-muted ${drawerTipoAtual === 'demandasFuturas' ? 'mb-3' : 'mb-0'}">${config.emptySub}</p>
+            ${drawerTipoAtual === 'demandasFuturas' ? `
+              <div>
+                <button type="button" class="btn btn-sm rounded-pill px-3 py-1 fw-bold text-white shadow-xs"
+                        style="background-color: #4f46e5;"
+                        onclick="abrirModalNovaDemandaFutura()">
+                  <i class="fa-solid fa-plus me-1"></i> Nova Demanda Futura
+                </button>
+              </div>
+            ` : ''}
           </div>
         `;
         return;
@@ -3875,6 +4472,78 @@
 
       // 3. Renderiza cada Card de Demanda com Layout Amplo (~700px)
       itensFiltrados.forEach((task) => {
+        if (drawerTipoAtual === 'demandasFuturas') {
+          const podeGerenciarFutura = usuarioPodeVerPainelGerente(appState.currentUser) ||
+            (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+
+          const origemLabel = (task.demandaExterna || task.modulo === 'Demanda Externa') ? 'Demanda Externa' : (task.modulo || 'SIOPLEEx');
+          const horarioFmt = formatarDataHoraFuturoPtBr(task.dataHoraProgramada);
+          const dtProg = parseDataHoraFuturoLocal(task.dataHoraProgramada);
+          let restanteLabel = '';
+          if (dtProg) {
+            const diffMin = Math.round((dtProg.getTime() - Date.now()) / 60000);
+            if (diffMin <= 0) {
+              restanteLabel = 'Entrando na Esteira...';
+            } else if (diffMin < 60) {
+              restanteLabel = `Em ${diffMin} min`;
+            } else if (diffMin < 1440) {
+              const hrs = Math.floor(diffMin / 60);
+              const mins = diffMin % 60;
+              restanteLabel = `Em ${hrs}h${mins > 0 ? ' ' + mins + 'min' : ''}`;
+            } else {
+              const dias = Math.floor(diffMin / 1440);
+              restanteLabel = `Em ${dias} dia(s)`;
+            }
+          }
+
+          const cardFuturo = document.createElement('div');
+          cardFuturo.className = 'card card-custom border-start border-4 mb-3 p-3 shadow-xs bg-white';
+          cardFuturo.style.borderLeftColor = '#4f46e5';
+          cardFuturo.style.transition = 'all 0.2s ease';
+
+          cardFuturo.innerHTML = `
+            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge ${origemLabel === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small">
+                  <i class="fa-solid ${origemLabel === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${escapeHtml(origemLabel)}
+                </span>
+                <span class="badge font-monospace small" style="background-color: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe;">
+                  <i class="fa-solid fa-calendar-check me-1"></i>Agendada
+                </span>
+                ${restanteLabel ? `<span class="badge bg-light text-dark border font-monospace small">${escapeHtml(restanteLabel)}</span>` : ''}
+              </div>
+              <span class="badge ${task.email24hEnviado ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning-emphasis border border-warning-subtle'} small">
+                <i class="fa-solid ${task.email24hEnviado ? 'fa-envelope-circle-check' : 'fa-envelope-open-text'} me-1"></i>
+                ${task.email24hEnviado ? 'E-mail 24h enviado' : 'E-mail agendado (24h antes)'}
+              </span>
+            </div>
+            <h6 class="fw-bold text-dark mb-2" style="font-size: 0.96rem; line-height: 1.4;">${escapeHtml(task.titulo)}</h6>
+            <div class="d-flex flex-wrap align-items-center gap-3 small text-muted mb-3 pt-1">
+              <span title="Nesse horário a Demanda entrará automaticamente na Esteira de Produção e 24 horas antes dessa Demanda será enviado um e-mail informando" style="cursor: help;">
+                <i class="fa-regular fa-clock me-1" style="color: #4f46e5;"></i>Horário: <strong style="color: #312e81;">${escapeHtml(horarioFmt)}</strong>
+              </span>
+              <span>
+                <i class="fa-solid fa-user me-1 text-secondary"></i>Responsável: <strong>${escapeHtml(task.devNome || 'Desenvolvedor')}</strong>
+              </span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light-subtle flex-wrap gap-2">
+              <small class="text-muted"><i class="fa-solid fa-robot me-1" style="color: #4f46e5;"></i>Entrada automática na Esteira no horário</small>
+              <div class="d-flex align-items-center gap-1">
+                ${podeGerenciarFutura ? `
+                  <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda Futura" onclick="abrirModalNovaDemandaFutura('${task.id}')">
+                    <i class="fa-solid fa-pen-to-square me-1"></i> Editar
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" title="Excluir Demanda Futura" onclick="excluirDemandaFuturaConfirm('${task.id}')">
+                    <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+          divConteudo.appendChild(cardFuturo);
+          return;
+        }
+
         const podeEditarOuExcluir = usuarioPodeVerPainelGerente(appState.currentUser) || 
           (appState.currentUser && (task.devId === appState.currentUser.id || (task.devNome && appState.currentUser.nome && task.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
 
@@ -4363,14 +5032,16 @@
 
       // Se outra demanda deste desenvolvedor estava ativa na produção, desativa apenas a flag "ativo"
       // NUNCA altera o status de outras demandas (as Não Iniciadas permanecem intocadas na fila de espera!)
+      const idsDesativados = [];
       appState.tarefas.forEach(other => {
         if (other.devId === devId && other.id !== task.id && other.ativo) {
           other.ativo = false;
+          idsDesativados.push(other.id);
           salvarEdicaoLocalDemanda(other);
         }
       });
 
-      // Salva no Local Edits Store para imunidade total contra F5
+      // Salva no Local Edits Store para imunidade total contra F5 enquanto aguarda confirmação do servidor
       salvarEdicaoLocalDemanda(task);
 
       verificarEAtualizarStatusTarefas();
@@ -4392,6 +5063,14 @@
         dataPrazo: task.dataPrazo,
         diasEstimados: task.diasEstimados,
         status: 'Em Andamento'
+      }, res => {
+        if (res && res.success) {
+          limparEdicaoLocal(task.id);
+          idsDesativados.forEach(id => limparEdicaoLocal(id));
+          try {
+            localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
+          } catch(e) {}
+        }
       });
     }
 
@@ -4565,8 +5244,9 @@
 
       // 1º Ao cadastrar uma demanda, não precisa colocar a data de conclusão
       // 4º Ao cadastrar uma demanda ela será "Não Iniciada"
+      const tempId = 'TMP-' + Date.now() + '-' + Math.floor(Math.random() * 900 + 100);
       const novaTarefa = {
-        id: 'TSK-' + Math.floor(Math.random() * 9000 + 1000),
+        id: tempId,
         modulo: modulo,
         demandaExterna: isExterna,
         titulo: titulo,
@@ -4585,7 +5265,7 @@
         isNovaDemanda: true
       };
 
-      // Salva no Local Edits Store para persistência absoluta (F5 imune)
+      // Salva no Local Edits Store temporariamente enquanto o servidor confirma o ID definitivo
       salvarEdicaoLocalDemanda(novaTarefa);
 
       appState.tarefas.unshift(novaTarefa);
@@ -4624,7 +5304,43 @@
         },
         res => {
           if (res && res.success && res.id) {
-            novaTarefa.id = res.id;
+            const realId = res.id;
+            const estavaNaLista = appState.tarefas.some(t => t.id === tempId);
+            const editTemp = (function() {
+              try {
+                const edits = JSON.parse(localStorage.getItem('SYSMANAGER_LOCAL_EDITS') || '{}');
+                return edits[tempId] || null;
+              } catch(e) { return null; }
+            })();
+
+            // Remove o ID temporário de SYSMANAGER_LOCAL_EDITS para nunca gerar demanda fantasma/duplicada
+            limparEdicaoLocal(tempId);
+
+            novaTarefa.id = realId;
+            novaTarefa.isNovaDemanda = false;
+            appState.tarefas = desduplicarTarefasEstado(appState.tarefas);
+
+            // Se o usuário já iniciou, concluiu, editou ou excluiu durante a criação no servidor, sincroniza no ID real
+            if (!estavaNaLista) {
+              executarNoServidor('excluirTarefa', { tarefaId: realId });
+            } else if (editTemp && editTemp.status === 'Em Andamento' && editTemp.dataPrazo) {
+              executarNoServidor('selecionarTarefaAtiva', {
+                tarefaId: realId,
+                devId: novaTarefa.devId,
+                dataInicio: novaTarefa.dataInicio,
+                dataPrazo: novaTarefa.dataPrazo,
+                diasEstimados: novaTarefa.diasEstimados,
+                status: 'Em Andamento'
+              });
+            } else if (editTemp && editTemp.status === 'Concluída') {
+              executarNoServidor('concluirTarefa', {
+                tarefaId: realId,
+                devId: novaTarefa.devId,
+                dataConclusao: novaTarefa.dataConclusao,
+                diasTrabalhados: novaTarefa.diasTrabalhados
+              });
+            }
+
             try {
               localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
             } catch(e) {}
@@ -4844,7 +5560,69 @@
     }
     window.sanitizarECorrigirDemandasNaoIniciadas = sanitizarECorrigirDemandasNaoIniciadas;
 
-    // Persistência local blindada para edições de demandas (Imunidade contra F5)
+    function normalizarTituloParaChave(titulo) {
+      return (titulo || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function normalizarChaveDevTitulo(tarefa) {
+      if (!tarefa) return '';
+      const devRef = (tarefa.devId || limparNomeDev(tarefa.devNome || '') || '').toString().trim().toLowerCase();
+      const titRef = normalizarTituloParaChave(tarefa.titulo);
+      return titRef ? `${devRef}::${titRef}` : '';
+    }
+
+    function prioridadeStatusTarefa(status) {
+      const norm = normalizarStatus(status);
+      if (norm === 'Concluída') return 4;
+      if (norm === 'Atrasada') return 3;
+      if (norm === 'Em Andamento') return 2;
+      return 1;
+    }
+
+    function desduplicarTarefasEstado(tarefas) {
+      if (!Array.isArray(tarefas)) return [];
+      const porId = new Map();
+      const semId = [];
+
+      tarefas.forEach(t => {
+        if (!t) return;
+        const idKey = t.id ? t.id.toString().trim().toUpperCase() : '';
+        if (!idKey) {
+          semId.push(t);
+          return;
+        }
+        const existente = porId.get(idKey);
+        if (!existente) {
+          porId.set(idKey, t);
+        } else {
+          const pAtual = prioridadeStatusTarefa(t.status) + (t.isNovaDemanda ? 0 : 10);
+          const pExist = prioridadeStatusTarefa(existente.status) + (existente.isNovaDemanda ? 0 : 10);
+          if (pAtual > pExist) porId.set(idKey, t);
+        }
+      });
+
+      const listaPorId = Array.from(porId.values()).concat(semId);
+      const chavesServidor = new Set();
+      listaPorId.forEach(t => {
+        const isTemp = t.isNovaDemanda === true || (t.id && t.id.toString().toUpperCase().startsWith('TMP-'));
+        if (!isTemp) {
+          const kId = normalizarChaveDevTitulo(t);
+          if (kId) chavesServidor.add(kId);
+          const kNome = `${limparNomeDev(t.devNome || '').toLowerCase()}::${normalizarTituloParaChave(t.titulo)}`;
+          if (kNome !== '::') chavesServidor.add(kNome);
+        }
+      });
+
+      return listaPorId.filter(t => {
+        const isTemp = t.isNovaDemanda === true || (t.id && t.id.toString().toUpperCase().startsWith('TMP-'));
+        if (!isTemp) return true;
+        const kId = normalizarChaveDevTitulo(t);
+        const kNome = `${limparNomeDev(t.devNome || '').toLowerCase()}::${normalizarTituloParaChave(t.titulo)}`;
+        return !(kId && chavesServidor.has(kId)) && !(kNome !== '::' && chavesServidor.has(kNome));
+      });
+    }
+
+    // Persistência local blindada para edições de demandas pendentes de confirmação do servidor
     function salvarEdicaoLocalDemanda(tarefaEditada) {
       if (!tarefaEditada || !tarefaEditada.id) return;
       try {
@@ -4866,23 +5644,65 @@
           urgencia: tarefaEditada.urgencia,
           status: tarefaEditada.status,
           ativo: tarefaEditada.ativo === true,
-          isNovaDemanda: tarefaEditada.isNovaDemanda === true
+          isNovaDemanda: tarefaEditada.isNovaDemanda === true,
+          savedAt: Date.now()
         };
         localStorage.setItem('SYSMANAGER_LOCAL_EDITS', JSON.stringify(edits));
       } catch(e) {}
     }
 
-    function aplicarEdicoesLocais(tarefas) {
+    function aplicarEdicoesLocais(tarefas, isAuthoritative) {
       if (!tarefas || !Array.isArray(tarefas)) return;
       try {
         const edits = JSON.parse(localStorage.getItem('SYSMANAGER_LOCAL_EDITS') || '{}');
         const ids = Object.keys(edits);
         if (ids.length === 0) return;
+
+        const now = Date.now();
+        const JANELA_SINCRONIZACAO_MS = 120000; // 2 minutos para sync em voo
+        let editsAlterados = false;
+
+        // Mapa de demandas do servidor para detectar duplicadas por desenvolvedor + título
+        const chavesServidor = new Set();
+        tarefas.forEach(t => {
+          if (!t) return;
+          const kId = normalizarChaveDevTitulo(t);
+          if (kId) chavesServidor.add(kId);
+          const kNome = `${limparNomeDev(t.devNome || '').toLowerCase()}::${normalizarTituloParaChave(t.titulo)}`;
+          if (kNome !== '::') chavesServidor.add(kNome);
+        });
+
         ids.forEach(id => {
           const ed = edits[id];
-          if (!ed || !ed.titulo) return;
+          if (!ed || !ed.titulo) {
+            delete edits[id];
+            editsAlterados = true;
+            return;
+          }
+
           const matchTask = tarefas.find(t => t && t.id && t.id.toString().toUpperCase() === id.toString().toUpperCase());
+          const edSemTimestampLegado = !ed.savedAt || isNaN(Number(ed.savedAt));
+          const edExpirado = !edSemTimestampLegado && (now - Number(ed.savedAt) > JANELA_SINCRONIZACAO_MS);
+
           if (matchTask) {
+            if (isAuthoritative) {
+              const serverStatus = normalizarStatus(matchTask.status);
+              const localStatus = normalizarStatus(ed.status);
+
+              // Se o servidor já concluiu, ou se o snapshot local é legado/antigo (>2min) ou idêntico ao servidor, limpa o local edit e confia no servidor
+              if (
+                serverStatus === 'Concluída' ||
+                edSemTimestampLegado ||
+                edExpirado ||
+                (serverStatus === localStatus && (matchTask.dataPrazo || '') === (ed.dataPrazo || '') && Boolean(matchTask.ativo) === Boolean(ed.ativo)) ||
+                (localStatus === 'Não Iniciada' && serverStatus !== 'Não Iniciada' && !ed.revertidoParaNaoIniciada)
+              ) {
+                delete edits[id];
+                editsAlterados = true;
+                return;
+              }
+            }
+
             if (ed.titulo) matchTask.titulo = ed.titulo;
             if (ed.descricao !== undefined) matchTask.descricao = ed.descricao;
             if (ed.modulo) matchTask.modulo = ed.modulo;
@@ -4899,7 +5719,18 @@
             if (ed.status) matchTask.status = ed.status;
             if (ed.ativo !== undefined) matchTask.ativo = ed.ativo;
           } else if (ed.isNovaDemanda) {
-            // Preserva demanda cadastrada localmente ainda não refletida no retorno do servidor
+            const kId = normalizarChaveDevTitulo(ed);
+            const kNome = `${limparNomeDev(ed.devNome || '').toLowerCase()}::${normalizarTituloParaChave(ed.titulo)}`;
+            const jaExisteNoServidor = (kId && chavesServidor.has(kId)) || (kNome !== '::' && chavesServidor.has(kNome));
+
+            // Purga entradas fantasmas/legadas/duplicadas cujo item real já foi gravado ou excluído no servidor
+            if (jaExisteNoServidor || (isAuthoritative && (edSemTimestampLegado || edExpirado))) {
+              delete edits[id];
+              editsAlterados = true;
+              return;
+            }
+
+            // Preserva somente demanda recém-criada nos últimos 2 minutos aguardando retorno do servidor
             tarefas.unshift({
               id: id,
               titulo: ed.titulo,
@@ -4919,8 +5750,16 @@
               dataConclusao: ed.dataConclusao || '',
               isNovaDemanda: true
             });
+          } else if (isAuthoritative) {
+            // Demanda não existe mais no servidor (foi excluída)
+            delete edits[id];
+            editsAlterados = true;
           }
         });
+
+        if (editsAlterados) {
+          localStorage.setItem('SYSMANAGER_LOCAL_EDITS', JSON.stringify(edits));
+        }
       } catch(e) {}
     }
 
@@ -6018,151 +6857,125 @@
       if (devTexto) tagsFiltros.push(`Dev: ${limparNomeDev(devTexto)}`);
       if (modTexto) tagsFiltros.push(`Módulo: ${modTexto}`);
       if (statusTexto) tagsFiltros.push(`Status: ${statusTexto}`);
-
-      // Divisão das demandas em folhas/páginas com cabeçalho repetido a partir da 2ª Folha
-      const ITENS_PAGINA_1 = 11;
-      const ITENS_PAGINAS_SEGUINTES = 14;
-
-      const paginas = [];
-      if (demandas.length === 0) {
-        paginas.push([]);
-      } else if (demandas.length <= ITENS_PAGINA_1) {
-        paginas.push(demandas);
-      } else {
-        paginas.push(demandas.slice(0, ITENS_PAGINA_1));
-        let cursor = ITENS_PAGINA_1;
-        while (cursor < demandas.length) {
-          paginas.push(demandas.slice(cursor, cursor + ITENS_PAGINAS_SEGUINTES));
-          cursor += ITENS_PAGINAS_SEGUINTES;
-        }
+      if (relatorioMultiSort.length > 1) {
+        tagsFiltros.push('Ordem: ' + relatorioMultiSort.map((c, i) => `${i + 1}º ${obterNomeAmigavelColuna(c.coluna)}`).join(' → '));
       }
-      const totalPaginas = paginas.length;
 
-      // Função geradora de linhas para cada página
+      // Gera uma única linha HTML (<tr>) de demanda para medição dinâmica e renderização final
+      function gerarHtmlLinhaPdf(d, idxGlobal) {
+        let statusBadgeColor = '#1e40af';
+        let statusBg = '#eff6ff';
+        let statusBorder = '#93c5fd';
+        if (d.status === 'Concluída') {
+          statusBadgeColor = '#166534';
+          statusBg = '#f0fdf4';
+          statusBorder = '#86efac';
+        } else if (d.status === 'Atrasada') {
+          statusBadgeColor = '#991b1b';
+          statusBg = '#fef2f2';
+          statusBorder = '#fca5a5';
+        } else if (d.status === 'Não Iniciada') {
+          statusBadgeColor = '#475569';
+          statusBg = '#f1f5f9';
+          statusBorder = '#cbd5e1';
+        }
+
+        let urgBadgeColor = '#0369a1';
+        let urgBg = '#e0f2fe';
+        let urgBorder = '#7dd3fc';
+        const urgLower = (d.urgencia || 'Media').toLowerCase();
+        if (urgLower === 'urgente') {
+          urgBadgeColor = '#dc2626'; urgBg = '#fef2f2'; urgBorder = '#fca5a5';
+        } else if (urgLower === 'alta') {
+          urgBadgeColor = '#b45309'; urgBg = '#fffbeb'; urgBorder = '#fcd34d';
+        } else if (urgLower === 'baixa') {
+          urgBadgeColor = '#15803d'; urgBg = '#f0fdf4'; urgBorder = '#86efac';
+        }
+        const urgTexto = d.urgencia || 'Média';
+
+        let prazo = '';
+        if (d.status === 'Concluída') {
+          prazo = formatarData(d.dataConclusao || d.dataPrazo);
+        } else if (d.dataPrazo) {
+          prazo = formatarData(d.dataPrazo);
+        } else {
+          prazo = 'A definir';
+        }
+
+        const isExternaPdf = (d.demandaExterna === true || d.demandaExterna === 'true' || d.modulo === 'Demanda Externa');
+        const modPdf = isExternaPdf ? 'Demanda Externa' : (d.modulo || 'SIOPLEEx');
+        const dtInsercaoFormatada = formatarData(d.dataInsercao || d.dataInicio);
+
+        return `
+          <tr style="background-color: ${idxGlobal % 2 === 0 ? '#ffffff' : '#f8fafc'}; page-break-inside: avoid !important; break-inside: avoid !important;">
+            <td style="padding: 5px 6px; border: 1px solid #e2e8f0; text-align: center; font-weight: 700; color: #64748b; font-family: monospace; font-size: 9.5px;">${String(idxGlobal + 1).padStart(2, '0')}</td>
+            <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: center;">
+              <span style="display: inline-block; white-space: nowrap; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.3px; ${isExternaPdf ? 'background: #fef3c7; color: #92400e; border: 1px solid #fde68a;' : 'background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;'}">
+                ${isExternaPdf ? 'Demanda Externa' : modPdf}
+              </span>
+            </td>
+            <td style="padding: 5px 10px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f172a; font-size: 10px; line-height: 1.3; text-align: left;">${d.titulo}</td>
+            <td style="padding: 5px 6px; border: 1px solid #e2e8f0; text-align: center;">
+              <span style="display: inline-block; white-space: nowrap; padding: 2px 8px; border-radius: 12px; font-size: 8.5px; font-weight: 700; color: ${urgBadgeColor}; background-color: ${urgBg}; border: 1px solid ${urgBorder};">
+                ${urgTexto}
+              </span>
+            </td>
+            <td style="padding: 5px 8px; border: 1px solid #e2e8f0; color: #1e293b; font-size: 10px; font-weight: 600; text-align: left;">${limparNomeDev(d.devNome)}</td>
+            <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 9.5px; font-weight: 600; font-family: monospace; white-space: nowrap;">${dtInsercaoFormatada}</td>
+            <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: center;">
+              <span style="display: inline-block; white-space: nowrap; padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: 700; color: ${statusBadgeColor}; background-color: ${statusBg}; border: 1px solid ${statusBorder}; text-transform: uppercase; letter-spacing: 0.3px;">
+                ${d.status}
+              </span>
+            </td>
+            <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: center; white-space: nowrap; color: ${d.status === 'Atrasada' ? '#dc2626' : (d.status === 'Concluída' ? '#16a34a' : (d.status === 'Não Iniciada' ? '#64748b' : '#334155'))}; font-weight: 700; font-size: 9.5px; font-family: monospace;">${prazo}</td>
+          </tr>
+        `;
+      }
+
       function renderizarLinhasTabelaPdf(listaDemandas, offsetGlobal) {
         if (!listaDemandas || listaDemandas.length === 0) {
-          return `<tr class="no-split" style="page-break-inside: avoid !important; break-inside: avoid !important;"><td colspan="8" style="padding: 20px; text-align: center; color: #64748b; border: 1px solid #cbd5e1; font-style: italic; font-size: 11px;">Nenhuma demanda encontrada para os critérios selecionados.</td></tr>`;
+          return `<tr class="no-split"><td colspan="8" style="padding: 20px; text-align: center; color: #64748b; border: 1px solid #cbd5e1; font-style: italic; font-size: 11px;">Nenhuma demanda encontrada para os critérios selecionados.</td></tr>`;
         }
-        let html = '';
-        listaDemandas.forEach((d, idxLocal) => {
-          const idxGlobal = offsetGlobal + idxLocal;
-          let statusBadgeColor = '#1e40af';
-          let statusBg = '#eff6ff';
-          let statusBorder = '#93c5fd';
-          if (d.status === 'Concluída') {
-            statusBadgeColor = '#166534';
-            statusBg = '#f0fdf4';
-            statusBorder = '#86efac';
-          } else if (d.status === 'Atrasada') {
-            statusBadgeColor = '#991b1b';
-            statusBg = '#fef2f2';
-            statusBorder = '#fca5a5';
-          } else if (d.status === 'Não Iniciada') {
-            statusBadgeColor = '#475569';
-            statusBg = '#f1f5f9';
-            statusBorder = '#cbd5e1';
-          }
-
-          let urgBadgeColor = '#0369a1';
-          let urgBg = '#e0f2fe';
-          let urgBorder = '#7dd3fc';
-          const urgLower = (d.urgencia || 'Media').toLowerCase();
-          if (urgLower === 'urgente') {
-            urgBadgeColor = '#dc2626'; urgBg = '#fef2f2'; urgBorder = '#fca5a5';
-          } else if (urgLower === 'alta') {
-            urgBadgeColor = '#b45309'; urgBg = '#fffbeb'; urgBorder = '#fcd34d';
-          } else if (urgLower === 'baixa') {
-            urgBadgeColor = '#15803d'; urgBg = '#f0fdf4'; urgBorder = '#86efac';
-          }
-          const urgTexto = d.urgencia || 'Média';
-
-          let prazo = '';
-          if (d.status === 'Concluída') {
-            prazo = formatarData(d.dataConclusao || d.dataPrazo);
-          } else if (d.dataPrazo) {
-            prazo = formatarData(d.dataPrazo);
-          } else {
-            prazo = 'A definir';
-          }
-
-          const isExternaPdf = (d.demandaExterna === true || d.demandaExterna === 'true' || d.modulo === 'Demanda Externa');
-          const modPdf = isExternaPdf ? 'Demanda Externa' : (d.modulo || 'SIOPLEEx');
-          const dtInsercaoFormatada = formatarData(d.dataInsercao || d.dataInicio);
-
-          html += `
-            <tr style="background-color: ${idxGlobal % 2 === 0 ? '#ffffff' : '#f8fafc'}; page-break-inside: avoid !important; break-inside: avoid !important;">
-              <td style="padding: 6px 6px; border: 1px solid #e2e8f0; text-align: center; font-weight: 700; color: #64748b; font-family: monospace; font-size: 9.5px;">${String(idxGlobal + 1).padStart(2, '0')}</td>
-              <td style="padding: 6px 8px; border: 1px solid #e2e8f0; text-align: center;">
-                <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.3px; ${isExternaPdf ? 'background: #fef3c7; color: #92400e; border: 1px solid #fde68a;' : 'background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;'}">
-                  ${isExternaPdf ? 'Demanda Externa' : modPdf}
-                </span>
-              </td>
-              <td style="padding: 6px 10px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f172a; font-size: 10px; line-height: 1.35; text-align: left;">${d.titulo}</td>
-              <td style="padding: 6px 6px; border: 1px solid #e2e8f0; text-align: center;">
-                <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 8.5px; font-weight: 700; color: ${urgBadgeColor}; background-color: ${urgBg}; border: 1px solid ${urgBorder};">
-                  ${urgTexto}
-                </span>
-              </td>
-              <td style="padding: 6px 8px; border: 1px solid #e2e8f0; color: #1e293b; font-size: 10px; font-weight: 600; text-align: left;">${limparNomeDev(d.devNome)}</td>
-              <td style="padding: 6px 8px; border: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 9.5px; font-weight: 600; font-family: monospace;">${dtInsercaoFormatada}</td>
-              <td style="padding: 6px 8px; border: 1px solid #e2e8f0; text-align: center;">
-                <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: 700; color: ${statusBadgeColor}; background-color: ${statusBg}; border: 1px solid ${statusBorder}; text-transform: uppercase; letter-spacing: 0.3px;">
-                  ${d.status}
-                </span>
-              </td>
-              <td style="padding: 6px 8px; border: 1px solid #e2e8f0; text-align: center; color: ${d.status === 'Atrasada' ? '#dc2626' : (d.status === 'Concluída' ? '#16a34a' : (d.status === 'Não Iniciada' ? '#64748b' : '#334155'))}; font-weight: 700; font-size: 9.5px; font-family: monospace;">${prazo}</td>
-            </tr>
-          `;
-        });
-        return html;
+        return listaDemandas.map((d, idxLocal) => gerarHtmlLinhaPdf(d, offsetGlobal + idxLocal)).join('');
       }
 
       // Cabeçalho Oficial da Tabela de Demandas para repetição em todas as folhas
       const theadHtml = `
-        <thead style="display: table-header-group;">
-          <tr style="background-color: #0f172a; color: #ffffff; page-break-inside: avoid !important; break-inside: avoid !important;">
-            <th style="padding: 7px 6px; border: 1px solid #1e293b; width: 36px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">ID</th>
-            <th style="padding: 7px 8px; border: 1px solid #1e293b; width: 110px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">ORIGEM</th>
-            <th style="padding: 7px 10px; border: 1px solid #1e293b; text-align: left; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">DEMANDA</th>
-            <th style="padding: 7px 6px; border: 1px solid #1e293b; width: 70px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">URGÊNCIA</th>
-            <th style="padding: 7px 8px; border: 1px solid #1e293b; width: 120px; text-align: left; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">DESENVOLVEDOR</th>
-            <th style="padding: 7px 8px; border: 1px solid #1e293b; width: 90px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">DATA INSERÇÃO</th>
-            <th style="padding: 7px 8px; border: 1px solid #1e293b; width: 110px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">STATUS</th>
-            <th style="padding: 7px 8px; border: 1px solid #1e293b; width: 90px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">PRAZO FINAL</th>
+        <thead>
+          <tr style="background-color: #0f172a; color: #ffffff;">
+            <th style="padding: 6px 6px; border: 1px solid #1e293b; width: 34px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">ID</th>
+            <th style="padding: 6px 8px; border: 1px solid #1e293b; width: 122px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">ORIGEM</th>
+            <th style="padding: 6px 10px; border: 1px solid #1e293b; text-align: left; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">DEMANDA</th>
+            <th style="padding: 6px 6px; border: 1px solid #1e293b; width: 70px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">URGÊNCIA</th>
+            <th style="padding: 6px 8px; border: 1px solid #1e293b; width: 115px; text-align: left; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">DESENVOLVEDOR</th>
+            <th style="padding: 6px 8px; border: 1px solid #1e293b; width: 92px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">DATA INSERÇÃO</th>
+            <th style="padding: 6px 8px; border: 1px solid #1e293b; width: 122px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">STATUS</th>
+            <th style="padding: 6px 8px; border: 1px solid #1e293b; width: 88px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;">PRAZO FINAL</th>
           </tr>
         </thead>
       `;
 
-      let paginasHtml = '';
-      let offsetGlobal = 0;
+      const horaEmissaoTexto = `${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}`;
 
-      paginas.forEach((itensPagina, numPagIdx) => {
-        const numPag = numPagIdx + 1;
-        const isPrimeira = (numPag === 1);
-        const linhasHtml = renderizarLinhasTabelaPdf(itensPagina, offsetGlobal);
-        const itemInicial = offsetGlobal + 1;
-        const itemFinal = offsetGlobal + itensPagina.length;
-        offsetGlobal += itensPagina.length;
-
+      function montarFolhaHtml(isPrimeira, linhasHtml, numPag, totalPaginas, itemInicial, itemFinal) {
         if (isPrimeira) {
-          // FOLHA 1: Cabeçalho Executivo Completo + 4 Cards + Subtítulo + O Cabeçalho da Tabela antes dos dados + Dados + Rodapé
-          paginasHtml += `
-            <div class="pagina-relatorio-pdf" style="box-sizing: border-box; page-break-inside: avoid !important; break-inside: avoid !important;">
+          return `
+            <div class="pagina-relatorio-pdf" style="width: 100%; box-sizing: border-box; background: #ffffff; padding: 6px 8px;">
               <!-- BARRA DECORATIVA SUPERIOR -->
-              <div style="background: linear-gradient(90deg, #0f172a 0%, #1d4ed8 50%, #38bdf8 100%); height: 3px; border-radius: 2px; margin-bottom: 12px;"></div>
+              <div style="background: linear-gradient(90deg, #0f172a 0%, #1d4ed8 50%, #38bdf8 100%); height: 3px; border-radius: 2px; margin-bottom: 10px;"></div>
 
               <!-- CABEÇALHO SM EXECUTIVO ELEGANTE -->
-              <div style="display: table; width: 100%; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px;">
+              <div style="display: table; width: 100%; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px;">
                 <div style="display: table-cell; vertical-align: middle;">
                   <div style="display: table; width: auto;">
                     <div style="display: table-cell; vertical-align: middle; padding-right: 12px;">
-                      <div style="background: #0f172a; color: #ffffff; font-weight: 800; font-size: 16px; padding: 6px 12px; border-radius: 8px; letter-spacing: 1.5px; display: inline-block; box-shadow: 0 2px 4px rgba(15,23,42,0.12);">
+                      <div style="background: #0f172a; color: #ffffff; font-weight: 800; font-size: 16px; padding: 6px 12px; border-radius: 8px; letter-spacing: 1.5px; display: inline-block;">
                         SM
                       </div>
                     </div>
                     <div style="display: table-cell; vertical-align: middle;">
-                      <div style="font-size: 21px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; line-height: 1.1;">Sys Manager</div>
-                      <div style="font-size: 9.5px; font-weight: 800; color: #2563eb; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.8px;">Relatório de Demandas</div>
+                      <div style="font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; line-height: 1.1;">Sys Manager</div>
+                      <div style="font-size: 9.5px; font-weight: 800; color: #2563eb; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.8px;">Relatório de Demandas</div>
                       <div style="font-size: 9px; color: #64748b; font-weight: 500; margin-top: 1px;">Documento de acompanhamento</div>
                     </div>
                   </div>
@@ -6171,52 +6984,41 @@
                   <div style="display: inline-block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-weight: 700; font-size: 11px; padding: 4px 14px; border-radius: 16px; margin-bottom: 3px;">
                     ${periodoDesc}
                   </div>
-                  ${tagsFiltros.length > 0 ? `<div style="font-size: 9.5px; color: #475569; font-weight: 600; margin-top: 3px;">${tagsFiltros.join(' • ')}</div>` : ''}
+                  ${tagsFiltros.length > 0 ? `<div style="font-size: 9px; color: #475569; font-weight: 600; margin-top: 2px;">${tagsFiltros.join(' • ')}</div>` : ''}
                   <div style="font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 500;">
-                    Emitido em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR').substring(0,5)}
+                    Emitido em: ${horaEmissaoTexto}
                   </div>
                 </div>
               </div>
 
-              <!-- 4 CARDS RESUMO EXECUTIVO SOFISTICADOS (4 STATUS OFICIAIS CONFORME REGRA OFICIAL) -->
-              <div style="display: table; width: 100%; margin-bottom: 12px; border-collapse: separate; border-spacing: 8px 0;">
+              <!-- 4 CARDS RESUMO EXECUTIVO -->
+              <div style="display: table; width: 100%; margin-bottom: 10px; border-collapse: separate; border-spacing: 8px 0;">
                 <div style="display: table-row;">
-                  <!-- 1. Demandas Concluídas -->
-                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); border: 1px solid #bbf7d0; border-top: 3px solid #16a34a; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(22,163,74,0.03);">
+                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); border: 1px solid #bbf7d0; border-top: 3px solid #16a34a; border-radius: 8px; padding: 7px 10px; text-align: center;">
                     <div style="font-size: 9px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Concluídas</div>
-                    <div style="font-size: 24px; font-weight: 800; color: #16a34a; margin: 2px 0; line-height: 1.1;">${concluidas}</div>
-                    <div style="font-size: 9px; color: #15803d; font-weight: 700;">
-                      ${totalDemandas > 0 ? Math.round((concluidas / totalDemandas) * 100) : 0}% entregues no período
-                    </div>
+                    <div style="font-size: 22px; font-weight: 800; color: #16a34a; margin: 2px 0; line-height: 1.1;">${concluidas}</div>
+                    <div style="font-size: 9px; color: #15803d; font-weight: 700;">${totalDemandas > 0 ? Math.round((concluidas / totalDemandas) * 100) : 0}% entregues no período</div>
                   </div>
-
-                  <!-- 2. Demandas Em Andamento -->
-                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; border-top: 3px solid #2563eb; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(37,99,235,0.03);">
+                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; border-top: 3px solid #2563eb; border-radius: 8px; padding: 7px 10px; text-align: center;">
                     <div style="font-size: 9px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">Em Andamento</div>
-                    <div style="font-size: 24px; font-weight: 800; color: #2563eb; margin: 2px 0; line-height: 1.1;">${emAndamento}</div>
+                    <div style="font-size: 22px; font-weight: 800; color: #2563eb; margin: 2px 0; line-height: 1.1;">${emAndamento}</div>
                     <div style="font-size: 9px; color: #1d4ed8; font-weight: 700;">produção ativa na esteira</div>
                   </div>
-
-                  <!-- 3. Demandas Não Iniciadas -->
-                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #ecfeff 0%, #ffffff 100%); border: 1px solid #a5f3fc; border-top: 3px solid #0891b2; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(8,145,178,0.03);">
+                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #ecfeff 0%, #ffffff 100%); border: 1px solid #a5f3fc; border-top: 3px solid #0891b2; border-radius: 8px; padding: 7px 10px; text-align: center;">
                     <div style="font-size: 9px; font-weight: 800; color: #0e7490; text-transform: uppercase; letter-spacing: 0.5px;">Não Iniciadas</div>
-                    <div style="font-size: 24px; font-weight: 800; color: #0891b2; margin: 2px 0; line-height: 1.1;">${naoIniciadas}</div>
+                    <div style="font-size: 22px; font-weight: 800; color: #0891b2; margin: 2px 0; line-height: 1.1;">${naoIniciadas}</div>
                     <div style="font-size: 9px; color: #0891b2; font-weight: 700;">aguardando na fila</div>
                   </div>
-
-                  <!-- 4. Demandas Atrasadas -->
-                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%); border: 1px solid #fecaca; border-top: 3px solid #dc2626; border-radius: 8px; padding: 8px 12px; text-align: center; box-shadow: 0 1px 3px rgba(220,38,38,0.03);">
+                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%); border: 1px solid #fecaca; border-top: 3px solid #dc2626; border-radius: 8px; padding: 7px 10px; text-align: center;">
                     <div style="font-size: 9px; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Atrasadas</div>
-                    <div style="font-size: 24px; font-weight: 800; color: #dc2626; margin: 2px 0; line-height: 1.1;">${atrasadas}</div>
-                    <div style="font-size: 9px; color: #b91c1c; font-weight: 700;">
-                      ${atrasadas === 0 ? 'Nenhum atraso registrado' : `${atrasadas} fora do prazo limite`}
-                    </div>
+                    <div style="font-size: 22px; font-weight: 800; color: #dc2626; margin: 2px 0; line-height: 1.1;">${atrasadas}</div>
+                    <div style="font-size: 9px; color: #b91c1c; font-weight: 700;">${atrasadas === 0 ? 'Nenhum atraso registrado' : `${atrasadas} fora do prazo limite`}</div>
                   </div>
                 </div>
               </div>
 
               <!-- BARRA DE SUBTÍTULO E RESUMO DA TABELA -->
-              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 10px; margin-bottom: 8px; display: table; width: 100%; box-sizing: border-box;">
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 10px; margin-bottom: 6px; display: table; width: 100%; box-sizing: border-box;">
                 <div style="display: table-cell; text-align: left; vertical-align: middle;">
                   <span style="font-weight: 800; font-size: 9.5px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">Detalhamento das Demandas do Período</span>
                 </div>
@@ -6229,89 +7031,144 @@
                 </div>
               </div>
 
-              <!-- TABELA DE DEMANDAS COM CABEÇALHO COMPLETO -->
-              <table style="width: 100%; border-collapse: collapse; font-size: 10px; border: 1px solid #e2e8f0; page-break-inside: auto !important;">
+              <!-- TABELA DE DEMANDAS -->
+              <table style="width: 100%; border-collapse: collapse; font-size: 10px; border: 1px solid #e2e8f0;">
                 ${theadHtml}
-                <tbody style="page-break-inside: auto;">
+                <tbody>
                   ${linhasHtml}
                 </tbody>
               </table>
 
-              <!-- RODAPÉ CORPORATIVO LIMPO -->
-              <div style="page-break-inside: avoid !important; break-inside: avoid !important; margin-top: 12px; padding-top: 8px; border-top: 1px solid #e2e8f0; display: table; width: 100%; font-size: 9px; color: #64748b;">
+              <!-- RODAPÉ -->
+              <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #e2e8f0; display: table; width: 100%; font-size: 9px; color: #64748b;">
                 <div style="display: table-cell; text-align: left; font-weight: 500;">Sys Manager (SM) • Governança e Acompanhamento</div>
-                <div style="display: table-cell; text-align: right; font-weight: 500;">Documento de acompanhamento${totalPaginas > 1 ? ` • Folha 1 de ${totalPaginas}` : ''}</div>
-              </div>
-            </div>
-          `;
-        } else {
-          // A PARTIR DA 2ª FOLHA: QUEBRA DE PÁGINA + CABEÇALHO ANTES DOS DADOS PARA CADA FOLHA EXTRA
-          paginasHtml += `
-            <!-- QUEBRA DE PÁGINA OFICIAL HTML2PDF -->
-            <div class="html2pdf__page-break" style="page-break-before: always; break-before: page; height: 1px; margin: 0; padding: 0; border: none; line-height: 0; font-size: 0;"></div>
-
-            <div class="pagina-relatorio-pdf" style="box-sizing: border-box; page-break-inside: avoid !important; break-inside: avoid !important; padding-top: 6px;">
-              <!-- BARRA DECORATIVA SUPERIOR -->
-              <div style="background: linear-gradient(90deg, #0f172a 0%, #1d4ed8 50%, #38bdf8 100%); height: 3px; border-radius: 2px; margin-bottom: 10px;"></div>
-
-              <!-- CABEÇALHO INSTITUCIONAL DA FOLHA EXTRA -->
-              <div style="display: table; width: 100%; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px;">
-                <div style="display: table-cell; vertical-align: middle;">
-                  <div style="display: table; width: auto;">
-                    <div style="display: table-cell; vertical-align: middle; padding-right: 10px;">
-                      <div style="background: #0f172a; color: #ffffff; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 6px; letter-spacing: 1.5px; display: inline-block;">
-                        SM
-                      </div>
-                    </div>
-                    <div style="display: table-cell; vertical-align: middle;">
-                      <div style="font-size: 16px; font-weight: 800; color: #0f172a; letter-spacing: -0.3px; line-height: 1.1;">Sys Manager • Relatório de Demandas</div>
-                      <div style="font-size: 9px; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 1px;">Continuação do Detalhamento das Demandas</div>
-                    </div>
-                  </div>
-                </div>
-                <div style="display: table-cell; vertical-align: middle; text-align: right;">
-                  <div style="display: inline-block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-weight: 700; font-size: 10px; padding: 3px 12px; border-radius: 14px;">
-                    ${periodoDesc}
-                  </div>
-                  <div style="font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 500;">
-                    Folha ${numPag} de ${totalPaginas}
-                  </div>
-                </div>
-              </div>
-
-              <!-- BARRA DE SUBTÍTULO E INTERVALO DAS DEMANDAS -->
-              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 10px; margin-bottom: 8px; display: table; width: 100%; box-sizing: border-box;">
-                <div style="display: table-cell; text-align: left; vertical-align: middle;">
-                  <span style="font-weight: 800; font-size: 9.5px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">Detalhamento das Demandas do Período (Continuação)</span>
-                </div>
-                <div style="display: table-cell; text-align: right; vertical-align: middle;">
-                  <span style="display: inline-block; background: #e2e8f0; color: #334155; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px;">Demandas ${String(itemInicial).padStart(2, '0')} a ${String(itemFinal).padStart(2, '0')} de ${totalDemandas}</span>
-                </div>
-              </div>
-
-              <!-- O CABEÇALHO DA TABELA ANTES DOS DADOS NESTA FOLHA EXTRA -->
-              <table style="width: 100%; border-collapse: collapse; font-size: 10px; border: 1px solid #e2e8f0; page-break-inside: auto !important;">
-                ${theadHtml}
-                <tbody style="page-break-inside: auto;">
-                  ${linhasHtml}
-                </tbody>
-              </table>
-
-              <!-- RODAPÉ CORPORATIVO LIMPO -->
-              <div style="page-break-inside: avoid !important; break-inside: avoid !important; margin-top: 12px; padding-top: 8px; border-top: 1px solid #e2e8f0; display: table; width: 100%; font-size: 9px; color: #64748b;">
-                <div style="display: table-cell; text-align: left; font-weight: 500;">Sys Manager (SM) • Governança e Acompanhamento</div>
-                <div style="display: table-cell; text-align: right; font-weight: 500;">Documento de acompanhamento • Folha ${numPag} de ${totalPaginas}</div>
+                <div style="display: table-cell; text-align: right; font-weight: 500;">Documento de acompanhamento${totalPaginas > 1 ? ` • Folha ${numPag} de ${totalPaginas}` : ''}</div>
               </div>
             </div>
           `;
         }
+
+        return `
+          <div class="pagina-relatorio-pdf pagina-extra" style="width: 100%; box-sizing: border-box; background: #ffffff; padding: 6px 8px; margin-top: 16px; border-top: 1px dashed #cbd5e1;">
+            <!-- BARRA DECORATIVA SUPERIOR -->
+            <div style="background: linear-gradient(90deg, #0f172a 0%, #1d4ed8 50%, #38bdf8 100%); height: 3px; border-radius: 2px; margin-bottom: 8px;"></div>
+
+            <!-- CABEÇALHO INSTITUCIONAL DA FOLHA EXTRA -->
+            <div style="display: table; width: 100%; border-bottom: 2px solid #e2e8f0; padding-bottom: 7px; margin-bottom: 8px;">
+              <div style="display: table-cell; vertical-align: middle;">
+                <div style="display: table; width: auto;">
+                  <div style="display: table-cell; vertical-align: middle; padding-right: 10px;">
+                    <div style="background: #0f172a; color: #ffffff; font-weight: 800; font-size: 13px; padding: 4px 10px; border-radius: 6px; letter-spacing: 1.5px; display: inline-block;">
+                      SM
+                    </div>
+                  </div>
+                  <div style="display: table-cell; vertical-align: middle;">
+                    <div style="font-size: 16px; font-weight: 800; color: #0f172a; letter-spacing: -0.3px; line-height: 1.1;">Sys Manager • Relatório de Demandas</div>
+                    <div style="font-size: 9px; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 1px;">Continuação do Detalhamento das Demandas</div>
+                  </div>
+                </div>
+              </div>
+              <div style="display: table-cell; vertical-align: middle; text-align: right;">
+                <div style="display: inline-block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-weight: 700; font-size: 10px; padding: 3px 12px; border-radius: 14px;">
+                  ${periodoDesc}
+                </div>
+                <div style="font-size: 9px; color: #64748b; margin-top: 2px; font-weight: 500;">
+                  Folha ${numPag} de ${totalPaginas}
+                </div>
+              </div>
+            </div>
+
+            <!-- BARRA DE SUBTÍTULO E INTERVALO DAS DEMANDAS -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 10px; margin-bottom: 6px; display: table; width: 100%; box-sizing: border-box;">
+              <div style="display: table-cell; text-align: left; vertical-align: middle;">
+                <span style="font-weight: 800; font-size: 9.5px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">Detalhamento das Demandas do Período (Continuação)</span>
+              </div>
+              <div style="display: table-cell; text-align: right; vertical-align: middle;">
+                <span style="display: inline-block; background: #e2e8f0; color: #334155; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px;">Demandas ${String(itemInicial).padStart(2, '0')} a ${String(itemFinal).padStart(2, '0')} de ${totalDemandas}</span>
+              </div>
+            </div>
+
+            <!-- CABEÇALHO DA TABELA ANTES DOS DADOS NESTA FOLHA EXTRA -->
+            <table style="width: 100%; border-collapse: collapse; font-size: 10px; border: 1px solid #e2e8f0;">
+              ${theadHtml}
+              <tbody>
+                ${linhasHtml}
+              </tbody>
+            </table>
+
+            <!-- RODAPÉ -->
+            <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #e2e8f0; display: table; width: 100%; font-size: 9px; color: #64748b;">
+              <div style="display: table-cell; text-align: left; font-weight: 500;">Sys Manager (SM) • Governança e Acompanhamento</div>
+              <div style="display: table-cell; text-align: right; font-weight: 500;">Documento de acompanhamento • Folha ${numPag} de ${totalPaginas}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Medição real offscreen para empacotar exatamente o máximo de linhas que cabem em 1 folha A4 paisagem sem overflow e sem páginas vazias
+      const PDF_RENDER_WIDTH_PX = 1040;
+      const PDF_MAX_SHEET_HEIGHT_PX = 695; // Proporção A4 Paisagem (194/281 * 1040 = 718px, com margem de segurança)
+
+      const paginas = [];
+      if (demandas.length === 0) {
+        paginas.push([]);
+      } else {
+        const medidorHost = document.createElement('div');
+        medidorHost.style.cssText = `position: fixed; left: -99999px; top: 0; width: ${PDF_RENDER_WIDTH_PX}px; background: #ffffff; color: #0f172a; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; box-sizing: border-box; pointer-events: none; visibility: hidden;`;
+        document.body.appendChild(medidorHost);
+
+        try {
+          let cursor = 0;
+          let numFolhaAtual = 1;
+          while (cursor < demandas.length) {
+            const isFirstSheet = (numFolhaAtual === 1);
+            medidorHost.innerHTML = montarFolhaHtml(isFirstSheet, '', numFolhaAtual, numFolhaAtual, cursor + 1, cursor + 1);
+            const sheetEl = medidorHost.querySelector('.pagina-relatorio-pdf');
+            const tbodyEl = sheetEl.querySelector('tbody');
+            const itensDaFolha = [];
+
+            while (cursor < demandas.length) {
+              const tempTbody = document.createElement('tbody');
+              tempTbody.innerHTML = gerarHtmlLinhaPdf(demandas[cursor], cursor);
+              const trEl = tempTbody.firstElementChild;
+              tbodyEl.appendChild(trEl);
+
+              // Se exceder a altura útil da folha e já houver pelo menos 1 linha, move esta linha para a próxima folha
+              if (sheetEl.offsetHeight > PDF_MAX_SHEET_HEIGHT_PX && itensDaFolha.length > 0) {
+                tbodyEl.removeChild(trEl);
+                break;
+              }
+              itensDaFolha.push(demandas[cursor]);
+              cursor++;
+            }
+
+            paginas.push(itensDaFolha);
+            numFolhaAtual++;
+          }
+        } finally {
+          if (medidorHost.parentNode) medidorHost.parentNode.removeChild(medidorHost);
+        }
+      }
+
+      const totalPaginas = paginas.length;
+      let paginasHtml = '';
+      let offsetGlobal = 0;
+
+      paginas.forEach((itensPagina, numPagIdx) => {
+        const numPag = numPagIdx + 1;
+        const isPrimeira = (numPag === 1);
+        const linhasHtml = renderizarLinhasTabelaPdf(itensPagina, offsetGlobal);
+        const itemInicial = offsetGlobal + 1;
+        const itemFinal = offsetGlobal + itensPagina.length;
+        offsetGlobal += itensPagina.length;
+        paginasHtml += montarFolhaHtml(isPrimeira, linhasHtml, numPag, totalPaginas, itemInicial, itemFinal);
       });
 
       // Monta o HTML do documento dentro de corpoVisualizacaoPdf
       const containerPdf = document.getElementById('corpoVisualizacaoPdf');
       if (containerPdf) {
         containerPdf.innerHTML = `
-          <div id="documentoPdfRenderizado" style="width: 100%; max-width: 1040px; margin: 0 auto; padding: 8px 10px; background: #ffffff; color: #0f172a; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: geometricPrecision; box-sizing: border-box;">
+          <div id="documentoPdfRenderizado" style="width: ${PDF_RENDER_WIDTH_PX}px; max-width: 100%; margin: 0 auto; padding: 6px; background: #ffffff; color: #0f172a; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: geometricPrecision; box-sizing: border-box;">
             ${paginasHtml}
           </div>
         `;
@@ -6327,7 +7184,7 @@
       // Atualiza status do modal
       const statusEl = document.getElementById('statusGeracaoPdfModal');
       if (statusEl) {
-        statusEl.innerHTML = `<span class="spinner-border spinner-border-sm text-primary me-1"></span> Gerando arquivo PDF oficial...`;
+        statusEl.innerHTML = `<span class="spinner-border spinner-border-sm text-primary me-1"></span> Gerando arquivo PDF oficial (${totalPaginas} ${totalPaginas === 1 ? 'página' : 'páginas'})...`;
       }
 
       // Dispara o download automático do arquivo PDF
@@ -6337,13 +7194,14 @@
     }
 
     /**
-     * Executa o download direto do PDF usando html2pdf sobre o container visível e renderizado
+     * Executa o download direto do PDF capturando cada folha 1-a-1 (elimina 100% qualquer página em branco)
      */
-    function executarDownloadPdfDireto() {
+    async function executarDownloadPdfDireto() {
       const containerPdf = document.getElementById('corpoVisualizacaoPdf');
       if (!containerPdf) return;
 
       const elementoParaExportar = document.getElementById('documentoPdfRenderizado') || containerPdf;
+      const folhas = Array.from(elementoParaExportar.querySelectorAll('.pagina-relatorio-pdf'));
 
       const mesSelect = document.getElementById('filtroRelatorioMes');
       const mesTexto = mesSelect ? mesSelect.selectedOptions[0].text : 'Todos_os_Meses';
@@ -6356,54 +7214,99 @@
         statusEl.innerHTML = `<span class="spinner-border spinner-border-sm text-primary me-1"></span> Baixando ${nomeArquivo}...`;
       }
 
-      const opt = {
-        margin:       [8, 8, 8, 8],
-        filename:     nomeArquivo,
-        image:        { type: 'jpeg', quality: 0.99 },
-        html2canvas:  { scale: 2.8, letterRendering: true, useCORS: true, logging: false, backgroundColor: '#ffffff' },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
-        pagebreak:    { mode: ['css', 'legacy'], before: '.html2pdf__page-break' }
-      };
+      const PDF_CAPTURE_WIDTH_PX = 1040;
+      const captureHost = document.createElement('div');
+      captureHost.style.cssText = `position: fixed; left: 0; top: 0; width: ${PDF_CAPTURE_WIDTH_PX}px; background: #ffffff; color: #0f172a; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; pointer-events: none; z-index: -9999; margin: 0; padding: 0;`;
+      document.body.appendChild(captureHost);
 
-      html2pdf()
-        .set(opt)
-        .from(elementoParaExportar)
-        .toPdf()
-        .get('pdf')
-        .then(function(pdfObj) {
-          // 1. Gera Blob e realiza download com link <a> compatível
+      try {
+        const sheetsToRender = folhas.length > 0 ? folhas : [elementoParaExportar];
+
+        // Cria o documento jsPDF com 1 única página A4 paisagem inicial vazia para preencher página por página
+        const dummyDiv = document.createElement('div');
+        dummyDiv.style.cssText = 'width: 10px; height: 10px; background: #ffffff;';
+        const pdfObj = await html2pdf()
+          .set({
+            margin: 0,
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+          })
+          .from(dummyDiv)
+          .toPdf()
+          .get('pdf');
+
+        const marginMm = 8;
+        const pageW = pdfObj.internal.pageSize.getWidth() - (marginMm * 2);   // ~281mm
+        const pageH = pdfObj.internal.pageSize.getHeight() - (marginMm * 2);  // ~194mm
+
+        for (let i = 0; i < sheetsToRender.length; i++) {
+          const cloneSheet = sheetsToRender[i].cloneNode(true);
+          cloneSheet.style.width = `${PDF_CAPTURE_WIDTH_PX}px`;
+          cloneSheet.style.maxWidth = `${PDF_CAPTURE_WIDTH_PX}px`;
+          cloneSheet.style.margin = '0';
+          cloneSheet.style.borderTop = 'none';
+          captureHost.innerHTML = '';
+          captureHost.appendChild(cloneSheet);
+
+          const canvas = await html2pdf()
+            .set({
+              margin: 0,
+              jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+              image: { type: 'jpeg', quality: 0.99 },
+              html2canvas: {
+                scale: 2.4,
+                letterRendering: true,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+              }
+            })
+            .from(cloneSheet)
+            .toCanvas()
+            .get('canvas');
+
+          if (i > 0) {
+            pdfObj.addPage('a4', 'landscape');
+          }
+
+          const ratio = Math.min(pageW / canvas.width, pageH / canvas.height);
+          const drawW = canvas.width * ratio;
+          const drawH = canvas.height * ratio;
+          const offsetX = marginMm + (pageW - drawW) / 2;
+          const imgData = canvas.toDataURL('image/jpeg', 0.98);
+          pdfObj.addImage(imgData, 'JPEG', offsetX, marginMm, drawW, drawH, undefined, 'FAST');
+        }
+
+        try {
+          const blob = pdfObj.output('blob');
+          const blobUrl = URL.createObjectURL(blob);
+
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = nomeArquivo;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
+
           try {
-            const blob = pdfObj.output('blob');
-            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+          } catch(e) {}
+        } catch(e) {
+          pdfObj.save(nomeArquivo);
+        }
 
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = nomeArquivo;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); }, 1000);
-
-            // 2. Tenta também abrir em nova aba
-            try {
-              window.open(blobUrl, '_blank');
-            } catch(e) {}
-          } catch(e) {
-            // Fallback para save padrão do pdfObj
-            pdfObj.save(nomeArquivo);
-          }
-
-          if (statusEl) {
-            statusEl.innerHTML = `<i class="fa-solid fa-circle-check text-success me-1"></i> Arquivo <strong>${nomeArquivo}</strong> baixado com sucesso!`;
-          }
-          mostrarToast('Download do PDF concluído!');
-        })
-        .catch(err => {
-          console.error('Erro na exportação do PDF:', err);
-          if (statusEl) {
-            statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-danger me-1"></i> Não foi possível baixar diretamente. Use o botão <strong>Imprimir / Salvar PDF</strong> acima.`;
-          }
-          mostrarToast('Aviso: utilize a opção Imprimir / Salvar PDF.');
-        });
+        if (statusEl) {
+          statusEl.innerHTML = `<i class="fa-solid fa-circle-check text-success me-1"></i> Arquivo <strong>${nomeArquivo}</strong> (${sheetsToRender.length} ${sheetsToRender.length === 1 ? 'folha' : 'folhas'}) baixado com sucesso!`;
+        }
+        mostrarToast('Download do PDF concluído!');
+      } catch (err) {
+        console.error('Erro na exportação do PDF:', err);
+        if (statusEl) {
+          statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-danger me-1"></i> Não foi possível baixar diretamente. Use o botão <strong>Imprimir / Salvar PDF</strong> acima.`;
+        }
+        mostrarToast('Aviso: utilize a opção Imprimir / Salvar PDF.');
+      } finally {
+        if (captureHost.parentNode) captureHost.parentNode.removeChild(captureHost);
+      }
     }
 
     /**
@@ -6432,11 +7335,11 @@
               table { width: 100%; border-collapse: collapse; page-break-inside: auto !important; }
               thead { display: table-header-group !important; }
               tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-              .html2pdf__page-break { page-break-before: always; break-before: page; height: 0; margin: 0; padding: 0; }
-              .pagina-relatorio-pdf { page-break-inside: avoid !important; break-inside: avoid !important; }
+              .pagina-relatorio-pdf { margin-top: 0 !important; border-top: none !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+              .pagina-extra { page-break-before: always; break-before: page; }
               @media print {
                 body { padding: 0; }
-                .html2pdf__page-break { page-break-before: always; break-before: page; }
+                .pagina-extra { page-break-before: always; break-before: page; }
               }
             </style>
           </head>
@@ -6460,10 +7363,12 @@
     function atualizarSelectsDev() {
       const selectModal = document.getElementById('taskDevSelect');
       const selectEditModal = document.getElementById('editTaskDevSelect');
+      const selectFuturoModal = document.getElementById('futuroDevSelect');
       const selectRel = document.getElementById('filtroRelatorioDev');
 
       if (selectModal) selectModal.innerHTML = '';
       if (selectEditModal) selectEditModal.innerHTML = '';
+      if (selectFuturoModal) selectFuturoModal.innerHTML = '';
       if (selectRel) selectRel.innerHTML = '<option value="TODOS">Todos os Desenvolvedores</option>';
 
       if (appState.usuarios.length === 0) {
@@ -6479,6 +7384,13 @@
           optEditDefault.value = 'USR-1';
           optEditDefault.innerText = 'Ten Nicolas';
           selectEditModal.appendChild(optEditDefault);
+        }
+
+        if (selectFuturoModal) {
+          const optFuturoDefault = document.createElement('option');
+          optFuturoDefault.value = 'USR-1';
+          optFuturoDefault.innerText = 'Ten Nicolas';
+          selectFuturoModal.appendChild(optFuturoDefault);
         }
 
         if (selectRel) {
@@ -6503,6 +7415,13 @@
             selectEditModal.appendChild(optEdit);
           }
 
+          if (selectFuturoModal) {
+            const optFuturo = document.createElement('option');
+            optFuturo.value = u.id;
+            optFuturo.innerText = `${u.nome} (${u.cargo || 'Membro'})`;
+            selectFuturoModal.appendChild(optFuturo);
+          }
+
           if (selectRel) {
             const opt2 = document.createElement('option');
             opt2.value = u.id;
@@ -6513,6 +7432,9 @@
 
         if (selectModal && appState.currentUser) {
           selectModal.value = appState.currentUser.id;
+        }
+        if (selectFuturoModal && appState.currentUser) {
+          selectFuturoModal.value = appState.currentUser.id;
         }
       }
     }
@@ -7792,7 +8714,8 @@
             dataConclusao: ''
           }
         ],
-        solicitacoes: []
+        solicitacoes: [],
+        demandasFuturas: []
       };
     }
   </script>
