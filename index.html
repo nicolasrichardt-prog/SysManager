@@ -1055,51 +1055,6 @@
 
         </div>
 
-        <!-- DRAWER LATERAL (OFFCANVAS) PARA VISUALIZAÇÃO AMPLA DAS LISTAS -->
-        <div class="offcanvas offcanvas-end offcanvas-drawer-custom" tabindex="-1" id="drawerLateralDemandas" aria-labelledby="drawerTitulo">
-          <div class="offcanvas-header border-bottom py-3 px-4 d-flex align-items-center justify-content-between" id="drawerHeader" style="background-color: #ffffff;">
-            <div class="d-flex align-items-center gap-2">
-              <div class="rounded-circle d-flex align-items-center justify-content-center" id="drawerIconContainer" style="width: 38px; height: 38px;">
-                <i id="drawerIcon" class="fa-solid fa-list fs-5"></i>
-              </div>
-              <div>
-                <div class="d-flex align-items-center gap-2">
-                  <h5 class="offcanvas-title fw-bold mb-0" id="drawerTitulo">Lista de Demandas</h5>
-                  <span class="badge rounded-pill font-monospace" id="drawerBadgeQtd">0</span>
-                </div>
-                <small class="text-muted d-block" id="drawerSubtitulo" style="font-size: 0.74rem;">Detalhes das demandas</small>
-              </div>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3 py-1 shadow-xs d-none" id="drawerBtnNovaDemanda" onclick="abrirModalNovaDemanda()">
-                <i class="fa-solid fa-plus me-1"></i> Nova Demanda
-              </button>
-              <button type="button" class="btn-close text-reset shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-          </div>
-          
-          <div class="offcanvas-body p-4 d-flex flex-column" style="background-color: #f8fafc;">
-            <!-- BARRA DE PESQUISA COM LUPA DENTRO DO DRAWER -->
-            <div class="input-group input-group-sm mb-3 shadow-xs" id="containerPesquisaDrawer">
-              <span class="input-group-text bg-white border-end-0 text-secondary" id="drawerPesquisaIcon">
-                <i class="fa-solid fa-magnifying-glass"></i>
-              </span>
-              <input type="text" class="form-control border-start-0 ps-1" id="drawerPesquisaInput" 
-                     placeholder="Pesquisar nesta lista..." 
-                     oninput="filtrarDrawerAoDigitar()" autocomplete="off">
-              <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="drawerBtnLimparPesquisa" 
-                      onclick="limparPesquisaDrawer()" title="Limpar pesquisa">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-
-            <!-- CONTÊINER COM SCROLL VERTICAL DOS CARDS DE DEMANDAS -->
-            <div class="flex-grow-1 overflow-auto pe-1" id="drawerConteudoLista" style="max-height: calc(100vh - 180px);">
-              <!-- Renderizado via JavaScript -->
-            </div>
-          </div>
-        </div>
-
       </div>
 
 
@@ -1226,6 +1181,14 @@
                       </label>
                     </div>
                   </li>
+                  <li class="px-2 py-1">
+                    <div class="form-check">
+                      <input class="form-check-input chk-rel-status cursor-pointer" type="checkbox" id="chkRelStatusDemandaFutura" value="Demanda Futura" checked onchange="aoMudarCheckboxStatusRelatorio()">
+                      <label class="form-check-label fw-semibold user-select-none cursor-pointer d-flex align-items-center gap-1" for="chkRelStatusDemandaFutura" style="color: #4f46e5;">
+                        <span class="badge px-1 py-0" style="font-size: 0.65rem; background-color: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe;">●</span> Demanda Futura
+                      </label>
+                    </div>
+                  </li>
                   <li><hr class="dropdown-divider my-1"></li>
                   <li class="px-2 pt-1 pb-0 d-flex justify-content-between align-items-center">
                     <button type="button" class="btn btn-link btn-xs text-decoration-none p-0 text-muted" style="font-size: 0.74rem;" onclick="selecionarSomenteStatusRelatorio(['Em Andamento', 'Atrasada'])">
@@ -1291,10 +1254,10 @@
             </div>
           </div>
 
-          <!-- DASHBOARD DO RELATÓRIO: 4 CARDS DOS 4 STATUS OFICIAIS (CONFORME REGRA OFICIAL) -->
-          <div class="row g-2 mb-3">
+          <!-- DASHBOARD DO RELATÓRIO: 5 CARDS DOS STATUS OFICIAIS -->
+          <div class="row row-cols-2 row-cols-md-5 g-2 mb-3">
             <!-- 1. Demandas Concluídas -->
-            <div class="col-md-3 col-6">
+            <div class="col">
               <div class="report-kpi-card kpi-concluidas" id="kpiCardRel_Concluida" onclick="filtrarRelatorioPorKpi('Concluída')" role="button" tabindex="0" title="Clique para filtrar apenas Concluídas">
                 <div class="kpi-label text-success">
                   <span>Demandas Concluídas</span>
@@ -1308,7 +1271,7 @@
             </div>
 
             <!-- 2. Demandas Em Andamento -->
-            <div class="col-md-3 col-6">
+            <div class="col">
               <div class="report-kpi-card kpi-andamento" id="kpiCardRel_EmAndamento" onclick="filtrarRelatorioPorKpi('Em Andamento')" role="button" tabindex="0" title="Clique para filtrar apenas Em Andamento">
                 <div class="kpi-label text-primary">
                   <span>Em Produção</span>
@@ -1322,7 +1285,7 @@
             </div>
 
             <!-- 3. Demandas Não Iniciadas -->
-            <div class="col-md-3 col-6">
+            <div class="col">
               <div class="report-kpi-card kpi-naoiniciada" id="kpiCardRel_NaoIniciada" onclick="filtrarRelatorioPorKpi('Não Iniciada')" role="button" tabindex="0" title="Clique para filtrar apenas Não Iniciadas">
                 <div class="kpi-label" style="color: #0891b2;">
                   <span>Não Iniciadas</span>
@@ -1335,8 +1298,22 @@
               </div>
             </div>
 
-            <!-- 4. Demandas Atrasadas -->
-            <div class="col-md-3 col-6">
+            <!-- 4. Demandas Futuras -->
+            <div class="col">
+              <div class="report-kpi-card" id="kpiCardRel_DemandaFutura" onclick="filtrarRelatorioPorKpi('Demanda Futura')" role="button" tabindex="0" title="Clique para filtrar apenas Demandas Futuras" style="border-top: 3px solid #6366f1;">
+                <div class="kpi-label" style="color: #4f46e5;">
+                  <span>Demanda Futura</span>
+                  <i class="fa-solid fa-calendar-days" style="color: #4f46e5;"></i>
+                </div>
+                <div class="kpi-number" style="color: #4f46e5;" id="relDemandasFuturas">0</div>
+                <span class="kpi-badge border" style="background-color: #eef2ff; color: #4338ca; border-color: #c7d2fe;" id="relDemandasFuturasDesc">
+                  0 agendadas p/ esteira
+                </span>
+              </div>
+            </div>
+
+            <!-- 5. Demandas Atrasadas -->
+            <div class="col">
               <div class="report-kpi-card kpi-atrasadas" id="kpiCardRel_Atrasada" onclick="filtrarRelatorioPorKpi('Atrasada')" role="button" tabindex="0" title="Clique para filtrar apenas Atrasadas">
                 <div class="kpi-label text-danger">
                   <span>Demandas Atrasadas</span>
@@ -2254,6 +2231,51 @@
     </div>
   </div>
 
+  <!-- DRAWER LATERAL (OFFCANVAS) GLOBAL PARA TODAS AS ABAS (ESTEIRA E RELATÓRIO) -->
+  <div class="offcanvas offcanvas-end offcanvas-drawer-custom" tabindex="-1" id="drawerLateralDemandas" aria-labelledby="drawerTitulo">
+    <div class="offcanvas-header border-bottom py-3 px-4 d-flex align-items-center justify-content-between" id="drawerHeader" style="background-color: #ffffff;">
+      <div class="d-flex align-items-center gap-2">
+        <div class="rounded-circle d-flex align-items-center justify-content-center" id="drawerIconContainer" style="width: 38px; height: 38px;">
+          <i id="drawerIcon" class="fa-solid fa-list fs-5"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <h5 class="offcanvas-title fw-bold mb-0" id="drawerTitulo">Lista de Demandas</h5>
+            <span class="badge rounded-pill font-monospace" id="drawerBadgeQtd">0</span>
+          </div>
+          <small class="text-muted d-block" id="drawerSubtitulo" style="font-size: 0.74rem;">Detalhes das demandas</small>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-nova-atividade btn-sm rounded-pill px-3 py-1 shadow-xs d-none" id="drawerBtnNovaDemanda" onclick="abrirModalNovaDemanda()">
+          <i class="fa-solid fa-plus me-1"></i> Nova Demanda
+        </button>
+        <button type="button" class="btn-close text-reset shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+    </div>
+
+    <div class="offcanvas-body p-4 d-flex flex-column" style="background-color: #f8fafc;">
+      <!-- BARRA DE PESQUISA COM LUPA DENTRO DO DRAWER -->
+      <div class="input-group input-group-sm mb-3 shadow-xs" id="containerPesquisaDrawer">
+        <span class="input-group-text bg-white border-end-0 text-secondary" id="drawerPesquisaIcon">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </span>
+        <input type="text" class="form-control border-start-0 ps-1" id="drawerPesquisaInput"
+               placeholder="Pesquisar nesta lista..."
+               oninput="filtrarDrawerAoDigitar()" autocomplete="off">
+        <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="drawerBtnLimparPesquisa"
+                onclick="limparPesquisaDrawer()" title="Limpar pesquisa">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- CONTÊINER COM SCROLL VERTICAL DOS CARDS DE DEMANDAS -->
+      <div class="flex-grow-1 overflow-auto pe-1" id="drawerConteudoLista" style="max-height: calc(100vh - 180px);">
+        <!-- Renderizado via JavaScript -->
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: PRÉ-VISUALIZAÇÃO E DOWNLOAD DO RELATÓRIO PDF (SM) -->
   <div class="modal fade" id="modalPreviewRelatorioPdf" tabindex="-1" aria-labelledby="modalPreviewRelatorioPdfLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
@@ -2886,9 +2908,9 @@
         if (valA === valB) return 0;
         return direcao === 'ASC' ? (valA - valB) : (valB - valA);
       } else if (coluna === 'urgencia') {
-        const pesos = { 'Baixa': 1, 'Media': 2, 'Alta': 3, 'Urgente': 4 };
-        valA = pesos[a.urgencia] || 2;
-        valB = pesos[b.urgencia] || 2;
+        const pesos = { 'Agendada': 0, 'Baixa': 1, 'Media': 2, 'Alta': 3, 'Urgente': 4 };
+        valA = (pesos[a.urgencia] !== undefined) ? pesos[a.urgencia] : 2;
+        valB = (pesos[b.urgencia] !== undefined) ? pesos[b.urgencia] : 2;
         if (valA === valB) return 0;
         return direcao === 'ASC' ? (valA - valB) : (valB - valA);
       } else if (coluna === 'diasEstimados') {
@@ -3000,7 +3022,28 @@
       }, 1600);
     }
 
-    // Fecha qualquer modal em 0 milissegundos
+    function limparBloqueioScrollEBackdrops() {
+      const temModalAberto = document.querySelectorAll('.modal.show').length > 0;
+      const temDrawerAberto = document.querySelectorAll('.offcanvas.show').length > 0;
+
+      if (!temModalAberto) {
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+      }
+      if (!temDrawerAberto) {
+        document.querySelectorAll('.offcanvas-backdrop').forEach(b => b.remove());
+      }
+      if (!temModalAberto && !temDrawerAberto) {
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+        document.body.removeAttribute('data-bs-overflow');
+        document.body.removeAttribute('data-bs-padding-right');
+        document.documentElement.style.removeProperty('overflow');
+        document.documentElement.style.removeProperty('padding-right');
+      }
+    }
+
+    // Fecha qualquer modal em 0 milissegundos sem travar o scroll da página
     function fecharModalSeguro(modalId) {
       const el = document.getElementById(modalId);
       if (!el) return;
@@ -3011,12 +3054,8 @@
         const inst = bootstrap.Modal.getOrCreateInstance(el);
         if (inst) inst.hide();
       }
-      setTimeout(() => {
-        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-        document.body.classList.remove('modal-open');
-        document.body.style.removeProperty('overflow');
-        document.body.style.removeProperty('padding-right');
-      }, 50);
+      setTimeout(limparBloqueioScrollEBackdrops, 50);
+      setTimeout(limparBloqueioScrollEBackdrops, 380);
     }
 
     function abrirModalNovaDemanda() {
@@ -3228,11 +3267,11 @@
       salvarDemandasFuturasLocais(locais);
       try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
 
-      const modalEl = document.getElementById('modalNovaDemandaFutura');
-      if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+      fecharModalSeguro('modalNovaDemandaFutura');
 
       verificarDemandasFuturasNoCliente();
       atualizarAbaEsteira();
+      atualizarRelatorioMensal();
       if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
       mostrarToast(isEdicao ? 'Demanda Futura atualizada!' : 'Demanda Futura agendada!');
 
@@ -3240,14 +3279,28 @@
         if (res && res.success) {
           if (!isEdicao && res.id) {
             objFuturo.id = res.id;
-            const atual = obterDemandasFuturasLocais().filter(x => x.id !== idFinal && x.id !== res.id);
-            salvarDemandasFuturasLocais(atual);
-            try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
-            atualizarAbaEsteira();
-            if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
-          } else {
-            const atual = obterDemandasFuturasLocais().filter(x => x.id !== idFinal);
-            salvarDemandasFuturasLocais(atual);
+          }
+          if (res.email24hEnviado) {
+            objFuturo.email24hEnviado = true;
+            objFuturo.dataEmail24h = res.dataEmail24h || '';
+            mostrarToast('Demanda Futura salva e e-mail de aviso enviado!');
+          }
+          if (res.status === 'Na Esteira') {
+            carregarDados();
+          }
+          if (res.emailErro) {
+            console.warn('Aviso ao enviar e-mail da Demanda Futura:', res.emailErro);
+          }
+          const atual = obterDemandasFuturasLocais().filter(x => x.id !== idFinal && x.id !== objFuturo.id);
+          salvarDemandasFuturasLocais(atual);
+          try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
+          atualizarAbaEsteira();
+          atualizarRelatorioMensal();
+          if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
+        } else if (res && res.message) {
+          console.warn('Servidor não processou Demanda Futura:', res.message);
+          if (res.message.toLowerCase().includes('não reconhecida')) {
+            mostrarToast('Salvo localmente. Reimplante o Code.gs no Apps Script para envio de e-mails!');
           }
         }
       }, () => {});
@@ -3272,6 +3325,7 @@
       } catch (e) {}
 
       atualizarAbaEsteira();
+      atualizarRelatorioMensal();
       if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
       mostrarToast('Demanda Futura excluída.');
 
@@ -3291,6 +3345,7 @@
     function verificarDemandasFuturasNoCliente() {
       if (!Array.isArray(appState.demandasFuturas) || appState.demandasFuturas.length === 0) return false;
       const agora = new Date();
+      const vinteQuatroHorasMs = 24 * 60 * 60 * 1000;
       let houvePromocao = false;
       let precisaChamarServidor = false;
 
@@ -3299,7 +3354,13 @@
         const dtProg = parseDataHoraFuturoLocal(df.dataHoraProgramada);
         if (!dtProg) return;
 
-        if (agora.getTime() >= dtProg.getTime()) {
+        const diffMs = dtProg.getTime() - agora.getTime();
+        if (diffMs > 0 && diffMs <= vinteQuatroHorasMs && !df.email24hEnviado && !String(df.id || '').startsWith('DFU-TMP-') && !df._emailSyncTentado) {
+          df._emailSyncTentado = true;
+          precisaChamarServidor = true;
+        }
+
+        if (diffMs <= 0) {
           df.status = 'Na Esteira';
           const dtPrazo = new Date(dtProg.getTime());
           dtPrazo.setDate(dtPrazo.getDate() + 1);
@@ -3351,11 +3412,42 @@
         try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
 
         if (precisaChamarServidor) {
-          executarNoServidor('processarDemandasFuturas', {}, () => {}, () => {});
+          executarNoServidor('processarDemandasFuturas', {}, (res) => {
+            if (res && res.success && Array.isArray(res.demandasFuturas)) {
+              res.demandasFuturas.forEach(srv => {
+                const loc = (appState.demandasFuturas || []).find(d => d.id === srv.id);
+                if (loc) {
+                  loc.email24hEnviado = Boolean(srv.email24hEnviado);
+                  loc.dataEmail24h = srv.dataEmail24h || '';
+                }
+              });
+              try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
+              if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
+            }
+          }, () => {});
         }
         atualizarAbaEsteira();
+        atualizarRelatorioMensal();
         if (drawerTipoAtual) renderizarConteudoDrawer();
         mostrarToast('Demanda Futura entrou automaticamente na Esteira de Produção!');
+      } else if (precisaChamarServidor) {
+        executarNoServidor('processarDemandasFuturas', {}, (res) => {
+          if (res && res.success && Array.isArray(res.demandasFuturas)) {
+            let atualizouMail = false;
+            res.demandasFuturas.forEach(srv => {
+              const loc = (appState.demandasFuturas || []).find(d => d.id === srv.id);
+              if (loc && srv.email24hEnviado && !loc.email24hEnviado) {
+                loc.email24hEnviado = true;
+                loc.dataEmail24h = srv.dataEmail24h || '';
+                atualizouMail = true;
+              }
+            });
+            if (atualizouMail) {
+              try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
+              if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
+            }
+          }
+        }, () => {});
       }
       return houvePromocao;
     }
@@ -3430,6 +3522,22 @@
       setInterval(() => {
         verificarDemandasFuturasNoCliente();
       }, 30000);
+
+      // Garantia global de desbloqueio de scroll ao fechar qualquer modal/drawer ou trocar aba
+      document.addEventListener('hidden.bs.modal', () => {
+        setTimeout(limparBloqueioScrollEBackdrops, 20);
+      });
+      document.addEventListener('hidden.bs.offcanvas', () => {
+        setTimeout(limparBloqueioScrollEBackdrops, 20);
+      });
+      document.addEventListener('shown.bs.tab', () => {
+        const drawerEl = document.getElementById('drawerLateralDemandas');
+        if (drawerEl && drawerEl.classList.contains('show')) {
+          const instDrawer = bootstrap.Offcanvas.getInstance(drawerEl);
+          if (instDrawer) instDrawer.hide();
+        }
+        setTimeout(limparBloqueioScrollEBackdrops, 50);
+      });
 
       // Sincronização automática ao alternar abas
       const tabRelBtn = document.getElementById('tab-relatorio-btn');
@@ -3698,19 +3806,38 @@
       const locaisFuturas = obterDemandasFuturasLocais();
       const mapFuturas = new Map();
       servidorFuturas.forEach(d => mapFuturas.set(d.id, d));
+      const servidorSuportaFuturas = Array.isArray(dados.demandasFuturas);
+      const locaisParaSync = [];
       locaisFuturas.forEach(l => {
         if (!removidasFuturas.includes(l.id)) {
-          // Mantém item local enquanto o servidor ainda não o devolveu ou se é edição recente
           if (!mapFuturas.has(l.id) || String(l.id).startsWith('DFU-TMP-')) {
             mapFuturas.set(l.id, { ...l });
-          } else if (isAuthoritative) {
-            // Servidor já possui esse ID, limpa cópia temporária depois
+            if (isAuthoritative && servidorSuportaFuturas && String(l.id).startsWith('DFU-TMP-') && l.status === 'Agendada') {
+              locaisParaSync.push(l);
+            }
           }
         }
       });
       appState.demandasFuturas = Array.from(mapFuturas.values()).sort((a, b) =>
         (a.dataHoraProgramada || '').localeCompare(b.dataHoraProgramada || '')
       );
+      if (locaisParaSync.length > 0) {
+        locaisParaSync.forEach(itemTmp => {
+          const tmpId = itemTmp.id;
+          executarNoServidor('cadastrarDemandaFutura', itemTmp, (res) => {
+            if (res && res.success && res.id) {
+              itemTmp.id = res.id;
+              itemTmp.email24hEnviado = Boolean(res.email24hEnviado);
+              itemTmp.dataEmail24h = res.dataEmail24h || '';
+              const restantes = obterDemandasFuturasLocais().filter(x => x.id !== tmpId && x.id !== res.id);
+              salvarDemandasFuturasLocais(restantes);
+              atualizarAbaEsteira();
+              atualizarRelatorioMensal();
+              if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
+            }
+          }, () => {});
+        });
+      }
       verificarDemandasFuturasNoCliente();
 
       // Reconcilia e aplica apenas edições locais válidas/pendentes (remove fantasmas/duplicadas obsoletas)
@@ -5409,6 +5536,16 @@
     }
 
     function abrirModalEditarTarefa(tarefaId) {
+      // Se o drawer lateral (Dossiê) estiver aberto, fecha-o antes para evitar empilhamento de backdrops/bloqueio de scroll
+      const elDrawer = document.getElementById('drawerLateralDemandas');
+      if (elDrawer && elDrawer.classList.contains('show')) {
+        const instDrawer = bootstrap.Offcanvas.getInstance(elDrawer);
+        if (instDrawer) instDrawer.hide();
+        setTimeout(() => {
+          document.querySelectorAll('.offcanvas-backdrop').forEach(b => b.remove());
+        }, 50);
+      }
+
       popularModulosUI();
       atualizarSelectsDev();
 
@@ -5645,9 +5782,11 @@
           status: tarefaEditada.status,
           ativo: tarefaEditada.ativo === true,
           isNovaDemanda: tarefaEditada.isNovaDemanda === true,
+          pendingSync: true,
           savedAt: Date.now()
         };
         localStorage.setItem('SYSMANAGER_LOCAL_EDITS', JSON.stringify(edits));
+        try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch(eCache) {}
       } catch(e) {}
     }
 
@@ -5688,18 +5827,56 @@
             if (isAuthoritative) {
               const serverStatus = normalizarStatus(matchTask.status);
               const localStatus = normalizarStatus(ed.status);
+              const mesmoConteudo =
+                serverStatus === localStatus &&
+                (matchTask.dataPrazo || '') === (ed.dataPrazo || '') &&
+                Boolean(matchTask.ativo) === Boolean(ed.ativo) &&
+                (matchTask.titulo || '') === (ed.titulo || '') &&
+                (matchTask.descricao || '') === (ed.descricao || '') &&
+                (matchTask.modulo || '') === (ed.modulo || '') &&
+                Boolean(matchTask.demandaExterna) === Boolean(ed.demandaExterna) &&
+                String(matchTask.devId || '') === String(ed.devId || '') &&
+                (matchTask.urgencia || '') === (ed.urgencia || '') &&
+                Number(matchTask.diasEstimados || 0) === Number(ed.diasEstimados || 0);
 
-              // Se o servidor já concluiu, ou se o snapshot local é legado/antigo (>2min) ou idêntico ao servidor, limpa o local edit e confia no servidor
+              // Se o servidor já concluiu, ou se o snapshot local é legado/antigo (>2min) ou 100% idêntico ao servidor, limpa o local edit e confia no servidor
               if (
                 serverStatus === 'Concluída' ||
                 edSemTimestampLegado ||
                 edExpirado ||
-                (serverStatus === localStatus && (matchTask.dataPrazo || '') === (ed.dataPrazo || '') && Boolean(matchTask.ativo) === Boolean(ed.ativo)) ||
+                mesmoConteudo ||
                 (localStatus === 'Não Iniciada' && serverStatus !== 'Não Iniciada' && !ed.revertidoParaNaoIniciada)
               ) {
                 delete edits[id];
                 editsAlterados = true;
                 return;
+              }
+
+              // Se ainda difere do servidor e está pendente de sincronização, reenvia em background após F5
+              if (ed.pendingSync && !ed.isNovaDemanda && typeof executarNoServidor === 'function') {
+                window._retriedLocalEditTs = window._retriedLocalEditTs || {};
+                if (window._retriedLocalEditTs[id] !== (ed.savedAt || 1)) {
+                  window._retriedLocalEditTs[id] = ed.savedAt || 1;
+                  executarNoServidor('atualizarTarefa', {
+                    id: ed.id,
+                    tarefaId: ed.id,
+                    titulo: ed.titulo,
+                    descricao: ed.descricao || '',
+                    modulo: ed.modulo || 'SIOPLEEx',
+                    demandaExterna: ed.demandaExterna === true,
+                    devId: ed.devId,
+                    devNome: ed.devNome,
+                    diasEstimados: ed.diasEstimados,
+                    dataPrazo: ed.dataPrazo || '',
+                    dataInicio: ed.dataInicio || '',
+                    urgencia: ed.urgencia || 'Média',
+                    status: ed.status
+                  }, resSync => {
+                    if (resSync && resSync.success) {
+                      limparEdicaoLocal(ed.id);
+                    }
+                  });
+                }
               }
             }
 
@@ -5931,10 +6108,16 @@
         localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
       } catch(e) {}
 
-      // 3. Atualiza toda a interface imediatamente (0ms de atraso)
+      // 3. Atualiza toda a interface imediatamente (preservando a posição de rolagem no Relatório)
+      const scrollYAntes = window.scrollY;
       atualizarAbaEsteira();
       renderizarGraficos();
       atualizarRelatorioMensal();
+      if (scrollYAntes > 0) {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: scrollYAntes, behavior: 'instant' });
+        });
+      }
       mostrarToast('Demanda atualizada com sucesso!');
 
       // 4. Sincroniza em segundo plano com o Google Sheets
@@ -5951,7 +6134,9 @@
           devNome: tarefa.devNome,
           diasEstimados: tarefa.diasEstimados,
           dataPrazo: tarefa.dataPrazo,
-          urgencia: tarefa.urgencia
+          dataInicio: tarefa.dataInicio || '',
+          urgencia: tarefa.urgencia,
+          status: tarefa.status
         },
         res => {
           if (res && res.success) {
@@ -5960,13 +6145,20 @@
             try {
               localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
             } catch(e) {}
-          } else if (res && !res.success) {
-            console.warn('Aviso do servidor ao salvar:', res.message);
+          } else {
+            const msg = (res && res.message) ? res.message : 'Resposta inesperada do servidor';
+            console.warn('Aviso do servidor ao salvar:', msg);
+            if (typeof mostrarToast === 'function') {
+              mostrarToast('Edição salva localmente, mas o servidor retornou aviso: ' + msg, 'warning');
+            }
             // Mantém a edição local protegida para o usuário não perder no F5
           }
         },
         err => {
           console.error('Erro de conexão ao salvar no servidor:', err);
+          if (typeof mostrarToast === 'function') {
+            mostrarToast('Sem resposta do servidor ao salvar edição; alteração preservada localmente.', 'warning');
+          }
         }
       );
     }
@@ -6265,11 +6457,11 @@
         lbl.innerHTML = '<span class="text-danger fw-semibold">Nenhum status</span>';
       } else if (checkedCbs.length === 1) {
         const v = checkedCbs[0].value;
-        lbl.innerText = (v === 'Não Iniciada') ? 'Não Iniciadas' : (v === 'Atrasada' ? 'Atrasadas' : (v === 'Concluída' ? 'Concluídas' : 'Em Andamento'));
+        lbl.innerText = (v === 'Não Iniciada') ? 'Não Iniciadas' : (v === 'Atrasada' ? 'Atrasadas' : (v === 'Concluída' ? 'Concluídas' : (v === 'Demanda Futura' ? 'Demanda Futura' : 'Em Andamento')));
       } else {
         const nomes = Array.from(checkedCbs).map(c => {
           const v = c.value;
-          return (v === 'Não Iniciada') ? 'Não Iniciadas' : (v === 'Atrasada' ? 'Atrasadas' : (v === 'Concluída' ? 'Concluídas' : 'Em Andamento'));
+          return (v === 'Não Iniciada') ? 'Não Iniciadas' : (v === 'Atrasada' ? 'Atrasadas' : (v === 'Concluída' ? 'Concluídas' : (v === 'Demanda Futura' ? 'Demanda Futura' : 'Em Andamento')));
         });
         lbl.innerText = nomes.join(', ');
       }
@@ -6316,12 +6508,13 @@
         kpiFiltroAtivoRelatorio = tipo;
       }
 
-      // Atualiza visual nos 4 cards de status + indicador de total
+      // Atualiza visual nos 5 cards de status + indicador de total
       const mapeamento = {
         'Concluída': 'kpiCardRel_Concluida',
         'Em Andamento': 'kpiCardRel_EmAndamento',
         'Não Iniciada': 'kpiCardRel_NaoIniciada',
-        'Atrasada': 'kpiCardRel_Atrasada'
+        'Atrasada': 'kpiCardRel_Atrasada',
+        'Demanda Futura': 'kpiCardRel_DemandaFutura'
       };
 
       Object.entries(mapeamento).forEach(([status, elementId]) => {
@@ -6394,7 +6587,7 @@
       if (btnLimpar) btnLimpar.classList.add('d-none');
 
       kpiFiltroAtivoRelatorio = null;
-      ['kpiCardRel_TODOS', 'kpiCardRel_Concluida', 'kpiCardRel_EmAndamento', 'kpiCardRel_NaoIniciada', 'kpiCardRel_Atrasada'].forEach(id => {
+      ['kpiCardRel_TODOS', 'kpiCardRel_Concluida', 'kpiCardRel_EmAndamento', 'kpiCardRel_NaoIniciada', 'kpiCardRel_Atrasada', 'kpiCardRel_DemandaFutura'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('kpi-filtro-ativo');
       });
@@ -6558,6 +6751,50 @@
         return emAndamentoNoPeriodo || isAtrasada || concluidaNoPeriodo || naoIniciadaNoPeriodo;
       });
 
+      // 5. + Demandas Futuras agendadas para entrada na esteira
+      if (Array.isArray(appState.demandasFuturas) && appState.demandasFuturas.length > 0) {
+        const futurasFiltradas = appState.demandasFuturas
+          .filter(df => (df.status || 'Agendada') === 'Agendada')
+          .filter(df => {
+            const isoAg = df.dataHoraProgramada ? String(df.dataHoraProgramada).split('T')[0] : '';
+            const dAg = isoAg ? parseDataLocal(isoAg) : null;
+            if (dAg) dAg.setHours(0, 0, 0, 0);
+            const dCri = parseDataLocal(df.dataCriacao || isoAg);
+            dCri.setHours(0, 0, 0, 0);
+            if (dataInicioFiltro && dataFimFiltro) {
+              const agNoPer = dAg && dAg.getTime() >= dataInicioFiltro.getTime() && dAg.getTime() <= dataFimFiltro.getTime();
+              const criNoPer = dCri.getTime() >= dataInicioFiltro.getTime() && dCri.getTime() <= dataFimFiltro.getTime();
+              return agNoPer || criNoPer;
+            }
+            if (dataFimFiltro && dCri.getTime() > dataFimFiltro.getTime() && (!dAg || dAg.getTime() > dataFimFiltro.getTime())) return false;
+            return true;
+          })
+          .map(df => {
+            const isoAg = df.dataHoraProgramada ? String(df.dataHoraProgramada).split('T')[0] : '';
+            return {
+              id: df.id,
+              titulo: df.titulo,
+              descricao: '',
+              modulo: df.modulo || 'SIOPLEEx',
+              demandaExterna: df.demandaExterna === true || df.demandaExterna === 'true' || df.modulo === 'Demanda Externa',
+              devId: df.devId,
+              devNome: df.devNome,
+              diasEstimados: 0,
+              diasTrabalhados: 0,
+              dataInsercao: (df.dataCriacao ? String(df.dataCriacao).split('T')[0] : isoAg),
+              dataInicio: '',
+              dataPrazo: isoAg,
+              dataHoraProgramada: df.dataHoraProgramada || '',
+              urgencia: 'Agendada',
+              status: 'Demanda Futura',
+              ativo: false,
+              isDemandaFutura: true,
+              email24hEnviado: df.email24hEnviado === true || df.email24hEnviado === 'true'
+            };
+          });
+        filtradas = filtradas.concat(futurasFiltradas);
+      }
+
       // Filtro por Desenvolvedor (se selecionado)
       const devRelFiltro = document.getElementById('filtroRelatorioDev');
       if (devRelFiltro && devRelFiltro.value && devRelFiltro.value !== 'TODOS') {
@@ -6601,12 +6838,13 @@
       renderizarPainelMultiSort();
       atualizarIconesMultiSort();
 
-      // Guarda métricas consolidadas do período filtrado conforme os 4 status oficiais
+      // Guarda métricas consolidadas do período filtrado conforme os 5 status oficiais
       const totalDemandas = filtradas.length;
       const totalConcluidas = filtradas.filter(t => t.status === 'Concluída').length;
       const totalEmAndamento = filtradas.filter(t => t.status === 'Em Andamento').length;
       const totalNaoIniciadas = filtradas.filter(t => t.status === 'Não Iniciada').length;
       const totalAtrasadas = filtradas.filter(t => t.status === 'Atrasada').length;
+      const totalDemandasFuturas = filtradas.filter(t => t.status === 'Demanda Futura').length;
 
       // 1. Demandas Concluídas
       const elConcluidas = document.getElementById('relConcluidas');
@@ -6640,6 +6878,14 @@
       const elAtrasadasDesc = document.getElementById('relAtrasadasDesc');
       if (elAtrasadasDesc) {
         elAtrasadasDesc.innerText = totalAtrasadas === 0 ? 'nenhum atraso' : `${totalAtrasadas} fora do prazo`;
+      }
+
+      // 5. Demandas Futuras Agendadas
+      const elDemandasFuturas = document.getElementById('relDemandasFuturas');
+      if (elDemandasFuturas) elDemandasFuturas.innerText = totalDemandasFuturas;
+      const elDemandasFuturasDesc = document.getElementById('relDemandasFuturasDesc');
+      if (elDemandasFuturasDesc) {
+        elDemandasFuturasDesc.innerText = totalDemandasFuturas === 1 ? '1 agendada p/ esteira' : `${totalDemandasFuturas} agendadas p/ esteira`;
       }
 
       // Indicador Total Geral de Demandas
@@ -6686,10 +6932,14 @@
         exibidasNaTabela.forEach((t, index) => {
           const tr = document.createElement('tr');
           tr.className = 'linha-tabela-relatorio';
-          tr.title = 'Clique para ver o dossiê completo desta demanda';
+          tr.title = t.isDemandaFutura ? 'Clique para editar esta demanda futura agendada' : 'Clique para editar ou visualizar detalhes desta demanda';
           tr.onclick = function(e) {
             if (e.target.closest('button') || e.target.closest('a')) return;
-            abrirDrawerDetalheDemanda(t.id);
+            if (t.isDemandaFutura) {
+              abrirModalNovaDemandaFutura(t.id);
+            } else {
+              abrirDrawerDetalheDemanda(t.id);
+            }
           };
 
           const isExterna = (t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa');
@@ -6708,6 +6958,8 @@
             statusBadge = `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-weight: 600; font-size: 0.74rem;"><i class="fa-solid fa-triangle-exclamation me-1 small"></i>Atrasada</span>`;
           } else if (t.status === 'Não Iniciada') {
             statusBadge = `<span class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1" style="font-weight: 600; font-size: 0.74rem;"><i class="fa-regular fa-circle-dot me-1 small"></i>Não Iniciada</span>`;
+          } else if (t.status === 'Demanda Futura') {
+            statusBadge = `<span class="badge rounded-pill px-2 py-1" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; font-weight: 600; font-size: 0.74rem;"><i class="fa-solid fa-calendar-days me-1 small"></i>Demanda Futura</span>`;
           } else {
             statusBadge = `<span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-weight: 600; font-size: 0.74rem;"><i class="fa-solid fa-spinner fa-spin me-1 small" style="animation-duration: 3s;"></i>Em Andamento</span>`;
           }
@@ -6720,12 +6972,16 @@
             urgenciaBadge = `<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;">Alta</span>`;
           } else if (urg === 'baixa') {
             urgenciaBadge = `<span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">Baixa</span>`;
+          } else if (urg === 'agendada') {
+            urgenciaBadge = `<span class="badge rounded-pill px-2 py-1" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; font-size: 0.72rem;"><i class="fa-regular fa-clock me-1"></i>Programada</span>`;
           } else {
             urgenciaBadge = `<span class="badge rounded-pill bg-info-subtle text-info border border-info-subtle px-2 py-1" style="font-size: 0.72rem;">Média</span>`;
           }
 
           let prazo = '';
-          if (t.status === 'Concluída') {
+          if (t.status === 'Demanda Futura') {
+            prazo = t.dataHoraProgramada ? formatarDataHoraFuturoPtBr(t.dataHoraProgramada) : (t.dataPrazo ? formatarData(t.dataPrazo) : 'A definir');
+          } else if (t.status === 'Concluída') {
             prazo = formatarData(t.dataConclusao || t.dataPrazo);
           } else if (t.dataPrazo) {
             prazo = formatarData(t.dataPrazo);
@@ -6737,12 +6993,17 @@
             ? `<span class="text-danger fw-bold font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-clock me-1"></i>${prazo}</span>`
             : (t.status === 'Concluída'
                 ? `<span class="text-success fw-semibold font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar-check me-1"></i>${prazo}</span>`
-                : (t.status === 'Não Iniciada'
-                    ? `<span class="text-muted font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-clock me-1"></i>${prazo}</span>`
-                    : `<span class="text-secondary font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar me-1"></i>${prazo}</span>`));
+                : (t.status === 'Demanda Futura'
+                    ? `<span class="fw-semibold font-monospace" style="color: #4338ca; font-size: 0.8rem;"><i class="fa-regular fa-calendar-days me-1"></i>${prazo}</span>`
+                    : (t.status === 'Não Iniciada'
+                        ? `<span class="text-muted font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-clock me-1"></i>${prazo}</span>`
+                        : `<span class="text-secondary font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar me-1"></i>${prazo}</span>`)));
 
-          const diasEstTexto = (t.status === 'Não Iniciada' && (!t.diasEstimados || t.diasEstimados === 0)) ? '-' : `${t.diasEstimados}d`;
-          const diasTrabTexto = (t.status === 'Não Iniciada' && (!t.diasTrabalhados || t.diasTrabalhados === 0)) ? '-' : `${t.diasTrabalhados}d`;
+          const diasEstTexto = (t.isDemandaFutura || (t.status === 'Não Iniciada' && (!t.diasEstimados || t.diasEstimados === 0))) ? '-' : `${t.diasEstimados}d`;
+          const diasTrabTexto = (t.isDemandaFutura || (t.status === 'Não Iniciada' && (!t.diasTrabalhados || t.diasTrabalhados === 0))) ? '-' : `${t.diasTrabalhados}d`;
+
+          const acaoEditarClick = t.isDemandaFutura ? `abrirModalNovaDemandaFutura('${t.id}')` : `abrirModalEditarTarefa('${t.id}')`;
+          const acaoExcluirClick = t.isDemandaFutura ? `excluirDemandaFuturaConfirm('${t.id}')` : `excluirDemandaConfirm('${t.id}')`;
 
           tr.innerHTML = `
             <td class="font-monospace text-muted small fw-semibold" style="padding-left: 2px; padding-right: 2px;">${String(index + 1).padStart(2, '0')}</td>
@@ -6766,14 +7027,11 @@
             <td style="padding-left: 2px; padding-right: 2px;">${prazoHtml}</td>
             <td data-html2canvas-ignore="true" class="text-center text-nowrap" style="padding-left: 2px; padding-right: 2px;">
               <div class="d-inline-flex gap-1 justify-content-center align-items-center">
-                <button type="button" class="btn btn-outline-primary btn-sm p-0 rounded-circle" style="width: 26px; height: 26px; min-width: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Ver Dossiê da Demanda" onclick="event.stopPropagation(); abrirDrawerDetalheDemanda('${t.id}')">
-                  <i class="fa-solid fa-eye" style="font-size: 0.72rem;"></i>
-                </button>
                 ${podeExcluirEstaDemanda ? `
-                  <button type="button" class="btn btn-outline-secondary btn-sm p-0 rounded-circle" style="width: 26px; height: 26px; min-width: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Editar Demanda" onclick="event.stopPropagation(); abrirModalEditarTarefa('${t.id}')">
+                  <button type="button" class="btn btn-outline-secondary btn-sm p-0 rounded-circle" style="width: 26px; height: 26px; min-width: 26px; display: inline-flex; align-items: center; justify-content: center;" title="${t.isDemandaFutura ? 'Editar Demanda Futura' : 'Editar Demanda'}" onclick="event.stopPropagation(); ${acaoEditarClick}">
                     <i class="fa-solid fa-pen-to-square" style="font-size: 0.72rem;"></i>
                   </button>
-                  <button type="button" class="btn btn-outline-danger btn-sm p-0 rounded-circle" style="width: 26px; height: 26px; min-width: 26px; display: inline-flex; align-items: center; justify-content: center;" title="Excluir Demanda" onclick="event.stopPropagation(); excluirDemandaConfirm('${t.id}')">
+                  <button type="button" class="btn btn-outline-danger btn-sm p-0 rounded-circle" style="width: 26px; height: 26px; min-width: 26px; display: inline-flex; align-items: center; justify-content: center;" title="${t.isDemandaFutura ? 'Excluir Demanda Futura' : 'Excluir Demanda'}" onclick="event.stopPropagation(); ${acaoExcluirClick}">
                     <i class="fa-solid fa-trash-can" style="font-size: 0.72rem;"></i>
                   </button>
                 ` : ''}
@@ -6843,10 +7101,11 @@
       const atrasadas = demandas.filter(t => t.status === 'Atrasada').length;
       const emAndamento = demandas.filter(t => t.status === 'Em Andamento').length;
       const naoIniciadas = demandas.filter(t => t.status === 'Não Iniciada').length;
+      const demandasFuturas = demandas.filter(t => t.status === 'Demanda Futura').length;
 
       dadosRelatorioPdfAtual = {
         mesTexto, anoTexto, devTexto, modTexto, statusTexto, periodoDesc,
-        totalDemandas, concluidas, atrasadas, emAndamento, naoIniciadas, demandas
+        totalDemandas, concluidas, atrasadas, emAndamento, naoIniciadas, demandasFuturas, demandas
       };
 
       // Tags de filtros adicionais ativos (não duplica se for personalizado)
@@ -6878,6 +7137,10 @@
           statusBadgeColor = '#475569';
           statusBg = '#f1f5f9';
           statusBorder = '#cbd5e1';
+        } else if (d.status === 'Demanda Futura') {
+          statusBadgeColor = '#4338ca';
+          statusBg = '#eef2ff';
+          statusBorder = '#c7d2fe';
         }
 
         let urgBadgeColor = '#0369a1';
@@ -6890,11 +7153,15 @@
           urgBadgeColor = '#b45309'; urgBg = '#fffbeb'; urgBorder = '#fcd34d';
         } else if (urgLower === 'baixa') {
           urgBadgeColor = '#15803d'; urgBg = '#f0fdf4'; urgBorder = '#86efac';
+        } else if (urgLower === 'agendada') {
+          urgBadgeColor = '#6d28d9'; urgBg = '#f5f3ff'; urgBorder = '#ddd6fe';
         }
-        const urgTexto = d.urgencia || 'Média';
+        const urgTexto = urgLower === 'agendada' ? 'Programada' : (d.urgencia || 'Média');
 
         let prazo = '';
-        if (d.status === 'Concluída') {
+        if (d.status === 'Demanda Futura') {
+          prazo = d.dataHoraProgramada ? formatarDataHoraFuturoPtBr(d.dataHoraProgramada) : (d.dataPrazo ? formatarData(d.dataPrazo) : 'A definir');
+        } else if (d.status === 'Concluída') {
           prazo = formatarData(d.dataConclusao || d.dataPrazo);
         } else if (d.dataPrazo) {
           prazo = formatarData(d.dataPrazo);
@@ -6927,7 +7194,7 @@
                 ${d.status}
               </span>
             </td>
-            <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: center; white-space: nowrap; color: ${d.status === 'Atrasada' ? '#dc2626' : (d.status === 'Concluída' ? '#16a34a' : (d.status === 'Não Iniciada' ? '#64748b' : '#334155'))}; font-weight: 700; font-size: 9.5px; font-family: monospace;">${prazo}</td>
+            <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: center; white-space: nowrap; color: ${d.status === 'Atrasada' ? '#dc2626' : (d.status === 'Concluída' ? '#16a34a' : (d.status === 'Demanda Futura' ? '#4338ca' : (d.status === 'Não Iniciada' ? '#64748b' : '#334155')))}; font-weight: 700; font-size: 9.5px; font-family: monospace;">${prazo}</td>
           </tr>
         `;
       }
@@ -7028,6 +7295,7 @@
                   <span style="display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Em Produção: ${emAndamento}</span>
                   <span style="display: inline-block; background: #cffafe; color: #0e7490; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Não Iniciadas: ${naoIniciadas}</span>
                   <span style="display: inline-block; background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Atrasadas: ${atrasadas}</span>
+                  ${demandasFuturas > 0 ? `<span style="display: inline-block; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Demandas Futuras: ${demandasFuturas}</span>` : ''}
                 </div>
               </div>
 
