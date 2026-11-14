@@ -3007,13 +3007,12 @@
     }
 
 
-    // 🌐 URL Oficial da API Google Apps Script (Conecta a Vercel à sua Planilha Google Sheets)
+  // 🌐 URL Oficial da API Google Apps Script (Conecta a Vercel à sua Planilha Google Sheets)
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby582XKNrahfPd70pklz3SCyCRVTdP7WuVqT5kKnCDERXIzRK19LLJ7PeDiWNcbMiJ83w/exec';
     const APPS_SCRIPT_URLS_LIST = [
-      'https://script.google.com/macros/s/AKfycbxg1nyoEAjUxaDJKnP1XujF5cbtFjbJ3gm8BKKQboAOaVVM-GfGWvAqMHjgRhfl3IT4/exec',
-      'https://script.google.com/macros/s/AKfycbxg1nyoEAjUxaDJKnP1XujF5cbtFjbJ3gm8BKKQboAOaVVM-GfGWvAqMHjgRhfI3lT4/exec',
-      'https://script.google.com/macros/s/AKfycbz-Z--vizc3igabZp67LoNIxvri_d-CFd76qijRBj5dV4EVGzj-jZLyNXYsLa3CmBBHYQ/exec'
+      APPS_SCRIPT_URL
     ];
+
     let activeAppsScriptUrl = APPS_SCRIPT_URL;
 
     const isGoogleScript = typeof google !== 'undefined' && google.script && google.script.run;
