@@ -3552,6 +3552,147 @@
       }, () => {});
     }
 
+    function aplicarFocoDemandaFuturaPromovida(dadosServidor, isAuthoritative) {
+      try {
+        const rawFoco = localStorage.getItem('SYSMANAGER_FOCO_DFU_PROMOVIDA');
+        if (!rawFoco) return;
+        const foco = JSON.parse(rawFoco);
+        if (!foco || !foco.titulo) return;
+
+        // Expira após 15 minutos caso já sincronizado
+        if (foco.timestamp && (Date.now() - Number(foco.timestamp) > 15 * 60 * 1000)) {
+          localStorage.removeItem('SYSMANAGER_FOCO_DFU_PROMOVIDA');
+          return;
+        }
+
+        const titFocoNorm = normalizarTituloParaChave(foco.titulo);
+        const devIdFoco = foco.devId || (appState.currentUser ? appState.currentUser.id : 'USR-1');
+
+        // Procura a demanda correspondente em appState.tarefas (por ID gerado, demandaFuturaId ou título)
+        let taskAlvo = (appState.tarefas || []).find(t =>
+          t && (
+            (foco.taskId && String(t.id || '').toUpperCase() === String(foco.taskId).toUpperCase()) ||
+            (foco.dfuId && t.demandaFuturaId === foco.dfuId) ||
+            (normalizarTituloParaChave(t.titulo) === titFocoNorm && t.status !== 'Concluída')
+          )
+        );
+
+        if (!taskAlvo) {
+          taskAlvo = {
+            id: foco.taskId || ('TSK-DF-' + Date.now()),
+            demandaFuturaId: foco.dfuId || '',
+            modulo: foco.modulo || 'SIOPLEEx',
+            demandaExterna: Boolean(foco.demandaExterna),
+            titulo: foco.titulo,
+            descricao: foco.descricao || '',
+            devId: devIdFoco,
+            devNome: foco.devNome || 'Ten Nicolas',
+            diasEstimados: Number(foco.diasEstimados) || 2,
+            diasTrabalhados: 1,
+            dataInicio: foco.dataInicio || formatarDataIso(new Date()),
+            dataInsercao: foco.dataInicio || formatarDataIso(new Date()),
+            dataPrazo: foco.dataPrazo || formatarDataIso(new Date()),
+            status: 'Em Andamento',
+            ativo: true,
+            urgencia: foco.urgencia || 'Media',
+            dataConclusao: '',
+            isNovaDemanda: true
+          };
+          appState.tarefas.unshift(taskAlvo);
+        } else {
+          // Atualiza o foco.taskId com o ID definitivo da planilha caso o servidor tenha gerado outro TSK-...
+          if (taskAlvo.id && !String(taskAlvo.id).startsWith('TSK-DF-') && foco.taskId !== taskAlvo.id) {
+            limparEdicaoLocal(foco.taskId);
+            foco.taskId = taskAlvo.id;
+            localStorage.setItem('SYSMANAGER_FOCO_DFU_PROMOVIDA', JSON.stringify(foco));
+          }
+          taskAlvo.status = 'Em Andamento';
+          taskAlvo.ativo = true;
+          if (foco.dataPrazo) taskAlvo.dataPrazo = foco.dataPrazo;
+          if (foco.diasEstimados) taskAlvo.diasEstimados = Number(foco.diasEstimados) || taskAlvo.diasEstimados || 1;
+          if (foco.urgencia) taskAlvo.urgencia = foco.urgencia;
+        }
+
+        // Garante que nenhuma outra demanda deste desenvolvedor roube o foco ("Produção Ativa")
+        (appState.tarefas || []).forEach(other => {
+          if (other && other.id !== taskAlvo.id && other.devId === taskAlvo.devId && other.status !== 'Concluída') {
+            if (other.ativo) {
+              other.ativo = false;
+              salvarEdicaoLocalDemanda(other);
+            }
+          }
+        });
+
+        // Move a tarefa promovida para o início do array para ter prioridade máxima na UI
+        const idxAlvo = appState.tarefas.findIndex(t => t && t.id === taskAlvo.id);
+        if (idxAlvo > 0) {
+          const [itemMovido] = appState.tarefas.splice(idxAlvo, 1);
+          appState.tarefas.unshift(itemMovido);
+        }
+
+        salvarEdicaoLocalDemanda(taskAlvo);
+
+        // Se os dados vieram do servidor (isAuthoritative), verifica se a planilha já gravou Ativo='SIM' nesta tarefa
+        if (isAuthoritative && dadosServidor && Array.isArray(dadosServidor.tarefas)) {
+          const taskNoServidor = dadosServidor.tarefas.find(t =>
+            t && (
+              String(t.id || '').toUpperCase() === String(taskAlvo.id || '').toUpperCase() ||
+              (normalizarTituloParaChave(t.titulo) === titFocoNorm && t.status !== 'Concluída')
+            )
+          );
+          const outraAtivaNoServidor = dadosServidor.tarefas.some(t =>
+            t && taskNoServidor && t.id !== taskNoServidor.id && t.devId === taskNoServidor.devId && t.status !== 'Concluída' && t.ativo
+          );
+
+          if (taskNoServidor) {
+            if (taskNoServidor.ativo && !outraAtivaNoServidor && (taskNoServidor.dataPrazo || '') === (taskAlvo.dataPrazo || '')) {
+              // O banco de dados (Google Sheets) já confirmou que esta demanda está Em Foco (SIM) e a anterior está NAO!
+              limparEdicaoLocal(taskNoServidor.id);
+              localStorage.removeItem('SYSMANAGER_FOCO_DFU_PROMOVIDA');
+            } else {
+              // Força a gravação de Ativo='SIM' (Em Foco) e do Prazo Final na planilha para nunca voltar à demanda antiga
+              window._syncFocoDfuId = window._syncFocoDfuId || {};
+              const nowMs = Date.now();
+              if (!window._syncFocoDfuId[taskNoServidor.id] || (nowMs - window._syncFocoDfuId[taskNoServidor.id] > 8000)) {
+                window._syncFocoDfuId[taskNoServidor.id] = nowMs;
+                executarNoServidor('selecionarTarefaAtiva', {
+                  tarefaId: taskNoServidor.id,
+                  devId: taskAlvo.devId,
+                  dataInicio: taskAlvo.dataInicio,
+                  dataPrazo: taskAlvo.dataPrazo,
+                  diasEstimados: taskAlvo.diasEstimados,
+                  urgencia: taskAlvo.urgencia,
+                  status: 'Em Andamento'
+                }, () => {
+                  executarNoServidor('atualizarTarefa', {
+                    id: taskNoServidor.id,
+                    tarefaId: taskNoServidor.id,
+                    titulo: taskAlvo.titulo,
+                    descricao: taskAlvo.descricao || '',
+                    modulo: taskAlvo.modulo || 'SIOPLEEx',
+                    demandaExterna: Boolean(taskAlvo.demandaExterna),
+                    devId: taskAlvo.devId,
+                    devNome: taskAlvo.devNome,
+                    diasEstimados: taskAlvo.diasEstimados,
+                    dataPrazo: taskAlvo.dataPrazo,
+                    dataInicio: taskAlvo.dataInicio,
+                    urgencia: taskAlvo.urgencia || 'Media',
+                    status: 'Em Andamento',
+                    ativo: true
+                  }, () => {
+                    limparEdicaoLocal(taskNoServidor.id);
+                    localStorage.removeItem('SYSMANAGER_FOCO_DFU_PROMOVIDA');
+                  });
+                });
+              }
+            }
+          }
+        }
+      } catch (errFoco) {
+        console.warn('Aviso ao aplicar foco de Demanda Futura:', errFoco);
+      }
+    }
+
     function verificarDemandasFuturasNoCliente() {
       if (!Array.isArray(appState.demandasFuturas) || appState.demandasFuturas.length === 0) return false;
       const agora = new Date();
@@ -3587,10 +3728,32 @@
           const dFimPrazo = parseDataLocal(dataPrazoIso);
           dFimPrazo.setHours(0, 0, 0, 0);
           const diasEst = Math.max(1, Number(df.diasEstimados) || Math.round((dFimPrazo.getTime() - dIniProg.getTime()) / (1000 * 60 * 60 * 24)) || 1);
+          const descAuto = `Entrada automática na Esteira de Produção via Demanda Futura (${formatarDataHoraFuturoPtBr(df.dataHoraProgramada)}).`;
+          const devIdAlvo = df.devId || (appState.currentUser ? appState.currentUser.id : 'USR-1');
+          const devNomeAlvo = limparNomeDev(df.devNome || (appState.currentUser ? appState.currentUser.nome : 'Ten Nicolas'));
+
+          // Registra a promoção no localStorage para blindar o foco contra qualquer sincronização em segundo plano
+          try {
+            localStorage.setItem('SYSMANAGER_FOCO_DFU_PROMOVIDA', JSON.stringify({
+              dfuId: df.id,
+              taskId: taskIdGen,
+              titulo: df.titulo,
+              descricao: descAuto,
+              modulo: df.demandaExterna ? 'Demanda Externa' : (df.modulo || 'SIOPLEEx'),
+              demandaExterna: Boolean(df.demandaExterna || df.modulo === 'Demanda Externa'),
+              devId: devIdAlvo,
+              devNome: devNomeAlvo,
+              dataInicio: formatarDataIso(dtProg),
+              dataPrazo: dataPrazoIso,
+              diasEstimados: diasEst,
+              urgencia: df.urgencia || 'Media',
+              timestamp: Date.now()
+            }));
+          } catch (e) {}
 
           // Remove o foco ("ativo") das demais demandas deste desenvolvedor para que a Demanda Futura entre Em Foco
           (appState.tarefas || []).forEach(t => {
-            if (t && t.devId === df.devId && t.status !== 'Concluída' && t.ativo) {
+            if (t && t.devId === devIdAlvo && t.status !== 'Concluída' && t.ativo) {
               t.ativo = false;
               salvarEdicaoLocalDemanda(t);
             }
@@ -3598,7 +3761,8 @@
 
           const taskExistente = (appState.tarefas || []).find(t =>
             t.id === taskIdGen ||
-            (t.demandaFuturaId && t.demandaFuturaId === df.id)
+            (t.demandaFuturaId && t.demandaFuturaId === df.id) ||
+            (normalizarTituloParaChave(t.titulo) === normalizarTituloParaChave(df.titulo) && t.status !== 'Concluída')
           );
 
           if (!taskExistente) {
@@ -3608,9 +3772,9 @@
               modulo: df.demandaExterna ? 'Demanda Externa' : (df.modulo || 'SIOPLEEx'),
               demandaExterna: Boolean(df.demandaExterna || df.modulo === 'Demanda Externa'),
               titulo: df.titulo,
-              descricao: `Entrada automática na Esteira de Produção via Demanda Futura (${formatarDataHoraFuturoPtBr(df.dataHoraProgramada)}).`,
-              devId: df.devId || (appState.currentUser ? appState.currentUser.id : 'USR-1'),
-              devNome: limparNomeDev(df.devNome || (appState.currentUser ? appState.currentUser.nome : 'Ten Nicolas')),
+              descricao: descAuto,
+              devId: devIdAlvo,
+              devNome: devNomeAlvo,
               diasEstimados: diasEst,
               diasTrabalhados: 1,
               dataInicio: formatarDataIso(dtProg),
@@ -3652,13 +3816,7 @@
         if (precisaChamarServidor) {
           executarNoServidor('processarDemandasFuturas', { forcarIds: idsPromovidosAgora }, (res) => {
             if (res && res.success) {
-              if (res.promovidas > 0) {
-                idsPromovidosAgora.forEach(fid => {
-                  const baseId = String(fid).replace(/^DFU-(?:TMP-)?/i, '');
-                  limparEdicaoLocal('TSK-DF-' + baseId);
-                });
-                carregarDados();
-              }
+              carregarDados();
             }
           }, () => {});
         }
@@ -4087,6 +4245,9 @@
       // Normaliza e verifica status das tarefas segundo as 4 regras oficiais
       verificarEAtualizarStatusTarefas();
 
+      // Garante que qualquer Demanda Futura recém-iniciada permaneça Em Foco na Produção Ativa e sincronize Ativo='SIM' na planilha
+      aplicarFocoDemandaFuturaPromovida(dados, isAuthoritative);
+
       // Normaliza perfis da equipe: apenas 'Desenvolvedor' e 'Gerente de Projetos' (onde Gerente de Projetos também desenvolve)
       appState.usuarios.forEach(u => {
         const cLower = (u.cargo || '').toLowerCase();
@@ -4251,6 +4412,7 @@
      * Permite concluir qualquer demanda (Em Andamento ou Atrasada) diretamente com 1 clique
      */
     function finalizarDemandaPorId(tarefaId) {
+      try { localStorage.removeItem('SYSMANAGER_FOCO_DFU_PROMOVIDA'); } catch (e) {}
       const tarefa = appState.tarefas.find(t => t.id === tarefaId);
       if (!tarefa) return;
 
@@ -4305,6 +4467,7 @@
      * Alterna qual demanda em andamento fica em foco no Hero Card ("PRODUÇÃO ATIVA")
      */
     function alternarFocoProducao(tarefaId) {
+      try { localStorage.removeItem('SYSMANAGER_FOCO_DFU_PROMOVIDA'); } catch (e) {}
       const task = appState.tarefas.find(t => t.id === tarefaId);
       if (!task) return;
       const devId = task.devId || (appState.currentUser ? appState.currentUser.id : null);
@@ -5393,6 +5556,7 @@
         return;
       }
 
+      try { localStorage.removeItem('SYSMANAGER_FOCO_DFU_PROMOVIDA'); } catch (e) {}
       const tarefaId = tarefaSendoIniciadaId || (document.getElementById('iniciarDemandaTarefaId') ? document.getElementById('iniciarDemandaTarefaId').value : null);
       const task = appState.tarefas.find(t => t.id === tarefaId);
       if (!task) return;
@@ -6171,7 +6335,8 @@
                     dataPrazo: ed.dataPrazo || '',
                     dataInicio: ed.dataInicio || '',
                     urgencia: ed.urgencia || 'Média',
-                    status: ed.status
+                    status: ed.status,
+                    ativo: ed.ativo
                   }, resSync => {
                     if (resSync && resSync.success) {
                       limparEdicaoLocal(ed.id);
