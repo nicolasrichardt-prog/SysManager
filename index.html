@@ -2047,12 +2047,25 @@
             </div>
           </div>
 
-          <!-- DESENVOLVEDOR RESPONSÁVEL -->
-          <div class="mb-3">
-            <label class="form-label small fw-bold" for="futuroDevSelect">
-              <i class="fa-solid fa-user me-1" style="color: #4f46e5;"></i> Desenvolvedor Responsável:
-            </label>
-            <select class="form-select" id="futuroDevSelect"></select>
+          <!-- URGÊNCIA / PRIORIDADE E DESENVOLVEDOR RESPONSÁVEL -->
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-dark" for="futuroUrgencia">
+                <i class="fa-solid fa-flag me-1" style="color: #4f46e5;"></i> Urgência / Prioridade:
+              </label>
+              <select class="form-select" id="futuroUrgencia">
+                <option value="Baixa">🟢 Baixa</option>
+                <option value="Media" selected>🟡 Média</option>
+                <option value="Alta">🟠 Alta</option>
+                <option value="Urgente">🚨 Urgente (Prioridade Alta)</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-dark" for="futuroDevSelect">
+                <i class="fa-solid fa-user me-1" style="color: #4f46e5;"></i> Desenvolvedor Responsável:
+              </label>
+              <select class="form-select" id="futuroDevSelect"></select>
+            </div>
           </div>
 
           <div class="p-3 bg-light rounded-3 border">
@@ -3293,6 +3306,7 @@
       const tituloInput = document.getElementById('futuroTitulo');
       const dataHoraInput = document.getElementById('futuroDataHora');
       const dataPrazoInput = document.getElementById('futuroDataPrazo');
+      const urgSelect = document.getElementById('futuroUrgencia');
       const devSelect = document.getElementById('futuroDevSelect');
 
       const existente = futuroId
@@ -3326,6 +3340,7 @@
         }
         aoMudarDataPrazoFuturo();
 
+        if (urgSelect) urgSelect.value = existente.urgencia || 'Media';
         if (devSelect && existente.devId) devSelect.value = existente.devId;
       } else {
         if (inputId) inputId.value = '';
@@ -3351,6 +3366,7 @@
         }
         aoMudarDataPrazoFuturo();
 
+        if (urgSelect) urgSelect.value = 'Media';
         if (devSelect && appState.currentUser) {
           devSelect.value = appState.currentUser.id;
         }
@@ -3373,6 +3389,7 @@
       const titulo = (document.getElementById('futuroTitulo')?.value || '').trim();
       const dataHoraProgramada = (document.getElementById('futuroDataHora')?.value || '').trim();
       const dataPrazoRaw = (document.getElementById('futuroDataPrazo')?.value || '').trim();
+      const urgencia = (document.getElementById('futuroUrgencia')?.value || 'Media').trim();
 
       if (!titulo) {
         alert('Informe o Nome da Demanda.');
@@ -3425,6 +3442,7 @@
         dataHoraProgramada: dataHoraProgramada.slice(0, 16),
         dataPrazo: dataPrazoIso,
         diasEstimados: diasEstimados,
+        urgencia: urgencia,
         devId: devId,
         devNome: devNome,
         devEmail: devEmail,
@@ -3600,7 +3618,7 @@
               dataPrazo: dataPrazoIso,
               status: 'Em Andamento',
               ativo: true,
-              urgencia: 'Media',
+              urgencia: df.urgencia || 'Media',
               dataConclusao: '',
               isNovaDemanda: true
             };
@@ -3611,6 +3629,7 @@
             taskExistente.ativo = true;
             taskExistente.dataPrazo = dataPrazoIso;
             taskExistente.diasEstimados = diasEst;
+            taskExistente.urgencia = df.urgencia || taskExistente.urgencia || 'Media';
             salvarEdicaoLocalDemanda(taskExistente);
           }
 
@@ -4863,6 +4882,7 @@
                 <span class="badge ${origemLabel === 'Demanda Externa' ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-secondary-subtle text-secondary border'} font-monospace small">
                   <i class="fa-solid ${origemLabel === 'Demanda Externa' ? 'fa-arrow-up-right-from-square' : 'fa-cube'} me-1"></i>${escapeHtml(origemLabel)}
                 </span>
+                <span class="badge badge-${(task.urgencia || 'Media').toLowerCase()}">${task.urgencia || 'Média'}</span>
                 <span class="badge font-monospace small" style="background-color: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe;">
                   <i class="fa-solid fa-calendar-check me-1"></i>Agendada
                 </span>
@@ -7063,7 +7083,7 @@
               dataInicio: isoAg,
               dataPrazo: df.dataPrazo || isoAg,
               dataHoraProgramada: df.dataHoraProgramada || '',
-              urgencia: 'Agendada',
+              urgencia: df.urgencia || 'Media',
               status: 'Demanda Futura',
               ativo: false,
               isDemandaFutura: true,
