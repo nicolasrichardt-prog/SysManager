@@ -3018,7 +3018,13 @@
           if (onSuccess) onSuccess(res);
         })
         .catch(err => {
-          const params = new URLSearchParams({ action: action, ...data });
+          const flatData = {};
+          if (data && typeof data === 'object') {
+            Object.keys(data).forEach(k => {
+              if (typeof data[k] !== 'object') flatData[k] = data[k];
+            });
+          }
+          const params = new URLSearchParams({ action: action, ...flatData, payload: JSON.stringify(data || {}) });
           fetch(`${APPS_SCRIPT_URL}?${params.toString()}`)
             .then(r => r.json())
             .then(res => { if (onSuccess) onSuccess(res); })
@@ -3201,8 +3207,7 @@
         if (tituloInput) tituloInput.value = '';
         if (dataHoraInput) {
           const padrao = new Date();
-          padrao.setDate(padrao.getDate() + 2);
-          padrao.setMinutes(0, 0, 0);
+          padrao.setDate(padrao.getDate() + 1);
           dataHoraInput.value = formatarInputDateTimeLocal(padrao);
         }
         if (devSelect && appState.currentUser) {
@@ -3829,11 +3834,9 @@
       const locaisParaSync = [];
       locaisFuturas.forEach(l => {
         if (!removidasFuturas.includes(l.id)) {
-          if (!mapFuturas.has(l.id) || String(l.id).startsWith('DFU-TMP-')) {
-            mapFuturas.set(l.id, { ...l });
-            if (isAuthoritative && servidorSuportaFuturas && String(l.id).startsWith('DFU-TMP-') && l.status === 'Agendada') {
-              locaisParaSync.push(l);
-            }
+          mapFuturas.set(l.id, { ...l });
+          if (isAuthoritative && servidorSuportaFuturas && l.status === 'Agendada') {
+            locaisParaSync.push(l);
           }
         }
       });
@@ -3843,7 +3846,8 @@
       if (locaisParaSync.length > 0) {
         locaisParaSync.forEach(itemTmp => {
           const tmpId = itemTmp.id;
-          executarNoServidor('cadastrarDemandaFutura', itemTmp, (res) => {
+          const acaoSync = String(tmpId).startsWith('DFU-TMP-') ? 'cadastrarDemandaFutura' : 'atualizarDemandaFutura';
+          executarNoServidor(acaoSync, itemTmp, (res) => {
             if (res && res.success && res.id) {
               itemTmp.id = res.id;
               itemTmp.email24hEnviado = Boolean(res.email24hEnviado);
@@ -5520,7 +5524,14 @@
     function aoMudarDatasEdicaoDemanda() {
       const dtIniInput = document.getElementById('editTaskDataInicio');
       const dtFimInput = document.getElementById('editTaskDataPrazo');
-      if (!dtIniInput || !dtFimInput || !dtIniInput.value || !dtFimInput.value) return;
+      const statusSelect = document.getElementById('editTaskStatus');
+      if (dtFimInput && dtFimInput.value && statusSelect && statusSelect.value === 'Não Iniciada') {
+        statusSelect.value = 'AUTO';
+      }
+      if (!dtIniInput || !dtFimInput || !dtIniInput.value || !dtFimInput.value) {
+        atualizarDicaDuracaoEdicaoModal();
+        return;
+      }
 
       const dtIni = new Date(dtIniInput.value + 'T00:00:00');
       const dtFim = new Date(dtFimInput.value + 'T00:00:00');
@@ -5534,6 +5545,10 @@
     function ajustarPrazoRapidoEdicao(diasAdicionais) {
       const dtIniInput = document.getElementById('editTaskDataInicio');
       const dtFimInput = document.getElementById('editTaskDataPrazo');
+      const statusSelect = document.getElementById('editTaskStatus');
+      if (statusSelect && statusSelect.value === 'Não Iniciada') {
+        statusSelect.value = 'AUTO';
+      }
       const baseVal = (dtIniInput && dtIniInput.value) ? dtIniInput.value : formatarDataIso(new Date());
       const dtIni = new Date(baseVal + 'T00:00:00');
       const dtFim = new Date(dtIni);
@@ -5626,17 +5641,17 @@
         if (dtInicioHidden) dtInicioHidden.value = inicioRaw;
         if (dtInicioExibicao) dtInicioExibicao.value = formatarData(inicioRaw) + ' (Inalterável)';
 
-        // DATA DE TÉRMINO / PRAZO: SELECIONÁVEL VIA CALENDÁRIO
+        // DATA DE TÉRMINO / PRAZO: SELECIONÁVEL VIA CALENDÁRIO (Sem recuo de fuso UTC)
         if (dtPrazoInput) {
           let prazoVal = '';
           if (tarefa.dataPrazo) {
-            const d = new Date(tarefa.dataPrazo);
+            const d = parseDataLocal(tarefa.dataPrazo);
             if (!isNaN(d.getTime())) {
               prazoVal = formatarDataIso(d);
             }
           }
           if (!prazoVal) {
-            const dIni = new Date(inicioRaw + 'T00:00:00');
+            const dIni = parseDataLocal(inicioRaw);
             const dPrazo = new Date(dIni);
             dPrazo.setDate(dIni.getDate() + (tarefa.diasEstimados || 2));
             prazoVal = formatarDataIso(dPrazo);
@@ -5651,7 +5666,7 @@
 
       const statusSelect = document.getElementById('editTaskStatus');
       if (statusSelect) {
-        statusSelect.value = tarefa.status || 'AUTO';
+        statusSelect.value = (tarefa.status === 'Concluída') ? 'Concluída' : 'AUTO';
       }
 
       const devSelect = document.getElementById('editTaskDevSelect');
@@ -6133,6 +6148,15 @@
         tarefa.ativo = false;
         tarefa.dataConclusao = dataPrazoIso || tarefa.dataConclusao || formatarDataIso(new Date());
       } else {
+        if (!dataPrazoIso && (statusEscolhido === 'Em Andamento' || statusEscolhido === 'Atrasada')) {
+          const dRef = new Date();
+          if (statusEscolhido === 'Atrasada') {
+            dRef.setDate(dRef.getDate() - 1);
+          } else {
+            dRef.setDate(dRef.getDate() + 2);
+          }
+          dataPrazoIso = formatarDataIso(dRef);
+        }
         if (dataPrazoIso) {
           if (!dataInicioIso) dataInicioIso = formatarDataIso(new Date());
           const dtIniObj = parseDataLocal(dataInicioIso);
@@ -7800,6 +7824,8 @@
       if (!isAuthoritative) return;
       const chaveNotas = obterChaveStorageUsuarioAnotacoes();
       const chaveAbas = obterChaveStorageAbasUsuarioAnotacoes();
+      const dirtyTs = Number(localStorage.getItem('SYSMANAGER_ANOTACOES_DIRTY_TS') || 0);
+      const isDirtyRecente = dirtyTs > 0 && (Date.now() - dirtyTs < 120000);
 
       let notasLocais = [];
       try {
@@ -7807,25 +7833,41 @@
         if (raw) notasLocais = JSON.parse(raw) || [];
       } catch (e) {}
 
-      if (Array.isArray(abasServidor) && abasServidor.length > 0) {
+      if (Array.isArray(abasServidor) && abasServidor.length > 0 && !isDirtyRecente) {
         const abasLocais = carregarAbasUsuarioAnotacoes();
         const abasMescladas = Array.from(new Set(['Geral', ...abasServidor, ...abasLocais]));
         try { localStorage.setItem(chaveAbas, JSON.stringify(abasMescladas)); } catch (e) {}
+      }
+
+      if (isDirtyRecente) {
+        // Se houve edição/exclusão local recente ainda sincronizando, envia o estado local para o BD sem sobrescrever
+        sincronizarTodasAnotacoesComBanco(notasLocais, carregarAbasUsuarioAnotacoes());
+        return;
       }
 
       if (Array.isArray(anotacoesServidor)) {
         if (anotacoesServidor.length === 0 && notasLocais.length > 0) {
           sincronizarTodasAnotacoesComBanco(notasLocais, carregarAbasUsuarioAnotacoes());
         } else if (anotacoesServidor.length > 0) {
+          let removidasIds = [];
+          try {
+            removidasIds = JSON.parse(localStorage.getItem('SYSMANAGER_ANOTACOES_REMOVIDAS') || '[]');
+          } catch (e) {}
           const mapa = new Map();
-          anotacoesServidor.forEach(n => mapa.set(n.id, n));
+          anotacoesServidor.forEach(n => {
+            if (n && n.id && !removidasIds.includes(n.id)) {
+              mapa.set(n.id, n);
+            }
+          });
           let temNotaLocalNova = false;
           notasLocais.forEach(loc => {
-            if (!loc || !loc.id || String(loc.id).startsWith('NOTE-INIT-')) return;
+            if (!loc || !loc.id || removidasIds.includes(loc.id)) return;
             const srv = mapa.get(loc.id);
             if (!srv) {
-              mapa.set(loc.id, loc);
-              temNotaLocalNova = true;
+              if (!String(loc.id).startsWith('NOTE-INIT-')) {
+                mapa.set(loc.id, loc);
+                temNotaLocalNova = true;
+              }
             } else if (new Date(loc.dataAtualizacao || 0) > new Date(srv.dataAtualizacao || 0)) {
               mapa.set(loc.id, loc);
               temNotaLocalNova = true;
@@ -7847,6 +7889,10 @@
         usuarioEmail: user.email || localStorage.getItem('SYSMANAGER_USER_EMAIL') || '',
         anotacoes: listaNotas || carregarMinhasAnotacoes(),
         abas: listaAbas || carregarAbasUsuarioAnotacoes()
+      }, res => {
+        if (res && res.success) {
+          localStorage.removeItem('SYSMANAGER_ANOTACOES_DIRTY_TS');
+        }
       });
     }
 
@@ -7971,6 +8017,7 @@
       const chave = obterChaveStorageUsuarioAnotacoes();
       try {
         localStorage.setItem(chave, JSON.stringify(lista));
+        localStorage.setItem('SYSMANAGER_ANOTACOES_DIRTY_TS', String(Date.now()));
       } catch (e) {
         console.error('Erro ao gravar anotações no localStorage:', e);
       }
@@ -7982,6 +8029,10 @@
           usuarioId: uId,
           usuarioEmail: uEmail,
           anotacao: notaEspecificaSalva
+        }, res => {
+          if (res && res.success) {
+            localStorage.removeItem('SYSMANAGER_ANOTACOES_DIRTY_TS');
+          }
         });
       } else {
         sincronizarTodasAnotacoesComBanco(lista, carregarAbasUsuarioAnotacoes());
@@ -8562,10 +8613,22 @@
       let notas = carregarMinhasAnotacoes();
       notas = notas.filter(x => x.id !== id);
       const chave = obterChaveStorageUsuarioAnotacoes();
-      try { localStorage.setItem(chave, JSON.stringify(notas)); } catch (e) {}
+      try {
+        localStorage.setItem(chave, JSON.stringify(notas));
+        localStorage.setItem('SYSMANAGER_ANOTACOES_DIRTY_TS', String(Date.now()));
+        const rem = JSON.parse(localStorage.getItem('SYSMANAGER_ANOTACOES_REMOVIDAS') || '[]');
+        if (!rem.includes(id)) {
+          rem.push(id);
+          localStorage.setItem('SYSMANAGER_ANOTACOES_REMOVIDAS', JSON.stringify(rem));
+        }
+      } catch (e) {}
       atualizarAbaAnotacoes();
       mostrarToast('🗑️ Anotação excluída do banco de dados!');
-      executarNoServidor('excluirAnotacao', { anotacaoId: id });
+      executarNoServidor('excluirAnotacao', { anotacaoId: id }, res => {
+        if (res && res.success) {
+          localStorage.removeItem('SYSMANAGER_ANOTACOES_DIRTY_TS');
+        }
+      });
     }
 
     /**
@@ -8979,6 +9042,7 @@
       const notas = carregarMinhasAnotacoes();
       const agora = new Date().toISOString();
 
+      let notaSalva = null;
       if (idEdit) {
         // Edição
         const n = notas.find(x => x.id === idEdit);
@@ -8989,6 +9053,7 @@
           n.fixado = fixado;
           n.conteudo = conteudo;
           n.dataAtualizacao = agora;
+          notaSalva = n;
         }
       } else {
         // Nova Anotação
@@ -9003,9 +9068,10 @@
           dataAtualizacao: agora
         };
         notas.unshift(nova);
+        notaSalva = nova;
       }
 
-      salvarAnotacoesStorage(notas);
+      salvarAnotacoesStorage(notas, notaSalva);
 
       // Fecha modal
       const modalEl = document.getElementById('modalAnotacao');
