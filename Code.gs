@@ -133,8 +133,8 @@ function verificarEmailAutorizado(email) {
     };
   }
 
-  // Fast-track para o Administrador: NUNCA bloqueia, resposta em 0ms
-  if (emailLimpo === ADMIN_EMAIL.toLowerCase()) {
+  // Fast-track para o Administrador e conta oficial do sistema: NUNCA bloqueia, resposta em 0ms
+  if (emailLimpo === ADMIN_EMAIL.toLowerCase() || emailLimpo === SYSMANAGER_EMAIL.toLowerCase()) {
     return {
       autorizado: true,
       email: ADMIN_EMAIL,
@@ -426,13 +426,11 @@ function calcularDiasExecucao(dataInicioRaw, dataConclusaoRaw, status, ativo) {
  * Lê os dados da planilha e vincula automaticamente o usuário autenticado ao seu perfil
  */
 function getAppData(clientEmail) {
-  let emailLogado = '';
-  try {
-    emailLogado = (Session.getActiveUser().getEmail() || '').toLowerCase().trim();
-  } catch (e) {}
-
-  if (!emailLogado && clientEmail) {
-    emailLogado = clientEmail.toLowerCase().trim();
+  let emailLogado = (clientEmail || '').toLowerCase().trim();
+  if (!emailLogado) {
+    try {
+      emailLogado = (Session.getActiveUser().getEmail() || '').toLowerCase().trim();
+    } catch (e) {}
   }
 
   if (!emailLogado) {
@@ -1308,15 +1306,21 @@ function ensureDemandasFuturasSheet_(ss) {
       'ID', 'Modulo', 'DemandaExterna', 'Titulo', 'DataHoraProgramada',
       'DevID', 'DevNome', 'DevEmail', 'Status',
       'Email24hEnviado', 'DataEmail24h', 'TarefaGeradaID', 'DataCriacao',
-      'DataPrazo', 'DiasEstimados'
+      'DataPrazo', 'DiasEstimados', 'Urgencia'
     ]);
-    sh.getRange(1, 1, 1, 15).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+    sh.getRange(1, 1, 1, 16).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
     sh.getRange('E:E').setNumberFormat('@');
     sh.getRange('N:N').setNumberFormat('@');
-  } else if (sh.getLastColumn() < 15) {
-    sh.getRange(1, 14, 1, 2).setValues([['DataPrazo', 'DiasEstimados']])
-      .setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-    sh.getRange('N:N').setNumberFormat('@');
+  } else {
+    if (sh.getLastColumn() < 15) {
+      sh.getRange(1, 14, 1, 2).setValues([['DataPrazo', 'DiasEstimados']])
+        .setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+      sh.getRange('N:N').setNumberFormat('@');
+    }
+    if (sh.getLastColumn() < 16) {
+      sh.getRange(1, 16, 1, 1).setValues([['Urgencia']])
+        .setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+    }
   }
   return sh;
 }
@@ -1395,7 +1399,7 @@ function lerDemandasFuturas_(ss) {
   const lista = [];
   if (!sh || sh.getLastRow() <= 1) return lista;
 
-  const numCols = Math.max(15, sh.getLastColumn());
+  const numCols = Math.max(16, sh.getLastColumn());
   const raw = sh.getRange(2, 1, sh.getLastRow() - 1, numCols).getValues();
   raw.forEach(r => {
     if (!r[0]) return;
@@ -1404,6 +1408,8 @@ function lerDemandasFuturas_(ss) {
     const dtProg = parseDataHoraProgramada_(r[4]);
     let dataPrazoIso = formatarDataIsoSegura_(r[13]);
     let diasEstimados = parseInt(r[14], 10) || 0;
+    const urgencia = (r[15] ? r[15].toString().trim() : '') || 'Media';
+
     if (!dataPrazoIso && dtProg) {
       const dP = new Date(dtProg.getFullYear(), dtProg.getMonth(), dtProg.getDate(), 12, 0, 0);
       dP.setDate(dP.getDate() + Math.max(1, diasEstimados || 2));
@@ -1430,7 +1436,8 @@ function lerDemandasFuturas_(ss) {
       tarefaGeradaId: r[11] ? r[11].toString().trim() : '',
       dataCriacao: r[12] ? formatarDataHoraIsoLocal_(r[12]) : '',
       dataPrazo: dataPrazoIso,
-      diasEstimados: diasEstimados || 2
+      diasEstimados: diasEstimados || 2,
+      urgencia: urgencia
     });
   });
 
@@ -1470,6 +1477,7 @@ function cadastrarDemandaFutura(dados) {
     const agoraStr = Utilities.formatDate(new Date(), tz, "yyyy-MM-dd'T'HH:mm");
     const devNomeLimpo = limparNomeDesenvolvedor_(dados.devNome || 'Ten Nicolas');
     const devEmail = resolverEmailDesenvolvedor_(ss, dados.devId, devNomeLimpo, dados.devEmail);
+    const urgencia = (dados.urgencia || 'Media').toString().trim() || 'Media';
 
     const dIniProg = new Date(dtProgramada.getFullYear(), dtProgramada.getMonth(), dtProgramada.getDate(), 12, 0, 0);
     let dPrazo = parseDataSegura_(dados.dataPrazo);
@@ -1501,7 +1509,8 @@ function cadastrarDemandaFutura(dados) {
       '',
       agoraStr,
       dataPrazoIso,
-      diasEstimados
+      diasEstimados,
+      urgencia
     ]);
     sh.getRange(sh.getLastRow(), 5).setNumberFormat('@').setValue(dataHoraIso);
     sh.getRange(sh.getLastRow(), 14).setNumberFormat('@').setValue(dataPrazoIso);
@@ -1557,6 +1566,7 @@ function atualizarDemandaFutura(dados) {
     const dataHoraIso = Utilities.formatDate(dtProgramada, tz, "yyyy-MM-dd'T'HH:mm");
     const devNomeLimpo = limparNomeDesenvolvedor_(dados.devNome || '');
     const devEmailResolvido = resolverEmailDesenvolvedor_(ss, dados.devId, devNomeLimpo, dados.devEmail);
+    const urgencia = (dados.urgencia || 'Media').toString().trim() || 'Media';
 
     const dIniProg = new Date(dtProgramada.getFullYear(), dtProgramada.getMonth(), dtProgramada.getDate(), 12, 0, 0);
     let dPrazo = parseDataSegura_(dados.dataPrazo);
@@ -1573,7 +1583,7 @@ function atualizarDemandaFutura(dados) {
       diasEstimados = Math.max(1, Math.round((dPrazo.getTime() - dIniProg.getTime()) / (1000 * 60 * 60 * 24)));
     }
 
-    const numCols = Math.max(15, sh.getLastColumn());
+    const numCols = Math.max(16, sh.getLastColumn());
     const range = sh.getRange(2, 1, sh.getLastRow() - 1, numCols);
     const rows = range.getValues();
     let encontrou = false;
@@ -1590,6 +1600,7 @@ function atualizarDemandaFutura(dados) {
         if (devEmailResolvido) r[7] = devEmailResolvido;
         r[13] = dataPrazoIso;
         r[14] = diasEstimados;
+        r[15] = urgencia;
         if (oldIso !== dataHoraIso && r[8] === 'Agendada') {
           r[9] = 'NAO';
           r[10] = '';
@@ -1615,7 +1626,8 @@ function atualizarDemandaFutura(dados) {
         '',
         agoraStr,
         dataPrazoIso,
-        diasEstimados
+        diasEstimados,
+        urgencia
       ]);
       sh.getRange(sh.getLastRow(), 5).setNumberFormat('@').setValue(dataHoraIso);
       sh.getRange(sh.getLastRow(), 14).setNumberFormat('@').setValue(dataPrazoIso);
@@ -1685,22 +1697,12 @@ function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
   const horaFmt = Utilities.formatDate(dtProgramada, tz, 'HH:mm');
   const devNome = limparNomeDesenvolvedor_(item.devNome || 'Responsável');
   const origem = item.demandaExterna ? 'Demanda Externa' : (item.modulo || 'SIOPLEEx');
+  const urgencia = item.urgencia || 'Média';
   const prazoFmt = item.dataPrazo ? Utilities.formatDate(parseDataSegura_(item.dataPrazo) || dtProgramada, tz, 'dd/MM/yyyy') : '-';
 
-  const destinatariosPrincipais = [];
-  if (item.devEmail && item.devEmail.indexOf('@') > -1) {
-    destinatariosPrincipais.push(item.devEmail.trim().toLowerCase());
-  }
-  if (!destinatariosPrincipais.includes(ADMIN_EMAIL.toLowerCase())) {
-    destinatariosPrincipais.push(ADMIN_EMAIL.toLowerCase());
-  }
-
-  const toEmail = destinatariosPrincipais[0];
-  const ccList = destinatariosPrincipais.slice(1);
-  if (toEmail !== SYSMANAGER_EMAIL.toLowerCase() && !ccList.includes(SYSMANAGER_EMAIL.toLowerCase())) {
-    ccList.push(SYSMANAGER_EMAIL.toLowerCase());
-  }
-  const ccEmail = ccList.join(',');
+  const toEmail = (item.devEmail && item.devEmail.indexOf('@') > -1)
+    ? item.devEmail.trim().toLowerCase()
+    : ADMIN_EMAIL.toLowerCase();
 
   const assunto = `[Sys Manager] Aviso 24h — Demanda Futura: ${item.titulo}`;
   const corpoTexto =
@@ -1708,6 +1710,7 @@ function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
     `Lembrete automático do Sys Manager: a Demanda Futura abaixo entrará automaticamente na Esteira de Produção.\n\n` +
     `• Demanda: ${item.titulo}\n` +
     `• Módulo / Origem: ${origem}\n` +
+    `• Urgência / Prioridade: ${urgencia}\n` +
     `• Responsável: ${devNome}\n` +
     `• Horário agendado para entrada na Esteira: ${dataFmt} às ${horaFmt}\n` +
     `• Prazo de conclusão previsto: ${prazoFmt}\n\n` +
@@ -1726,6 +1729,7 @@ function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
         <div style="background: #f8fafc; border-left: 4px solid #4f46e5; padding: 14px 16px; border-radius: 6px; margin: 16px 0;">
           <p style="margin: 0 0 6px;"><strong>Demanda:</strong> ${item.titulo}</p>
           <p style="margin: 0 0 6px;"><strong>Módulo / Origem:</strong> ${origem}</p>
+          <p style="margin: 0 0 6px;"><strong>Urgência:</strong> ${urgencia}</p>
           <p style="margin: 0 0 6px;"><strong>Responsável:</strong> ${devNome}</p>
           <p style="margin: 0 0 6px;"><strong>Horário programado:</strong> <span style="color: #4f46e5; font-weight: bold;">${dataFmt} às ${horaFmt}</span></p>
           <p style="margin: 0;"><strong>Prazo de conclusão:</strong> <span style="color: #0f172a; font-weight: bold;">${prazoFmt}</span></p>
@@ -1748,7 +1752,6 @@ function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
     body: corpoTexto,
     htmlBody: corpoHtml
   };
-  if (ccEmail) payload.cc = ccEmail;
   MailApp.sendEmail(payload);
 }
 
@@ -1774,7 +1777,7 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt, forcarIdsOpt) {
     });
   }
 
-  const numCols = Math.max(15, sh.getLastColumn());
+  const numCols = Math.max(16, sh.getLastColumn());
   const range = sh.getRange(2, 1, sh.getLastRow() - 1, numCols);
   const rows = range.getValues();
   let alterou = false;
@@ -1806,6 +1809,7 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt, forcarIdsOpt) {
     const modulo = demandaExterna ? 'Demanda Externa' : ((r[1] || 'SIOPLEEx').toString().trim() || 'SIOPLEEx');
     const titulo = (r[3] || '').toString().trim();
     const dataPrazoStr = formatarDataIsoSegura_(r[13]);
+    const urgencia = (r[15] ? r[15].toString().trim() : '') || 'Media';
 
     // 1. Enviar aviso por e-mail 24 horas antes (ou imediatamente se agendada para menos de 24h)
     const emailJaEnviado = (r[9] === 'SIM' || r[9] === true);
@@ -1818,7 +1822,8 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt, forcarIdsOpt) {
           demandaExterna: demandaExterna,
           devNome: devNome,
           devEmail: devEmail,
-          dataPrazo: dataPrazoStr
+          dataPrazo: dataPrazoStr,
+          urgencia: urgencia
         }, dtProgramada);
         r[9] = 'SIM';
         r[10] = Utilities.formatDate(agora, tz, 'dd/MM/yyyy HH:mm');
@@ -1885,7 +1890,7 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt, forcarIdsOpt) {
         prazoFinal,
         'Em Andamento',
         'SIM',
-        'Media',
+        urgencia,
         '',
         modulo
       ]);
@@ -1938,7 +1943,7 @@ function dispararEmailDemandaFuturaManual(demandaFuturaId) {
     if (sh.getLastRow() <= 1) return { success: false, message: 'Nenhuma Demanda Futura cadastrada.' };
 
     const tz = obterTimeZone_();
-    const numCols = Math.max(15, sh.getLastColumn());
+    const numCols = Math.max(16, sh.getLastColumn());
     const range = sh.getRange(2, 1, sh.getLastRow() - 1, numCols);
     const rows = range.getValues();
     const targetId = (demandaFuturaId || '').toString().trim();
@@ -1951,6 +1956,7 @@ function dispararEmailDemandaFuturaManual(demandaFuturaId) {
         const devEmail = resolverEmailDesenvolvedor_(ss, r[5], devNome, r[7]);
         const demandaExterna = (r[2] === 'SIM' || r[2] === true || r[1] === 'Demanda Externa');
         const modulo = demandaExterna ? 'Demanda Externa' : ((r[1] || 'SIOPLEEx').toString().trim() || 'SIOPLEEx');
+        const urgencia = (r[15] ? r[15].toString().trim() : '') || 'Media';
 
         enviarEmailAvisoDemandaFutura_({
           id: r[0],
@@ -1959,7 +1965,8 @@ function dispararEmailDemandaFuturaManual(demandaFuturaId) {
           demandaExterna: demandaExterna,
           devNome: devNome,
           devEmail: devEmail,
-          dataPrazo: formatarDataIsoSegura_(r[13])
+          dataPrazo: formatarDataIsoSegura_(r[13]),
+          urgencia: urgencia
         }, dtProgramada);
 
         r[7] = devEmail;
