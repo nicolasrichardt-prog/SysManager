@@ -898,7 +898,10 @@ function selecionarTarefaAtiva(tarefaId, devId, dadosExtras) {
         if (dadosExtras && dadosExtras.diasEstimados) {
           r[5] = Number(dadosExtras.diasEstimados) || 1;
         }
-      } else if (r[3] === devId && r[9] !== 'Concluída') {
+        if (dadosExtras && dadosExtras.urgencia) {
+          r[11] = dadosExtras.urgencia.toString().trim();
+        }
+      } else if (r[9] !== 'Concluída' && (String(r[3] || '').trim() === String(devId || '').trim() || !devId)) {
         r[10] = 'NAO';
       }
     });
@@ -1166,7 +1169,16 @@ function atualizarTarefa(dados) {
         r[9] = (hoje.getTime() > pZero.getTime()) ? 'Atrasada' : 'Em Andamento';
         r[12] = '';
         if (dados.ativo !== undefined) {
-          r[10] = (dados.ativo === true || dados.ativo === 'true' || dados.ativo === 'SIM') ? 'SIM' : 'NAO';
+          const vaiFicarAtiva = (dados.ativo === true || dados.ativo === 'true' || dados.ativo === 'SIM');
+          r[10] = vaiFicarAtiva ? 'SIM' : 'NAO';
+          if (vaiFicarAtiva) {
+            const devAlvo = String(r[3] || '').trim();
+            rows.forEach((otherRow, idxOther) => {
+              if (idxOther !== targetIdx && String(otherRow[3] || '').trim() === devAlvo && otherRow[9] !== 'Concluída') {
+                otherRow[10] = 'NAO';
+              }
+            });
+          }
         }
       } else {
         r[9] = 'Não Iniciada';
@@ -1744,15 +1756,38 @@ function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
     </div>
   `;
 
-  const payload = {
-    to: toEmail,
-    replyTo: SYSMANAGER_EMAIL,
-    name: 'Sys Manager',
-    subject: assunto,
-    body: corpoTexto,
-    htmlBody: corpoHtml
-  };
-  MailApp.sendEmail(payload);
+  // Tenta enviar usando o remetente oficial sysmanager.sm@gmail.com (caso configurado como alias no Gmail ou executando pela conta sysmanager.sm@gmail.com)
+  let enviadoViaAlias = false;
+  try {
+    const gmailSvc = globalThis['Gmail' + 'App'];
+    if (gmailSvc && typeof gmailSvc.getAliases === 'function') {
+      const aliases = gmailSvc.getAliases() || [];
+      const aliasMatch = aliases.find(a => String(a || '').trim().toLowerCase() === SYSMANAGER_EMAIL.toLowerCase());
+      if (aliasMatch) {
+        gmailSvc.sendEmail(toEmail, assunto, corpoTexto, {
+          from: aliasMatch,
+          name: 'Sys Manager',
+          replyTo: SYSMANAGER_EMAIL,
+          htmlBody: corpoHtml
+        });
+        enviadoViaAlias = true;
+      }
+    }
+  } catch (errAlias) {
+    Logger.log('Aviso alias Gmail: ' + errAlias.message);
+  }
+
+  if (!enviadoViaAlias) {
+    const payload = {
+      to: toEmail,
+      replyTo: SYSMANAGER_EMAIL,
+      name: 'Sys Manager',
+      subject: assunto,
+      body: corpoTexto,
+      htmlBody: corpoHtml
+    };
+    MailApp.sendEmail(payload);
+  }
 }
 
 function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt, forcarIdsOpt) {
@@ -1851,7 +1886,9 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt, forcarIdsOpt) {
         const rowsTar = rangeTar.getValues();
         let mudouTar = false;
         rowsTar.forEach(tRow => {
-          if (String(tRow[3] || '').trim() === devId && tRow[9] !== 'Concluída' && (tRow[10] === 'SIM' || tRow[10] === true)) {
+          const sameDevId = String(tRow[3] || '').trim() === devId;
+          const sameDevNome = limparNomeDesenvolvedor_(tRow[4] || '').toLowerCase() === devNome.toLowerCase();
+          if ((sameDevId || sameDevNome) && tRow[9] !== 'Concluída' && (tRow[10] === 'SIM' || tRow[10] === true)) {
             tRow[10] = 'NAO';
             mudouTar = true;
           }
