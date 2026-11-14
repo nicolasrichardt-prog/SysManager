@@ -1756,37 +1756,41 @@ function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
     </div>
   `;
 
-  // Tenta enviar usando o remetente oficial sysmanager.sm@gmail.com (caso configurado como alias no Gmail ou executando pela conta sysmanager.sm@gmail.com)
-  let enviadoViaAlias = false;
+  // 1. Tenta enviar via GmailApp usando o alias sysmanager.sm@gmail.com (se configurado em "Enviar e-mail como" no Gmail)
+  let enviado = false;
   try {
-    const gmailSvc = globalThis['Gmail' + 'App'];
-    if (gmailSvc && typeof gmailSvc.getAliases === 'function') {
-      const aliases = gmailSvc.getAliases() || [];
-      const aliasMatch = aliases.find(a => String(a || '').trim().toLowerCase() === SYSMANAGER_EMAIL.toLowerCase());
-      if (aliasMatch) {
-        gmailSvc.sendEmail(toEmail, assunto, corpoTexto, {
-          from: aliasMatch,
-          name: 'Sys Manager',
-          replyTo: SYSMANAGER_EMAIL,
-          htmlBody: corpoHtml
-        });
-        enviadoViaAlias = true;
-      }
+    const aliases = GmailApp.getAliases() || [];
+    const aliasOficial = aliases.find(a => String(a || '').trim().toLowerCase() === SYSMANAGER_EMAIL.toLowerCase());
+    if (aliasOficial) {
+      GmailApp.sendEmail(toEmail, assunto, corpoTexto, {
+        from: aliasOficial,
+        name: 'Sys Manager',
+        replyTo: SYSMANAGER_EMAIL,
+        htmlBody: corpoHtml
+      });
+      enviado = true;
+    } else {
+      GmailApp.sendEmail(toEmail, assunto, corpoTexto, {
+        name: 'Sys Manager',
+        replyTo: SYSMANAGER_EMAIL,
+        htmlBody: corpoHtml
+      });
+      enviado = true;
     }
-  } catch (errAlias) {
-    Logger.log('Aviso alias Gmail: ' + errAlias.message);
+  } catch (errGmail) {
+    Logger.log('Fallback para MailApp: ' + errGmail.message);
   }
 
-  if (!enviadoViaAlias) {
-    const payload = {
+  // 2. Fallback via MailApp caso GmailApp ainda não tenha sido autorizado
+  if (!enviado) {
+    MailApp.sendEmail({
       to: toEmail,
       replyTo: SYSMANAGER_EMAIL,
       name: 'Sys Manager',
       subject: assunto,
       body: corpoTexto,
       htmlBody: corpoHtml
-    };
-    MailApp.sendEmail(payload);
+    });
   }
 }
 
@@ -2054,6 +2058,21 @@ function instalarGatilhoDemandasFuturas() {
     .create();
   PropertiesService.getScriptProperties().setProperty('GATILHO_DFU_ATIVO', 'SIM');
   return { success: true, message: 'Gatilho configurado a cada 5 minutos para Demandas Futuras.' };
+}
+
+/**
+ * Execute esta função uma vez pelo botão "Executar" na barra superior do Apps Script
+ * para autorizar o GmailApp e verificar se o alias sysmanager.sm@gmail.com está ativo.
+ */
+function autorizarEValidarRemetenteEmail() {
+  const usuarioAtivo = Session.getEffectiveUser().getEmail();
+  const aliases = GmailApp.getAliases();
+  Logger.log('Conta que executa o script: ' + usuarioAtivo);
+  Logger.log('Aliases configurados no Gmail desta conta: ' + JSON.stringify(aliases));
+  return {
+    contaExecucao: usuarioAtivo,
+    aliases: aliases
+  };
 }
 
 // =========================================================================
