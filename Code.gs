@@ -1,7 +1,7 @@
 /**
  * ====================================================================
  * SysManager - Sistema de Gestão Ágil de Tarefas e Esteira de Demandas
- * Backend Google Apps Script com Autenticação Dinâmica por Planilha (Code.gs)
+ * Backend Google Apps Script com Autenticação e Persistência Completa (Code.gs)
  * ====================================================================
  */
 
@@ -15,19 +15,63 @@ const ADMIN_MESTRE_EMAIL = ADMIN_EMAIL; // Compatibilidade retroativa
 const SPREADSHEET_ID = '';
 
 const SYSMANAGER_EMAIL = 'sysmanager.sm@gmail.com';
+const TIMEZONE_PADRAO = 'America/Sao_Paulo';
 
 const SHEETS = {
   USUARIOS: 'Usuarios',
   TAREFAS: 'Tarefas',
   SOLICITACOES: 'SolicitacoesPrazo',
-  DEMANDAS_FUTURAS: 'DemandasFuturas'
+  DEMANDAS_FUTURAS: 'DemandasFuturas',
+  ANOTACOES: 'Anotacoes',
+  ANOTACOES_ABAS: 'AnotacoesAbas'
 };
+
+function obterTimeZone_() {
+  try {
+    const tz = Session.getScriptTimeZone();
+    if (tz && (tz.indexOf('Sao_Paulo') > -1 || tz.indexOf('Brasilia') > -1 || tz.indexOf('Fortaleza') > -1 || tz.indexOf('Recife') > -1 || tz.indexOf('GMT-03') > -1)) {
+      return tz;
+    }
+  } catch (e) {}
+  return TIMEZONE_PADRAO;
+}
+
+/**
+ * Converte string YYYY-MM-DD, DD/MM/YYYY ou Date para objeto Date local (meio-dia) sem recuo de fuso UTC
+ */
+function parseDataSegura_(val) {
+  if (!val) return null;
+  if (Object.prototype.toString.call(val) === '[object Date]') {
+    return isNaN(val.getTime()) ? null : new Date(val.getFullYear(), val.getMonth(), val.getDate(), 12, 0, 0);
+  }
+  const str = val.toString().trim();
+  if (!str || str === '-' || str.toLowerCase() === 'a definir') return null;
+
+  const mIso = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (mIso) {
+    return new Date(parseInt(mIso[1], 10), parseInt(mIso[2], 10) - 1, parseInt(mIso[3], 10), 12, 0, 0);
+  }
+
+  const mBr = str.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (mBr) {
+    return new Date(parseInt(mBr[3], 10), parseInt(mBr[2], 10) - 1, parseInt(mBr[1], 10), 12, 0, 0);
+  }
+
+  const parsed = new Date(str);
+  return isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 12, 0, 0);
+}
+
+function formatarDataIsoSegura_(val) {
+  const d = parseDataSegura_(val);
+  if (!d) return '';
+  return Utilities.formatDate(d, obterTimeZone_(), 'yyyy-MM-dd');
+}
 
 function getDatabaseSpreadsheet() {
   if (typeof SPREADSHEET_ID !== 'undefined' && SPREADSHEET_ID && SPREADSHEET_ID.trim() !== '') {
     try {
       return SpreadsheetApp.openById(SPREADSHEET_ID.trim());
-    } catch(e) {
+    } catch (e) {
       Logger.log('Aviso ao abrir SPREADSHEET_ID: ' + e.message);
     }
   }
@@ -35,13 +79,12 @@ function getDatabaseSpreadsheet() {
   let ss = SpreadsheetApp.getActiveSpreadsheet();
   if (ss) return ss;
 
-  // Usa ScriptProperties para ser global e compartilhado entre todos os usuários
   const props = PropertiesService.getScriptProperties();
   let sheetId = props.getProperty('SYSMANAGER_SHEET_ID');
   if (sheetId) {
     try {
       return SpreadsheetApp.openById(sheetId);
-    } catch(e) {}
+    } catch (e) {}
   }
 
   ss = SpreadsheetApp.create('SysManager_Database');
@@ -60,7 +103,7 @@ function getEmailsAutorizadosDinamicos() {
 
     if (shUsuarios && shUsuarios.getLastRow() > 1) {
       const rawUsers = shUsuarios.getRange(2, 1, shUsuarios.getLastRow() - 1, Math.max(5, shUsuarios.getLastColumn())).getValues();
-      
+
       rawUsers.forEach(r => {
         for (let c = 1; c < r.length; c++) {
           const val = (r[c] || '').toString().trim().toLowerCase();
@@ -83,10 +126,10 @@ function getEmailsAutorizadosDinamicos() {
 function verificarEmailAutorizado(email) {
   const emailLimpo = (email || '').toLowerCase().trim();
   if (!emailLimpo) {
-    return { 
-      autorizado: false, 
-      email: '', 
-      message: 'Por favor, informe o seu e-mail @gmail.com.' 
+    return {
+      autorizado: false,
+      email: '',
+      message: 'Por favor, informe o seu e-mail @gmail.com.'
     };
   }
 
@@ -109,14 +152,13 @@ function verificarEmailAutorizado(email) {
     const isAuth = autorizados.includes(emailLimpo);
 
     if (!isAuth) {
-      return { 
-        autorizado: false, 
-        email: emailLimpo, 
-        message: 'E-mail "' + emailLimpo + '" não está cadastrado na equipe. Solicite ao Administrador Nicolas Richardt o cadastro na aba Equipe.' 
+      return {
+        autorizado: false,
+        email: emailLimpo,
+        message: 'E-mail "' + emailLimpo + '" não está cadastrado na equipe. Solicite ao Administrador Nicolas Richardt o cadastro na aba Equipe.'
       };
     }
 
-    // Busca dados completos do usuário na planilha
     const ss = getDatabaseSpreadsheet();
     const shUsuarios = ss.getSheetByName(SHEETS.USUARIOS);
     let userEncontrado = null;
@@ -166,7 +208,7 @@ function verificarEmailAutorizado(email) {
 function verificarEmailLogin(email) {
   try {
     return verificarEmailAutorizado(email);
-  } catch(e) {
+  } catch (e) {
     return {
       autorizado: false,
       email: email || '',
@@ -177,22 +219,20 @@ function verificarEmailLogin(email) {
 
 /**
  * Validação de autorização para ações no backend
- * Retorna true para garantir que ações da interface nunca sejam bloqueadas silenciosamente
  */
 function verificarAutorizacao(emailParam) {
-  return { 
-    autorizado: true, 
-    email: ADMIN_EMAIL 
+  return {
+    autorizado: true,
+    email: emailParam || ADMIN_EMAIL
   };
 }
 
 /**
  * Ponto de entrada do Web App
- * Renderiza o Index.html e processa requisições de API vindas da Vercel
  */
 function doGet(e) {
   initDatabaseIfNeeded();
-  
+
   if (e && e.parameter && e.parameter.action) {
     return processarRequisicaoApi(e.parameter.action, e.parameter);
   }
@@ -213,7 +253,7 @@ function doPost(e) {
       var parsed = JSON.parse(e.postData.contents);
       action = parsed.action || '';
       payload = parsed.data || {};
-    } catch(err) {
+    } catch (err) {
       action = (e.parameter && e.parameter.action) || '';
       payload = e.parameter || {};
     }
@@ -263,9 +303,19 @@ function processarRequisicaoApi(action, data) {
       result = excluirDemandaFutura(data.demandaFuturaId || data.id || data);
     } else if (action === 'processarDemandasFuturas') {
       result = processarDemandasFuturasAgendadas();
+    } else if (action === 'dispararEmailDemandaFuturaManual') {
+      result = dispararEmailDemandaFuturaManual(data.demandaFuturaId || data.id);
+    } else if (action === 'salvarAnotacao') {
+      result = salvarAnotacaoNoBanco(data);
+    } else if (action === 'excluirAnotacao') {
+      result = excluirAnotacaoDoBanco(data);
+    } else if (action === 'salvarAbasAnotacoes') {
+      result = salvarAbasAnotacoesNoBanco(data);
+    } else if (action === 'sincronizarAnotacoesUsuario') {
+      result = sincronizarAnotacoesUsuarioNoBanco(data);
     }
-  } catch(err) {
-    result = { success: false, error: err.message || err.toString() };
+  } catch (err) {
+    result = { success: false, error: err.message || err.toString(), message: err.message || err.toString() };
   }
 
   return ContentService.createTextOutput(JSON.stringify(result))
@@ -277,12 +327,16 @@ function initDatabaseIfNeeded() {
   let shUsuarios = ss.getSheetByName(SHEETS.USUARIOS);
   if (!shUsuarios) {
     initDatabase();
+  } else {
+    try { ensureDemandasFuturasSheet_(ss); } catch (e) {}
+    try { ensureAnotacoesSheets_(ss); } catch (e) {}
   }
+  try { garantirGatilhoDemandasFuturas_(); } catch (e) {}
 }
 
 function initDatabase() {
   const ss = getDatabaseSpreadsheet();
-  
+
   // 1. Aba Usuários padronizada com ID, Nome, Email, Cargo, DataCriacao
   let shUsuarios = ss.getSheetByName(SHEETS.USUARIOS);
   if (!shUsuarios) {
@@ -292,28 +346,27 @@ function initDatabase() {
     shUsuarios.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
   }
 
-  // Garantir aba de Demandas Futuras
-  try {
-    ensureDemandasFuturasSheet_(ss);
-  } catch (errFut) {}
+  // Garantir abas de Demandas Futuras e Anotações
+  try { ensureDemandasFuturasSheet_(ss); } catch (errFut) {}
+  try { ensureAnotacoesSheets_(ss); } catch (errNote) {}
 
   // 2. Tarefas
   let shTarefas = ss.getSheetByName(SHEETS.TAREFAS);
   if (!shTarefas) {
     shTarefas = ss.insertSheet(SHEETS.TAREFAS);
     shTarefas.appendRow([
-      'ID', 'Titulo', 'Descricao', 'DevID', 'DevNome', 
-      'DiasEstimados', 'DiasTrabalhados', 'DataInicio', 'DataPrazo', 
+      'ID', 'Titulo', 'Descricao', 'DevID', 'DevNome',
+      'DiasEstimados', 'DiasTrabalhados', 'DataInicio', 'DataPrazo',
       'Status', 'Ativo', 'Urgencia', 'DataConclusao', 'Modulo'
     ]);
-    
+
     const hoje = new Date();
     const prazo1 = new Date();
     prazo1.setDate(hoje.getDate() + 3);
 
     shTarefas.appendRow([
-      'TSK-101', 'Criar API de Pagamento', 'Integração com gateway', 
-      'USR-1', 'Ten Nicolas', 4, 1, hoje, prazo1, 
+      'TSK-101', 'Criar API de Pagamento', 'Integração com gateway',
+      'USR-1', 'Ten Nicolas', 4, 1, hoje, prazo1,
       'Em Andamento', 'SIM', 'Alta', '', 'SIOPLEEx'
     ]);
     shTarefas.getRange(1, 1, 1, 14).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
@@ -324,8 +377,8 @@ function initDatabase() {
   if (!shSolicitacoes) {
     shSolicitacoes = ss.insertSheet(SHEETS.SOLICITACOES);
     shSolicitacoes.appendRow([
-      'ID', 'TarefaID', 'TarefaTitulo', 'DevID', 'DevNome', 
-      'Justificativa', 'NovosDiasSolicitados', 'Status', 
+      'ID', 'TarefaID', 'TarefaTitulo', 'DevID', 'DevNome',
+      'Justificativa', 'NovosDiasSolicitados', 'Status',
       'GerenteNome', 'DataSolicitacao', 'DataResposta'
     ]);
     shSolicitacoes.getRange(1, 1, 1, 11).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
@@ -333,35 +386,18 @@ function initDatabase() {
 }
 
 function calcularDiasExecucao(dataInicioRaw, dataConclusaoRaw, status, ativo) {
-  if (!ativo && status !== 'Concluída') return 0;
-  if (!dataInicioRaw) return 1;
-
-  let dInicio;
-  if (dataInicioRaw instanceof Date) {
-    dInicio = new Date(dataInicioRaw.getFullYear(), dataInicioRaw.getMonth(), dataInicioRaw.getDate());
-  } else {
-    const parts = dataInicioRaw.toString().split('T')[0].split('-');
-    dInicio = parts.length === 3 
-      ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
-      : new Date(dataInicioRaw);
-    dInicio.setHours(0, 0, 0, 0);
-  }
+  if (status === 'Não Iniciada' || (!ativo && status !== 'Concluída' && status !== 'Em Andamento' && status !== 'Atrasada')) return 0;
+  const dInicio = parseDataSegura_(dataInicioRaw);
+  if (!dInicio) return (status === 'Não Iniciada') ? 0 : 1;
+  dInicio.setHours(0, 0, 0, 0);
 
   let dFim;
   if (status === 'Concluída' && dataConclusaoRaw) {
-    if (dataConclusaoRaw instanceof Date) {
-      dFim = new Date(dataConclusaoRaw.getFullYear(), dataConclusaoRaw.getMonth(), dataConclusaoRaw.getDate());
-    } else {
-      const parts = dataConclusaoRaw.toString().split('T')[0].split('-');
-      dFim = parts.length === 3 
-        ? new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10))
-        : new Date(dataConclusaoRaw);
-      dFim.setHours(0, 0, 0, 0);
-    }
+    dFim = parseDataSegura_(dataConclusaoRaw) || new Date();
   } else {
-    const hoje = new Date();
-    dFim = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    dFim = new Date();
   }
+  dFim.setHours(0, 0, 0, 0);
 
   const diffMs = dFim.getTime() - dInicio.getTime();
   const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
@@ -372,15 +408,15 @@ function calcularDiasExecucao(dataInicioRaw, dataConclusaoRaw, status, ativo) {
  * Lê os dados da planilha e vincula automaticamente o usuário autenticado ao seu perfil
  */
 function getAppData(clientEmail) {
-  let emailLogado = (Session.getActiveUser().getEmail() || '').toLowerCase().trim();
-  
-  // Se o Google não retornar o e-mail ativo da sessão (comum no modo 'Eu' para outros usuários),
-  // usa o e-mail validado fornecido pelo cliente salvo no navegador (localStorage)
+  let emailLogado = '';
+  try {
+    emailLogado = (Session.getActiveUser().getEmail() || '').toLowerCase().trim();
+  } catch (e) {}
+
   if (!emailLogado && clientEmail) {
     emailLogado = clientEmail.toLowerCase().trim();
   }
 
-  // Se nenhum e-mail estiver disponível, solicita identificação/login
   if (!emailLogado) {
     return {
       autorizado: false,
@@ -404,17 +440,17 @@ function getAppData(clientEmail) {
   const ss = getDatabaseSpreadsheet();
   initDatabaseIfNeeded();
 
-  // 1. Usuários (Estrutura garantida: A=ID, B=Nome, C=Email, D=Cargo, E=DataCriacao)
+  // 1. Usuários
   const shUsuarios = ss.getSheetByName(SHEETS.USUARIOS);
   const usuarios = [];
   let currentUser = check.usuario || null;
 
   if (shUsuarios && shUsuarios.getLastRow() > 1) {
     const rawUsers = shUsuarios.getRange(2, 1, shUsuarios.getLastRow() - 1, 5).getValues();
-    
+
     rawUsers.forEach(r => {
       if (!r[0]) return;
-      
+
       const id = (r[0] || '').toString().trim();
       const nome = (r[1] || '').toString().trim();
       const email = (r[2] || '').toString().trim().toLowerCase();
@@ -434,21 +470,19 @@ function getAppData(clientEmail) {
 
       usuarios.push(userObj);
 
-      // Vincula diretamente o perfil autenticado pelo e-mail
       if (email && emailLogado && email === emailLogado) {
         currentUser = userObj;
       }
     });
   }
 
-  // Se o usuário logado for o Administrador e não tiver linha exata de email correspondente, vincula ao registro dele
   if (!currentUser && emailLogado === ADMIN_EMAIL.toLowerCase()) {
     const nickInSheet = usuarios.find(u => u.nome.toLowerCase().includes('nicolas'));
     if (nickInSheet) {
       currentUser = nickInSheet;
     } else {
       currentUser = {
-        id: 'USR-ADMIN',
+        id: 'USR-1',
         nome: 'Ten Nicolas',
         email: ADMIN_EMAIL,
         cargo: 'Gerente de Projetos'
@@ -459,7 +493,9 @@ function getAppData(clientEmail) {
   // 1.5 Processar Demandas Futuras (avisos 24h e entrada automática na esteira)
   try {
     processarDemandasFuturasAgendadas_(ss, usuarios);
-  } catch (errFut) {}
+  } catch (errFut) {
+    Logger.log('Aviso processarDemandasFuturasAgendadas_: ' + errFut.message);
+  }
 
   // 2. Tarefas
   const shTarefas = ss.getSheetByName(SHEETS.TAREFAS);
@@ -475,42 +511,52 @@ function getAppData(clientEmail) {
       if (!r[0]) return;
 
       let isAtivo = (r[10] === 'SIM' || r[10] === true);
-      const dataPrazo = r[8] ? new Date(r[8]) : null;
-      let statusAtual = r[9];
+      const dataPrazo = parseDataSegura_(r[8]);
+      const dataInicio = parseDataSegura_(r[7]);
+      const dataConclusao = parseDataSegura_(r[12]);
+      let statusSalvo = (r[9] || '').toString().trim();
+      let statusAtual = statusSalvo;
 
-      if (statusAtual !== 'Concluída') {
-        if (dataPrazo && !isNaN(dataPrazo.getTime())) {
-          const prazoSemHora = new Date(dataPrazo);
-          prazoSemHora.setHours(0, 0, 0, 0);
-          if (hoje.getTime() > prazoSemHora.getTime()) {
-            statusAtual = 'Atrasada';
-          } else {
-            statusAtual = 'Em Andamento';
-          }
+      if (statusSalvo === 'Concluída' || statusSalvo.toLowerCase().includes('conclu')) {
+        statusAtual = 'Concluída';
+        isAtivo = false;
+      } else if (statusSalvo === 'Não Iniciada' && !dataPrazo) {
+        statusAtual = 'Não Iniciada';
+        isAtivo = false;
+      } else if (dataPrazo) {
+        const prazoSemHora = new Date(dataPrazo.getFullYear(), dataPrazo.getMonth(), dataPrazo.getDate(), 0, 0, 0);
+        if (hoje.getTime() > prazoSemHora.getTime()) {
+          statusAtual = 'Atrasada';
         } else {
-          statusAtual = 'Não Iniciada';
-          isAtivo = false;
+          statusAtual = 'Em Andamento';
         }
+      } else {
+        statusAtual = 'Não Iniciada';
+        isAtivo = false;
       }
-      const diasAuto = calcularDiasExecucao(r[7], r[12], statusAtual, isAtivo);
+      const diasAuto = calcularDiasExecucao(dataInicio, dataConclusao, statusAtual, isAtivo);
+      const dataInicioIso = formatarDataIsoSegura_(dataInicio);
+      const dataPrazoIso = formatarDataIsoSegura_(dataPrazo);
+      const dataConclusaoIso = formatarDataIsoSegura_(dataConclusao);
+      const modRaw = r[13] ? r[13].toString().trim() : 'SIOPLEEx';
 
       tarefas.push({
-        id: r[0],
-        titulo: r[1],
-        descricao: r[2],
-        devId: r[3],
-        devNome: r[4],
+        id: r[0].toString().trim(),
+        titulo: (r[1] || '').toString().trim(),
+        descricao: (r[2] || '').toString(),
+        devId: (r[3] || '').toString().trim(),
+        devNome: (r[4] || '').toString().trim(),
         diasEstimados: Number(r[5]) || 0,
         diasTrabalhados: diasAuto,
-        dataInicio: r[7] ? Utilities.formatDate(new Date(r[7]), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
-        dataInsercao: r[7] ? Utilities.formatDate(new Date(r[7]), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
-        dataPrazo: r[8] ? Utilities.formatDate(new Date(r[8]), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
+        dataInicio: dataInicioIso,
+        dataInsercao: dataInicioIso || formatarDataIsoSegura_(new Date()),
+        dataPrazo: dataPrazoIso,
         status: statusAtual,
         ativo: isAtivo,
-        urgencia: r[11] || 'Media',
-        dataConclusao: r[12] ? Utilities.formatDate(new Date(r[12]), Session.getScriptTimeZone(), 'yyyy-MM-dd') : '',
-        modulo: r[13] ? r[13].toString().trim() : 'SIOPLEEx',
-        demandaExterna: r[13] ? (r[13].toString().trim() === 'Demanda Externa') : false
+        urgencia: (r[11] || 'Media').toString().trim(),
+        dataConclusao: dataConclusaoIso,
+        modulo: modRaw,
+        demandaExterna: (modRaw === 'Demanda Externa')
       });
     });
   }
@@ -518,6 +564,7 @@ function getAppData(clientEmail) {
   // 3. Solicitações
   const shSol = ss.getSheetByName(SHEETS.SOLICITACOES);
   const solicitacoes = [];
+  const tz = obterTimeZone_();
   if (shSol && shSol.getLastRow() > 1) {
     const rawSol = shSol.getRange(2, 1, shSol.getLastRow() - 1, 11).getValues();
     rawSol.forEach(r => {
@@ -532,8 +579,8 @@ function getAppData(clientEmail) {
           novosDiasSolicitados: Number(r[6]) || 0,
           status: r[7],
           gerenteNome: r[8],
-          dataSolicitacao: r[9] ? Utilities.formatDate(new Date(r[9]), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') : '',
-          dataResposta: r[10] ? Utilities.formatDate(new Date(r[10]), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') : ''
+          dataSolicitacao: r[9] ? Utilities.formatDate(new Date(r[9]), tz, 'dd/MM/yyyy HH:mm') : '',
+          dataResposta: r[10] ? Utilities.formatDate(new Date(r[10]), tz, 'dd/MM/yyyy HH:mm') : ''
         });
       }
     });
@@ -542,6 +589,9 @@ function getAppData(clientEmail) {
   // 4. Demandas Futuras
   const demandasFuturas = lerDemandasFuturas_(ss);
 
+  // 5. Anotações Pessoais e Abas do Usuário Logado
+  const dadosAnotacoes = lerAnotacoesDoUsuario_(ss, currentUser, emailLogado);
+
   return {
     autorizado: true,
     precisaLogin: false,
@@ -549,6 +599,8 @@ function getAppData(clientEmail) {
     tarefas: tarefas,
     solicitacoes: solicitacoes,
     demandasFuturas: demandasFuturas,
+    anotacoes: dadosAnotacoes.anotacoes,
+    abasAnotacoes: dadosAnotacoes.abas,
     emailAutenticado: emailLogado,
     currentUser: currentUser,
     adminEmail: ADMIN_EMAIL,
@@ -556,21 +608,10 @@ function getAppData(clientEmail) {
   };
 }
 
-/**
- * Garante e padroniza a estrutura da aba Usuários:
- * Coluna A: ID
- * Coluna B: Nome
- * Coluna C: Email (Gmail)
- * Coluna D: Cargo
- * Coluna E: DataCriacao
- * 
- * Se a planilha tiver colunas desordenadas ou faltar a coluna de e-mail,
- * reorganiza automaticamente preservando todos os membros e IDs!
- */
 function organizarPlanilhaUsuarios() {
   const ss = getDatabaseSpreadsheet();
   let sh = ss.getSheetByName(SHEETS.USUARIOS);
-  
+
   if (!sh) {
     sh = ss.insertSheet(SHEETS.USUARIOS);
     sh.appendRow(['ID', 'Nome', 'Email', 'Cargo', 'DataCriacao']);
@@ -624,66 +665,13 @@ function organizarPlanilhaUsuarios() {
     return sh;
   }
 
-  if (lastRow > 1) {
-    const rawData = sh.getRange(2, 1, lastRow - 1, lastCol).getValues();
-    const rowsLimpos = [];
-
-    rawData.forEach(r => {
-      if (!r[0]) return;
-      const id = (r[0] || '').toString().trim();
-      const nome = (r[1] || '').toString().trim();
-      let email = '';
-      let cargo = 'Desenvolvedor';
-      let data = new Date();
-
-      for (let c = 2; c < r.length; c++) {
-        const val = r[c];
-        if (!val) continue;
-
-        if (val instanceof Date) {
-          data = val;
-          continue;
-        }
-
-        const strVal = val.toString().trim();
-        if (strVal.includes('@')) {
-          email = strVal.toLowerCase();
-        } else if (['desenvolvedor', 'dev', 'gerente', 'gerente de projetos', 'ambos'].includes(strVal.toLowerCase())) {
-          const l = strVal.toLowerCase();
-          if (l === 'desenvolvedor' || l === 'dev') cargo = 'Desenvolvedor';
-          else cargo = 'Gerente de Projetos';
-        }
-      }
-
-      if (!email && nome.toLowerCase().includes('nicolas')) {
-        email = ADMIN_EMAIL;
-      }
-
-      rowsLimpos.push([id, nome, email, cargo, data]);
-    });
-
-    sh.clearContents();
-    sh.getRange(1, 1, 1, 5).setValues([['ID', 'Nome', 'Email', 'Cargo', 'DataCriacao']]);
-    sh.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-
-    if (rowsLimpos.length > 0) {
-      sh.getRange(2, 1, rowsLimpos.length, 5).setValues(rowsLimpos);
-    }
-  } else {
-    sh.clearContents();
-    sh.getRange(1, 1, 1, 5).setValues([['ID', 'Nome', 'Email', 'Cargo', 'DataCriacao']]);
-    sh.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
-  }
-
-  SpreadsheetApp.flush();
   return sh;
 }
 
-/**
- * 1º Cadastrar Membro com E-mail Google (Salva diretamente no banco da planilha)
- */
 function cadastrarUsuario(dados) {
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     organizarPlanilhaUsuarios();
     const ss = getDatabaseSpreadsheet();
     const sh = ss.getSheetByName(SHEETS.USUARIOS);
@@ -700,24 +688,25 @@ function cadastrarUsuario(dados) {
     sh.appendRow([newId, nomeLimpo, emailLimpo, cargoLimpo, new Date()]);
     SpreadsheetApp.flush();
 
-    return { 
-      success: true, 
-      id: newId, 
-      nome: nomeLimpo, 
-      email: emailLimpo, 
-      cargo: cargoLimpo 
+    return {
+      success: true,
+      id: newId,
+      nome: nomeLimpo,
+      email: emailLimpo,
+      cargo: cargoLimpo
     };
-  } catch(e) {
+  } catch (e) {
     Logger.log('Erro ao cadastrar usuário: ' + e.message);
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
-/**
- * Alterar Membro (Nome, Email, Cargo) com persistência imediata
- */
 function atualizarUsuario(dados) {
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     organizarPlanilhaUsuarios();
     const ss = getDatabaseSpreadsheet();
     const sh = ss.getSheetByName(SHEETS.USUARIOS);
@@ -753,14 +742,18 @@ function atualizarUsuario(dados) {
       return { success: true };
     }
     return { success: false, message: 'Membro com ID "' + dados.id + '" não localizado' };
-  } catch(e) {
+  } catch (e) {
     Logger.log('Erro ao atualizar usuário: ' + e.message);
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
 function excluirUsuario(userId) {
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     const ss = getDatabaseSpreadsheet();
     const sh = ss.getSheetByName(SHEETS.USUARIOS);
     if (!sh || sh.getLastRow() <= 1) return { success: false, message: 'Planilha vazia' };
@@ -777,16 +770,22 @@ function excluirUsuario(userId) {
       }
     }
     return { success: false, message: 'ID não encontrado' };
-  } catch(e) {
+  } catch (e) {
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
-function cadastrarTarefa(dados) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false, message: 'Não autorizado' };
+function limparNomeDesenvolvedor_(nome) {
+  if (!nome) return '';
+  return nome.toString().replace(/\s*\((?:Desenvolvedor|Gerente de Projetos|Gerente|Ambos|Membro)\)\s*$/i, '').trim();
+}
 
+function cadastrarTarefa(dados) {
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     const ss = getDatabaseSpreadsheet();
     const sh = ss.getSheetByName(SHEETS.TAREFAS);
     const existingIds = new Set();
@@ -801,19 +800,13 @@ function cadastrarTarefa(dados) {
     }
 
     const tornarAtiva = dados.tornarAtiva === true || dados.tornarAtiva === 'true';
-    const dias = tornarAtiva ? (parseInt(dados.diasEstimados) || 1) : (parseInt(dados.diasEstimados) || 0);
-    let hoje = new Date();
-    if (dados.dataInicio) {
-      const parsedIni = new Date(dados.dataInicio);
-      if (!isNaN(parsedIni.getTime())) hoje = parsedIni;
-    }
-    let dataPrazo = '';
-    if (dados.dataPrazo) {
-      const parsedFim = new Date(dados.dataPrazo);
-      if (!isNaN(parsedFim.getTime())) dataPrazo = parsedFim;
-    } else if (tornarAtiva) {
-      const p = new Date(hoje);
-      p.setDate(hoje.getDate() + Math.max(1, dias));
+    const dias = tornarAtiva ? (parseInt(dados.diasEstimados, 10) || 1) : (parseInt(dados.diasEstimados, 10) || 0);
+    const hoje = parseDataSegura_(dados.dataInicio) || new Date();
+    let dataPrazo = parseDataSegura_(dados.dataPrazo) || '';
+
+    if (!dataPrazo && tornarAtiva) {
+      const p = new Date(hoje.getTime());
+      p.setDate(p.getDate() + Math.max(1, dias));
       dataPrazo = p;
     }
 
@@ -828,35 +821,41 @@ function cadastrarTarefa(dados) {
       range.setValues(rows);
     }
 
+    const devNomeLimpo = limparNomeDesenvolvedor_(dados.devNome || '');
+    const moduloFinal = (dados.demandaExterna === true || dados.demandaExterna === 'true' || dados.modulo === 'Demanda Externa')
+      ? 'Demanda Externa'
+      : (dados.modulo ? dados.modulo.toString().trim() : 'SIOPLEEx');
+
     sh.appendRow([
       newId,
-      dados.titulo.trim(),
+      (dados.titulo || '').toString().trim(),
       dados.descricao || '',
-      dados.devId,
-      dados.devNome,
+      (dados.devId || '').toString().trim(),
+      devNomeLimpo,
       dias,
       0,
-      tornarAtiva ? hoje : (dados.dataInicio ? new Date(dados.dataInicio) : ''),
+      tornarAtiva ? hoje : (parseDataSegura_(dados.dataInicio) || ''),
       dataPrazo,
       tornarAtiva ? 'Em Andamento' : 'Não Iniciada',
       tornarAtiva ? 'SIM' : 'NAO',
       dados.urgencia || 'Media',
       '',
-      (dados.demandaExterna || dados.modulo === 'Demanda Externa') ? 'Demanda Externa' : (dados.modulo ? dados.modulo.toString().trim() : 'SIOPLEEx')
+      moduloFinal
     ]);
     SpreadsheetApp.flush();
 
     return { success: true, id: newId };
-  } catch(e) {
+  } catch (e) {
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
 function selecionarTarefaAtiva(tarefaId, devId, dadosExtras) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false };
-
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     const ss = getDatabaseSpreadsheet();
     const sh = ss.getSheetByName(SHEETS.TAREFAS);
     if (!sh || sh.getLastRow() <= 1) return { success: false };
@@ -868,42 +867,40 @@ function selecionarTarefaAtiva(tarefaId, devId, dadosExtras) {
 
     const idBusca = (tarefaId || '').toString().trim().toUpperCase();
     rows.forEach(r => {
-      if (r[3] === devId && r[9] !== 'Concluída') {
-        const rowId = (r[0] ? r[0].toString().trim().toUpperCase() : '');
-        if (rowId === idBusca) {
-          r[10] = 'SIM';
-          r[9] = 'Em Andamento';
-          if (dadosExtras && dadosExtras.dataInicio) {
-            r[7] = new Date(dadosExtras.dataInicio);
-          } else if (!r[7]) {
-            r[7] = hoje;
-          }
-          if (dadosExtras && dadosExtras.dataPrazo) {
-            r[8] = new Date(dadosExtras.dataPrazo);
-          }
-          if (dadosExtras && dadosExtras.diasEstimados) {
-            r[5] = Number(dadosExtras.diasEstimados) || 1;
-          }
-        } else {
-          // Apenas remove o destaque ativo no Painel; NUNCA altera o status de outras demandas
-          r[10] = 'NAO';
+      const rowId = (r[0] ? r[0].toString().trim().toUpperCase() : '');
+      if (rowId === idBusca) {
+        r[10] = 'SIM';
+        r[9] = 'Em Andamento';
+        if (dadosExtras && dadosExtras.dataInicio) {
+          r[7] = parseDataSegura_(dadosExtras.dataInicio) || hoje;
+        } else if (!r[7]) {
+          r[7] = hoje;
         }
+        if (dadosExtras && dadosExtras.dataPrazo) {
+          r[8] = parseDataSegura_(dadosExtras.dataPrazo) || r[8];
+        }
+        if (dadosExtras && dadosExtras.diasEstimados) {
+          r[5] = Number(dadosExtras.diasEstimados) || 1;
+        }
+      } else if (r[3] === devId && r[9] !== 'Concluída') {
+        r[10] = 'NAO';
       }
     });
 
     range.setValues(rows);
     SpreadsheetApp.flush();
     return { success: true };
-  } catch(e) {
+  } catch (e) {
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
 function concluirTarefa(tarefaId, devId) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false };
-
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     const ss = getDatabaseSpreadsheet();
     const sh = ss.getSheetByName(SHEETS.TAREFAS);
     if (!sh || sh.getLastRow() <= 1) return { success: false };
@@ -925,67 +922,46 @@ function concluirTarefa(tarefaId, devId) {
     range.setValues(rows);
     SpreadsheetApp.flush();
     return { success: true };
-  } catch(e) {
+  } catch (e) {
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
 function excluirTarefa(tarefaId) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false, message: 'Não autorizado' };
-
-  // Validação de permissão: Gerente/Admin podem excluir qualquer uma; membros podem excluir as suas próprias
-  const emailLogado = (check.email || '').toLowerCase().trim();
-  const isMasterAdmin = (emailLogado === ADMIN_EMAIL.toLowerCase() || emailLogado.includes('nicolas'));
-  const userCargo = (check.usuario && check.usuario.cargo ? check.usuario.cargo.toString().toLowerCase() : '');
-  const isGerente = userCargo.includes('gerente') || userCargo.includes('ambos');
-
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     const ss = getDatabaseSpreadsheet();
     const sh = ss.getSheetByName(SHEETS.TAREFAS);
     if (!sh || sh.getLastRow() <= 1) return { success: false, message: 'Nenhuma demanda cadastrada' };
 
     const lastRow = sh.getLastRow();
-    const lastCol = Math.max(14, sh.getLastColumn());
-    const range = sh.getRange(2, 1, lastRow - 1, lastCol);
+    const range = sh.getRange(2, 1, lastRow - 1, 1);
     const rows = range.getValues();
-
-    const curUserId = check.usuario && check.usuario.id ? check.usuario.id.toString().trim() : '';
-    const curUserNome = check.usuario && check.usuario.nome ? check.usuario.nome.toString().trim().toLowerCase() : '';
+    const idBusca = (tarefaId || '').toString().trim().toUpperCase();
 
     for (let i = 0; i < rows.length; i++) {
-      if (rows[i][0] && rows[i][0].toString().trim() === tarefaId.toString().trim()) {
-        const taskDevId = rows[i][3] ? rows[i][3].toString().trim() : '';
-        const taskDevNome = rows[i][4] ? rows[i][4].toString().trim().toLowerCase() : '';
-
-        const isDono = (curUserId && taskDevId === curUserId) || 
-                       (curUserNome && taskDevNome === curUserNome) ||
-                       (emailLogado && taskDevNome.includes(emailLogado.split('@')[0]));
-
-        if (!isMasterAdmin && !isGerente && !isDono) {
-          return { success: false, message: 'Permissão negada. Você só pode excluir as suas próprias demandas.' };
-        }
-
-        sh.deleteRow(i + 2); // 1-based, cabeçalho é linha 1
+      if (rows[i][0] && rows[i][0].toString().trim().toUpperCase() === idBusca) {
+        sh.deleteRow(i + 2);
         SpreadsheetApp.flush();
         return { success: true };
       }
     }
 
     return { success: false, message: 'Demanda não encontrada' };
-  } catch(e) {
+  } catch (e) {
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
-/**
- * Troca a posição de duas tarefas na esteira (subir/descer prioridade)
- */
 function trocarOrdemTarefas(id1, id2) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false, message: 'Não autorizado' };
-
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     const ss = getDatabaseSpreadsheet();
     const sh = ss.getSheetByName(SHEETS.TAREFAS);
     if (!sh || sh.getLastRow() <= 2) return { success: true };
@@ -997,9 +973,9 @@ function trocarOrdemTarefas(id1, id2) {
     let row2 = -1;
 
     for (let i = 0; i < ids.length; i++) {
-      const val = ids[i][0] ? ids[i][0].toString().trim() : '';
-      if (val === id1.toString().trim()) row1 = i + 2;
-      if (val === id2.toString().trim()) row2 = i + 2;
+      const val = ids[i][0] ? ids[i][0].toString().trim().toUpperCase() : '';
+      if (val === (id1 || '').toString().trim().toUpperCase()) row1 = i + 2;
+      if (val === (id2 || '').toString().trim().toUpperCase()) row2 = i + 2;
     }
 
     if (row1 !== -1 && row2 !== -1 && row1 !== row2) {
@@ -1011,19 +987,21 @@ function trocarOrdemTarefas(id1, id2) {
       return { success: true };
     }
     return { success: false, message: 'Linhas não encontradas' };
-  } catch(e) {
+  } catch (e) {
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
 /**
- * Atualiza dados de uma demanda existente (permite alterar tudo MENOS a Data de Início)
+ * Atualiza todos os dados de uma demanda existente em qualquer aba (Esteira, Drawer ou Relatório Mensal)
+ * e persiste imediatamente no Google Sheets sem deslocamento de fuso horário.
  */
 function atualizarTarefa(dados) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false, message: 'Não autorizado' };
-
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     const ss = getDatabaseSpreadsheet();
     const sh = ss.getSheetByName(SHEETS.TAREFAS);
     if (!sh || sh.getLastRow() <= 1) return { success: false, message: 'Nenhuma demanda cadastrada' };
@@ -1037,58 +1015,129 @@ function atualizarTarefa(dados) {
     if (!tarefaId) return { success: false, message: 'ID da demanda não informado' };
     const idBusca = tarefaId.toUpperCase();
 
+    let targetIdx = -1;
     for (let i = 0; i < rows.length; i++) {
       const rowId = (rows[i][0] ? rows[i][0].toString().trim() : '').toUpperCase();
       if (rowId === idBusca) {
-        // Atualizar campos permitidos (todos MENOS rows[i][7] - Data de Início, que é preservada intacta)
-        if (dados.titulo !== undefined && dados.titulo !== null) {
-          rows[i][1] = dados.titulo.toString().trim();
-        }
-        if (dados.descricao !== undefined && dados.descricao !== null) {
-          rows[i][2] = dados.descricao.toString();
-        }
-        if (dados.devId !== undefined && dados.devId) {
-          rows[i][3] = dados.devId.toString().trim();
-        }
-        if (dados.devNome !== undefined && dados.devNome) {
-          rows[i][4] = dados.devNome.toString().trim();
-        }
-        if (dados.diasEstimados !== undefined) {
-          rows[i][5] = parseInt(dados.diasEstimados) || rows[i][5];
-        }
-
-        // rows[i][7] é Data de Início -> NUNCA ALTERAR!
-
-        if (dados.dataPrazo) {
-          const parsedFim = new Date(dados.dataPrazo);
-          if (!isNaN(parsedFim.getTime())) {
-            rows[i][8] = parsedFim;
-          }
-        }
-
-        if (dados.urgencia) {
-          rows[i][11] = dados.urgencia.toString().trim();
-        }
-
-        const isExterna = (dados.demandaExterna === true || dados.demandaExterna === 'true' || dados.modulo === 'Demanda Externa');
-        rows[i][13] = isExterna ? 'Demanda Externa' : (dados.modulo ? dados.modulo.toString().trim() : 'SIOPLEEx');
-
-        range.setValues(rows);
-        SpreadsheetApp.flush();
-        return { success: true, message: 'Demanda atualizada com sucesso na planilha!' };
+        targetIdx = i;
+        break;
       }
     }
 
-    return { success: false, message: 'Demanda não encontrada: ' + tarefaId };
-  } catch(e) {
+    if (targetIdx === -1 && dados.tituloOriginal) {
+      const titOrig = dados.tituloOriginal.toString().trim().toLowerCase();
+      for (let i = 0; i < rows.length; i++) {
+        if ((rows[i][1] || '').toString().trim().toLowerCase() === titOrig) {
+          targetIdx = i;
+          break;
+        }
+      }
+    }
+
+    if (targetIdx === -1) {
+      return { success: false, message: 'Demanda não encontrada na planilha: ' + tarefaId };
+    }
+
+    const r = rows[targetIdx];
+
+    if (dados.titulo !== undefined && dados.titulo !== null) {
+      r[1] = dados.titulo.toString().trim();
+    }
+    if (dados.descricao !== undefined && dados.descricao !== null) {
+      r[2] = dados.descricao.toString();
+    }
+    if (dados.devId !== undefined && dados.devId) {
+      r[3] = dados.devId.toString().trim();
+    }
+    if (dados.devNome !== undefined && dados.devNome) {
+      r[4] = limparNomeDesenvolvedor_(dados.devNome);
+    }
+    if (dados.diasEstimados !== undefined) {
+      r[5] = parseInt(dados.diasEstimados, 10) || 0;
+    }
+
+    const prazoParsed = parseDataSegura_(dados.dataPrazo);
+    if (dados.dataPrazo === '' || dados.status === 'Não Iniciada') {
+      if (dados.status === 'Não Iniciada') {
+        r[8] = '';
+        r[5] = 0;
+        r[6] = 0;
+      } else if (prazoParsed) {
+        r[8] = prazoParsed;
+      }
+    } else if (prazoParsed) {
+      r[8] = prazoParsed;
+      if (!r[7]) {
+        r[7] = parseDataSegura_(dados.dataInicio) || new Date();
+      }
+    }
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const dataPrazoAtual = parseDataSegura_(r[8]);
+
+    if (dados.status === 'Concluída') {
+      r[9] = 'Concluída';
+      r[10] = 'NAO';
+      if (prazoParsed) {
+        r[12] = prazoParsed;
+      } else if (!r[12]) {
+        r[12] = new Date();
+      }
+      if (!r[7]) r[7] = new Date();
+    } else if (dados.status === 'Não Iniciada' || (!dataPrazoAtual && r[9] !== 'Concluída')) {
+      r[9] = 'Não Iniciada';
+      r[10] = 'NAO';
+      r[8] = '';
+      r[12] = '';
+    } else if (dataPrazoAtual) {
+      const pZero = new Date(dataPrazoAtual.getFullYear(), dataPrazoAtual.getMonth(), dataPrazoAtual.getDate(), 0, 0, 0);
+      r[9] = (hoje.getTime() > pZero.getTime()) ? 'Atrasada' : 'Em Andamento';
+      r[12] = '';
+      if (dados.ativo !== undefined) {
+        r[10] = (dados.ativo === true || dados.ativo === 'true' || dados.ativo === 'SIM') ? 'SIM' : 'NAO';
+      }
+    }
+
+    if (dados.urgencia) {
+      r[11] = dados.urgencia.toString().trim();
+    }
+
+    const isExterna = (dados.demandaExterna === true || dados.demandaExterna === 'true' || dados.modulo === 'Demanda Externa');
+    r[13] = isExterna ? 'Demanda Externa' : (dados.modulo ? dados.modulo.toString().trim() : 'SIOPLEEx');
+
+    rows[targetIdx] = r;
+    range.setValues(rows);
+    SpreadsheetApp.flush();
+
+    return {
+      success: true,
+      message: 'Demanda atualizada com sucesso na planilha!',
+      tarefa: {
+        id: r[0].toString().trim(),
+        titulo: r[1],
+        descricao: r[2],
+        devId: r[3],
+        devNome: r[4],
+        diasEstimados: Number(r[5]) || 0,
+        dataInicio: formatarDataIsoSegura_(r[7]),
+        dataPrazo: formatarDataIsoSegura_(r[8]),
+        status: r[9],
+        ativo: (r[10] === 'SIM' || r[10] === true),
+        urgencia: r[11],
+        dataConclusao: formatarDataIsoSegura_(r[12]),
+        modulo: r[13],
+        demandaExterna: (r[13] === 'Demanda Externa')
+      }
+    };
+  } catch (e) {
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
 function solicitarNovoPrazo(dados) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false };
-
   try {
     const ss = getDatabaseSpreadsheet();
     const shSol = ss.getSheetByName(SHEETS.SOLICITACOES);
@@ -1101,7 +1150,7 @@ function solicitarNovoPrazo(dados) {
       dados.devId,
       dados.devNome,
       dados.justificativa || '',
-      parseInt(dados.novosDiasSolicitados) || 1,
+      parseInt(dados.novosDiasSolicitados, 10) || 1,
       'Pendente',
       '',
       new Date(),
@@ -1110,15 +1159,12 @@ function solicitarNovoPrazo(dados) {
     SpreadsheetApp.flush();
 
     return { success: true };
-  } catch(e) {
+  } catch (e) {
     return { success: false, message: e.message };
   }
 }
 
 function darCientePrazo(solicitacaoId, gerenteNome) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false };
-
   try {
     const ss = getDatabaseSpreadsheet();
     const shSol = ss.getSheetByName(SHEETS.SOLICITACOES);
@@ -1153,7 +1199,7 @@ function darCientePrazo(solicitacaoId, gerenteNome) {
           const hoje = new Date();
           const novoPrazo = new Date(hoje);
           novoPrazo.setDate(hoje.getDate() + dadosSol.diasExtras);
-          
+
           r[5] = Number(r[5]) + dadosSol.diasExtras;
           r[8] = novoPrazo;
           r[9] = 'Em Andamento';
@@ -1166,7 +1212,7 @@ function darCientePrazo(solicitacaoId, gerenteNome) {
     SpreadsheetApp.flush();
 
     return { success: true };
-  } catch(e) {
+  } catch (e) {
     return { success: false, message: e.message };
   }
 }
@@ -1190,6 +1236,9 @@ function ensureDemandasFuturasSheet_(ss) {
   return sh;
 }
 
+/**
+ * Parsing determinístico de Data/Hora programada no fuso horário de Brasília (America/Sao_Paulo, UTC-3)
+ */
 function parseDataHoraProgramada_(val) {
   if (!val) return null;
   if (Object.prototype.toString.call(val) === '[object Date]') {
@@ -1197,13 +1246,28 @@ function parseDataHoraProgramada_(val) {
   }
   const str = val.toString().trim();
   if (!str) return null;
-  const tz = Session.getScriptTimeZone();
-  const normalized = str.replace(' ', 'T').slice(0, 16);
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalized)) {
-    try {
-      return Utilities.parseDate(normalized, tz, "yyyy-MM-dd'T'HH:mm");
-    } catch (e) {}
+
+  const mIso = str.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
+  if (mIso) {
+    const isoComOffset = `${mIso[1]}-${mIso[2]}-${mIso[3]}T${mIso[4]}:${mIso[5]}:00-03:00`;
+    const dOffset = new Date(isoComOffset);
+    if (!isNaN(dOffset.getTime())) return dOffset;
+    return new Date(
+      parseInt(mIso[1], 10),
+      parseInt(mIso[2], 10) - 1,
+      parseInt(mIso[3], 10),
+      parseInt(mIso[4], 10),
+      parseInt(mIso[5], 10),
+      0, 0
+    );
   }
+
+  const mBr = str.match(/^(\d{2})\/(\d{2})\/(\d{4})\s*(?:às\s*)?(\d{2}):(\d{2})/i);
+  if (mBr) {
+    const isoComOffset = `${mBr[3]}-${mBr[2]}-${mBr[1]}T${mBr[4]}:${mBr[5]}:00-03:00`;
+    return new Date(isoComOffset);
+  }
+
   const parsed = new Date(str);
   return isNaN(parsed.getTime()) ? null : parsed;
 }
@@ -1211,7 +1275,34 @@ function parseDataHoraProgramada_(val) {
 function formatarDataHoraIsoLocal_(val) {
   const dt = parseDataHoraProgramada_(val);
   if (!dt) return '';
-  return Utilities.formatDate(dt, Session.getScriptTimeZone(), "yyyy-MM-dd'T'HH:mm");
+  return Utilities.formatDate(dt, obterTimeZone_(), "yyyy-MM-dd'T'HH:mm");
+}
+
+function resolverEmailDesenvolvedor_(ss, devId, devNome, devEmailInformado) {
+  if (devEmailInformado && devEmailInformado.toString().includes('@')) {
+    return devEmailInformado.toString().trim().toLowerCase();
+  }
+  const idLimpo = (devId || '').toString().trim().toLowerCase();
+  const nomeLimpo = limparNomeDesenvolvedor_(devNome || '').toLowerCase();
+
+  try {
+    const shUsr = ss.getSheetByName(SHEETS.USUARIOS);
+    if (shUsr && shUsr.getLastRow() > 1) {
+      const rows = shUsr.getRange(2, 1, shUsr.getLastRow() - 1, 4).getValues();
+      for (let i = 0; i < rows.length; i++) {
+        const uId = (rows[i][0] || '').toString().trim().toLowerCase();
+        const uNome = (rows[i][1] || '').toString().trim().toLowerCase();
+        const uEmail = (rows[i][2] || '').toString().trim().toLowerCase();
+        if (uEmail && uEmail.includes('@')) {
+          if ((idLimpo && uId === idLimpo) || (nomeLimpo && (uNome === nomeLimpo || uNome.includes(nomeLimpo) || nomeLimpo.includes(uNome)))) {
+            return uEmail;
+          }
+        }
+      }
+    }
+  } catch (e) {}
+
+  return ADMIN_EMAIL;
 }
 
 function lerDemandasFuturas_(ss) {
@@ -1246,10 +1337,9 @@ function lerDemandasFuturas_(ss) {
 }
 
 function cadastrarDemandaFutura(dados) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false, message: 'Não autorizado' };
-
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     const ss = getDatabaseSpreadsheet();
     const sh = ensureDemandasFuturasSheet_(ss);
 
@@ -1271,22 +1361,13 @@ function cadastrarDemandaFutura(dados) {
       newId = 'DFU-' + (Date.now().toString().slice(-5)) + Math.floor(Math.random() * 90 + 10);
     }
 
+    const tz = obterTimeZone_();
     const demandaExterna = (dados.demandaExterna === true || dados.demandaExterna === 'true' || dados.modulo === 'Demanda Externa');
     const modulo = demandaExterna ? 'Demanda Externa' : ((dados.modulo || 'SIOPLEEx').toString().trim() || 'SIOPLEEx');
-    const dataHoraIso = Utilities.formatDate(dtProgramada, Session.getScriptTimeZone(), "yyyy-MM-dd'T'HH:mm");
-    const agoraStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd'T'HH:mm");
-
-    let devEmail = (dados.devEmail || '').toString().trim();
-    if (!devEmail && dados.devId) {
-      const shUsr = ss.getSheetByName(SHEETS.USUARIOS);
-      if (shUsr && shUsr.getLastRow() > 1) {
-        shUsr.getRange(2, 1, shUsr.getLastRow() - 1, 4).getValues().forEach(u => {
-          if (u[0] && u[0].toString().trim() === dados.devId.toString().trim() && u[2]) {
-            devEmail = u[2].toString().trim();
-          }
-        });
-      }
-    }
+    const dataHoraIso = Utilities.formatDate(dtProgramada, tz, "yyyy-MM-dd'T'HH:mm");
+    const agoraStr = Utilities.formatDate(new Date(), tz, "yyyy-MM-dd'T'HH:mm");
+    const devNomeLimpo = limparNomeDesenvolvedor_(dados.devNome || 'Ten Nicolas');
+    const devEmail = resolverEmailDesenvolvedor_(ss, dados.devId, devNomeLimpo, dados.devEmail);
 
     sh.appendRow([
       newId,
@@ -1294,9 +1375,9 @@ function cadastrarDemandaFutura(dados) {
       demandaExterna ? 'SIM' : 'NAO',
       titulo,
       dataHoraIso,
-      dados.devId || '',
-      dados.devNome || '',
-      devEmail || '',
+      dados.devId || 'USR-1',
+      devNomeLimpo,
+      devEmail,
       'Agendada',
       'NAO',
       '',
@@ -1306,21 +1387,39 @@ function cadastrarDemandaFutura(dados) {
     sh.getRange(sh.getLastRow(), 5).setNumberFormat('@').setValue(dataHoraIso);
     SpreadsheetApp.flush();
 
-    try {
-      processarDemandasFuturasAgendadas_(ss);
-    } catch (errProc) {}
+    try { garantirGatilhoDemandasFuturas_(); } catch (e) {}
 
-    return { success: true, id: newId };
+    let procRes = { emailsEnviados: 0, promovidas: 0, emailErro: '' };
+    try {
+      procRes = processarDemandasFuturasAgendadas_(ss);
+    } catch (errProc) {
+      procRes.emailErro = errProc.message;
+    }
+
+    const todas = lerDemandasFuturas_(ss);
+    const itemCriado = todas.find(x => x.id === newId) || null;
+
+    return {
+      success: true,
+      id: newId,
+      email24hEnviado: itemCriado ? itemCriado.email24hEnviado : false,
+      dataEmail24h: itemCriado ? itemCriado.dataEmail24h : '',
+      status: itemCriado ? itemCriado.status : 'Agendada',
+      demanda: itemCriado,
+      demandasFuturas: todas,
+      emailErro: procRes.emailErro || ''
+    };
   } catch (e) {
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
 function atualizarDemandaFutura(dados) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false, message: 'Não autorizado' };
-
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     const ss = getDatabaseSpreadsheet();
     const sh = ensureDemandasFuturasSheet_(ss);
     if (sh.getLastRow() <= 1) return { success: false, message: 'Demanda futura não encontrada.' };
@@ -1331,9 +1430,12 @@ function atualizarDemandaFutura(dados) {
       return { success: false, message: 'Dados inválidos para atualização.' };
     }
 
+    const tz = obterTimeZone_();
     const demandaExterna = (dados.demandaExterna === true || dados.demandaExterna === 'true' || dados.modulo === 'Demanda Externa');
     const modulo = demandaExterna ? 'Demanda Externa' : ((dados.modulo || 'SIOPLEEx').toString().trim() || 'SIOPLEEx');
-    const dataHoraIso = Utilities.formatDate(dtProgramada, Session.getScriptTimeZone(), "yyyy-MM-dd'T'HH:mm");
+    const dataHoraIso = Utilities.formatDate(dtProgramada, tz, "yyyy-MM-dd'T'HH:mm");
+    const devNomeLimpo = limparNomeDesenvolvedor_(dados.devNome || '');
+    const devEmailResolvido = resolverEmailDesenvolvedor_(ss, dados.devId, devNomeLimpo, dados.devEmail);
 
     const range = sh.getRange(2, 1, sh.getLastRow() - 1, 13);
     const rows = range.getValues();
@@ -1347,8 +1449,8 @@ function atualizarDemandaFutura(dados) {
         r[3] = dados.titulo.toString().trim();
         r[4] = dataHoraIso;
         if (dados.devId) r[5] = dados.devId;
-        if (dados.devNome) r[6] = dados.devNome;
-        if (dados.devEmail !== undefined) r[7] = dados.devEmail;
+        if (devNomeLimpo) r[6] = devNomeLimpo;
+        if (devEmailResolvido) r[7] = devEmailResolvido;
         if (oldIso !== dataHoraIso && r[8] === 'Agendada') {
           r[9] = 'NAO';
           r[10] = '';
@@ -1362,21 +1464,37 @@ function atualizarDemandaFutura(dados) {
     sh.getRange(2, 5, rows.length, 1).setNumberFormat('@');
     SpreadsheetApp.flush();
 
+    let procRes = { emailErro: '' };
     try {
-      processarDemandasFuturasAgendadas_(ss);
-    } catch (errProc) {}
+      procRes = processarDemandasFuturasAgendadas_(ss);
+    } catch (errProc) {
+      procRes.emailErro = errProc.message;
+    }
 
-    return { success: true };
+    const todas = lerDemandasFuturas_(ss);
+    const itemAtual = todas.find(x => x.id === targetId) || null;
+
+    return {
+      success: true,
+      id: targetId,
+      email24hEnviado: itemAtual ? itemAtual.email24hEnviado : false,
+      dataEmail24h: itemAtual ? itemAtual.dataEmail24h : '',
+      status: itemAtual ? itemAtual.status : 'Agendada',
+      demanda: itemAtual,
+      demandasFuturas: todas,
+      emailErro: procRes.emailErro || ''
+    };
   } catch (e) {
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
 function excluirDemandaFutura(demandaFuturaId) {
-  const check = verificarAutorizacao();
-  if (!check.autorizado) return { success: false, message: 'Não autorizado' };
-
+  const lock = LockService.getScriptLock();
   try {
+    lock.waitLock(10000);
     const ss = getDatabaseSpreadsheet();
     const sh = ss.getSheetByName(SHEETS.DEMANDAS_FUTURAS);
     if (!sh || sh.getLastRow() <= 1) return { success: true };
@@ -1392,23 +1510,37 @@ function excluirDemandaFutura(demandaFuturaId) {
     return { success: true };
   } catch (e) {
     return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
   }
 }
 
 function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
-  const tz = Session.getScriptTimeZone();
+  const tz = obterTimeZone_();
   const dataFmt = Utilities.formatDate(dtProgramada, tz, 'dd/MM/yyyy');
   const horaFmt = Utilities.formatDate(dtProgramada, tz, 'HH:mm');
-  const devNome = item.devNome || 'Responsável';
+  const devNome = limparNomeDesenvolvedor_(item.devNome || 'Responsável');
   const origem = item.demandaExterna ? 'Demanda Externa' : (item.modulo || 'SIOPLEEx');
 
-  const toEmail = (item.devEmail && item.devEmail.indexOf('@') > -1) ? item.devEmail : SYSMANAGER_EMAIL;
-  const ccEmail = (toEmail.toLowerCase() !== SYSMANAGER_EMAIL.toLowerCase()) ? SYSMANAGER_EMAIL : '';
+  const destinatariosPrincipais = [];
+  if (item.devEmail && item.devEmail.indexOf('@') > -1) {
+    destinatariosPrincipais.push(item.devEmail.trim().toLowerCase());
+  }
+  if (!destinatariosPrincipais.includes(ADMIN_EMAIL.toLowerCase())) {
+    destinatariosPrincipais.push(ADMIN_EMAIL.toLowerCase());
+  }
+
+  const toEmail = destinatariosPrincipais[0];
+  const ccList = destinatariosPrincipais.slice(1);
+  if (toEmail !== SYSMANAGER_EMAIL.toLowerCase() && !ccList.includes(SYSMANAGER_EMAIL.toLowerCase())) {
+    ccList.push(SYSMANAGER_EMAIL.toLowerCase());
+  }
+  const ccEmail = ccList.join(',');
 
   const assunto = `[Sys Manager] Aviso 24h — Demanda Futura: ${item.titulo}`;
   const corpoTexto =
     `Olá, ${devNome}!\n\n` +
-    `Lembrete automático do Sys Manager: a Demanda Futura abaixo entrará automaticamente na Esteira de Produção dentro das próximas 24 horas.\n\n` +
+    `Lembrete automático do Sys Manager: a Demanda Futura abaixo entrará automaticamente na Esteira de Produção.\n\n` +
     `• Demanda: ${item.titulo}\n` +
     `• Módulo / Origem: ${origem}\n` +
     `• Responsável: ${devNome}\n` +
@@ -1420,7 +1552,7 @@ function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
     <div style="font-family: Arial, sans-serif; color: #0f172a; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
       <div style="background: linear-gradient(135deg, #0f172a 0%, #4f46e5 100%); color: #ffffff; padding: 18px 24px;">
         <h2 style="margin: 0; font-size: 18px;">Sys Manager — Aviso de Demanda Futura</h2>
-        <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Entrada automática na Esteira de Produção em breve (24h antes)</p>
+        <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Entrada automática na Esteira de Produção (Aviso 24h)</p>
       </div>
       <div style="padding: 20px 24px; background-color: #ffffff;">
         <p style="margin-top: 0;">Olá, <strong>${devNome}</strong>!</p>
@@ -1441,41 +1573,37 @@ function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
     </div>
   `;
 
-  const payload = {
-    to: toEmail,
-    replyTo: SYSMANAGER_EMAIL,
-    name: 'Sys Manager',
-    subject: assunto,
-    body: corpoTexto,
-    htmlBody: corpoHtml
-  };
-  if (ccEmail) payload.cc = ccEmail;
-
-  MailApp.sendEmail(payload);
+  try {
+    const payload = {
+      to: toEmail,
+      replyTo: SYSMANAGER_EMAIL,
+      name: 'Sys Manager',
+      subject: assunto,
+      body: corpoTexto,
+      htmlBody: corpoHtml
+    };
+    if (ccEmail) payload.cc = ccEmail;
+    MailApp.sendEmail(payload);
+  } catch (errMailApp) {
+    GmailApp.sendEmail(toEmail, assunto, corpoTexto, {
+      htmlBody: corpoHtml,
+      name: 'Sys Manager',
+      replyTo: SYSMANAGER_EMAIL,
+      cc: ccEmail || ''
+    });
+  }
 }
 
 function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt) {
   const ss = ssOpt || getDatabaseSpreadsheet();
   const sh = ss.getSheetByName(SHEETS.DEMANDAS_FUTURAS);
   if (!sh || sh.getLastRow() <= 1) {
-    return { success: true, emailsEnviados: 0, promovidas: 0 };
+    return { success: true, emailsEnviados: 0, promovidas: 0, demandasFuturas: [] };
   }
 
-  const tz = Session.getScriptTimeZone();
+  const tz = obterTimeZone_();
   const agora = new Date();
-  const vinteQuatroHorasMs = 24 * 60 * 60 * 1000;
-
-  let usuariosMap = {};
-  if (Array.isArray(usuariosOpt)) {
-    usuariosOpt.forEach(u => { if (u && u.id) usuariosMap[u.id] = u; });
-  } else {
-    const shUsr = ss.getSheetByName(SHEETS.USUARIOS);
-    if (shUsr && shUsr.getLastRow() > 1) {
-      shUsr.getRange(2, 1, shUsr.getLastRow() - 1, 4).getValues().forEach(u => {
-        if (u[0]) usuariosMap[u[0].toString().trim()] = { id: u[0].toString().trim(), nome: u[1], email: u[2] };
-      });
-    }
-  }
+  const janelaAvisoMs = (24 * 60 * 60 * 1000) + (2 * 60 * 1000);
 
   const shTarefas = ss.getSheetByName(SHEETS.TAREFAS);
   const existingTaskIds = new Set();
@@ -1494,6 +1622,7 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt) {
   let alterou = false;
   let emailsEnviados = 0;
   let promovidas = 0;
+  let ultimoErroEmail = '';
 
   rows.forEach(r => {
     if (!r[0]) return;
@@ -1504,11 +1633,11 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt) {
     if (!dtProgramada) return;
 
     const diffMs = dtProgramada.getTime() - agora.getTime();
-    const devId = (r[5] || '').toString().trim();
-    const usr = usuariosMap[devId] || {};
-    const devNome = (r[6] || usr.nome || '').toString().trim();
-    const devEmail = (r[7] || usr.email || '').toString().trim();
-    if (!r[7] && devEmail) {
+    const devId = (r[5] || 'USR-1').toString().trim();
+    const devNome = limparNomeDesenvolvedor_(r[6] || 'Ten Nicolas');
+    const devEmail = resolverEmailDesenvolvedor_(ss, devId, devNome, r[7]);
+
+    if (r[7] !== devEmail && devEmail) {
       r[7] = devEmail;
       alterou = true;
     }
@@ -1517,9 +1646,9 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt) {
     const modulo = demandaExterna ? 'Demanda Externa' : ((r[1] || 'SIOPLEEx').toString().trim() || 'SIOPLEEx');
     const titulo = (r[3] || '').toString().trim();
 
-    // 1. Enviar aviso por e-mail 24 horas antes (ou antes disso caso tenha sido criada a menos de 24h)
+    // 1. Enviar aviso por e-mail 24 horas antes (ou imediatamente se agendada para menos de 24h)
     const emailJaEnviado = (r[9] === 'SIM' || r[9] === true);
-    if (diffMs <= vinteQuatroHorasMs && !emailJaEnviado) {
+    if (diffMs <= janelaAvisoMs && !emailJaEnviado) {
       try {
         enviarEmailAvisoDemandaFutura_({
           id: r[0],
@@ -1533,7 +1662,10 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt) {
         r[10] = Utilities.formatDate(agora, tz, 'dd/MM/yyyy HH:mm');
         alterou = true;
         emailsEnviados++;
-      } catch (errMail) {}
+      } catch (errMail) {
+        ultimoErroEmail = errMail.message || errMail.toString();
+        Logger.log('Erro ao enviar e-mail 24h Demanda Futura (' + r[0] + '): ' + ultimoErroEmail);
+      }
     }
 
     // 2. Quando chegar o horário programado, entra automaticamente na Esteira de Produção
@@ -1544,8 +1676,10 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt) {
       }
       existingTaskIds.add(newTaskId.toUpperCase());
 
-      const prazoPadrao = new Date(dtProgramada.getTime());
+      const dataIniLimpa = new Date(dtProgramada.getFullYear(), dtProgramada.getMonth(), dtProgramada.getDate(), 12, 0, 0);
+      const prazoPadrao = new Date(dataIniLimpa.getTime());
       prazoPadrao.setDate(prazoPadrao.getDate() + 1);
+
       const jaTemAtiva = devsComTarefaAtiva.has(devId);
       if (devId && !jaTemAtiva) devsComTarefaAtiva.add(devId);
 
@@ -1559,8 +1693,8 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt) {
         devId,
         devNome,
         1,
-        0,
-        dtProgramada,
+        1,
+        dataIniLimpa,
         prazoPadrao,
         'Em Andamento',
         jaTemAtiva ? 'NAO' : 'SIM',
@@ -1582,7 +1716,13 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt) {
     SpreadsheetApp.flush();
   }
 
-  return { success: true, emailsEnviados: emailsEnviados, promovidas: promovidas };
+  return {
+    success: true,
+    emailsEnviados: emailsEnviados,
+    promovidas: promovidas,
+    emailErro: ultimoErroEmail,
+    demandasFuturas: lerDemandasFuturas_(ss)
+  };
 }
 
 function processarDemandasFuturasAgendadas() {
@@ -1590,10 +1730,73 @@ function processarDemandasFuturasAgendadas() {
 }
 
 /**
- * Execute esta função UMA VEZ no editor do Google Apps Script
- * (preferencialmente logado na conta sysmanager.sm@gmail.com)
- * para ativar o envio automático dos e-mails 24h antes e a entrada automática na Esteira.
+ * Permite disparar/reenviar manualmente o aviso de uma Demanda Futura
  */
+function dispararEmailDemandaFuturaManual(demandaFuturaId) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    const ss = getDatabaseSpreadsheet();
+    const sh = ensureDemandasFuturasSheet_(ss);
+    if (sh.getLastRow() <= 1) return { success: false, message: 'Nenhuma Demanda Futura cadastrada.' };
+
+    const tz = obterTimeZone_();
+    const range = sh.getRange(2, 1, sh.getLastRow() - 1, 13);
+    const rows = range.getValues();
+    const targetId = (demandaFuturaId || '').toString().trim();
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      if (r[0] && r[0].toString().trim() === targetId) {
+        const dtProgramada = parseDataHoraProgramada_(r[4]) || new Date();
+        const devNome = limparNomeDesenvolvedor_(r[6] || 'Ten Nicolas');
+        const devEmail = resolverEmailDesenvolvedor_(ss, r[5], devNome, r[7]);
+        const demandaExterna = (r[2] === 'SIM' || r[2] === true || r[1] === 'Demanda Externa');
+        const modulo = demandaExterna ? 'Demanda Externa' : ((r[1] || 'SIOPLEEx').toString().trim() || 'SIOPLEEx');
+
+        enviarEmailAvisoDemandaFutura_({
+          id: r[0],
+          titulo: r[3],
+          modulo: modulo,
+          demandaExterna: demandaExterna,
+          devNome: devNome,
+          devEmail: devEmail
+        }, dtProgramada);
+
+        r[7] = devEmail;
+        r[9] = 'SIM';
+        r[10] = Utilities.formatDate(new Date(), tz, 'dd/MM/yyyy HH:mm');
+        range.setValues(rows);
+        SpreadsheetApp.flush();
+
+        return {
+          success: true,
+          emailDestino: devEmail,
+          dataEmail24h: r[10],
+          demandasFuturas: lerDemandasFuturas_(ss)
+        };
+      }
+    }
+    return { success: false, message: 'Demanda Futura não localizada.' };
+  } catch (e) {
+    return { success: false, message: 'Falha ao enviar e-mail: ' + e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
+  }
+}
+
+function garantirGatilhoDemandasFuturas_() {
+  const props = PropertiesService.getScriptProperties();
+  if (props.getProperty('GATILHO_DFU_ATIVO') === 'SIM') return;
+  const fnName = 'processarDemandasFuturasAgendadas';
+  const triggers = ScriptApp.getProjectTriggers();
+  const jaExiste = triggers.some(t => t.getHandlerFunction() === fnName);
+  if (!jaExiste) {
+    ScriptApp.newTrigger(fnName).timeBased().everyMinutes(5).create();
+  }
+  props.setProperty('GATILHO_DFU_ATIVO', 'SIM');
+}
+
 function instalarGatilhoDemandasFuturas() {
   const fnName = 'processarDemandasFuturasAgendadas';
   const triggers = ScriptApp.getProjectTriggers();
@@ -1604,7 +1807,278 @@ function instalarGatilhoDemandasFuturas() {
   });
   ScriptApp.newTrigger(fnName)
     .timeBased()
-    .everyMinutes(10)
+    .everyMinutes(5)
     .create();
-  return { success: true, message: 'Gatilho configurado a cada 10 minutos para Demandas Futuras.' };
+  PropertiesService.getScriptProperties().setProperty('GATILHO_DFU_ATIVO', 'SIM');
+  return { success: true, message: 'Gatilho configurado a cada 5 minutos para Demandas Futuras.' };
+}
+
+// =========================================================================
+// ANOTAÇÕES PESSOAIS DO USUÁRIO (Persistência Individual no Banco de Dados)
+// =========================================================================
+
+function ensureAnotacoesSheets_(ss) {
+  let shNotas = ss.getSheetByName(SHEETS.ANOTACOES);
+  if (!shNotas) {
+    shNotas = ss.insertSheet(SHEETS.ANOTACOES);
+    shNotas.appendRow([
+      'ID', 'UsuarioID', 'UsuarioEmail', 'Aba', 'Titulo',
+      'Conteudo', 'Cor', 'Fixado', 'DataCriacao', 'DataAtualizacao'
+    ]);
+    shNotas.getRange(1, 1, 1, 10).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+  }
+
+  let shAbas = ss.getSheetByName(SHEETS.ANOTACOES_ABAS);
+  if (!shAbas) {
+    shAbas = ss.insertSheet(SHEETS.ANOTACOES_ABAS);
+    shAbas.appendRow(['UsuarioID', 'UsuarioEmail', 'AbasJSON', 'DataAtualizacao']);
+    shAbas.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+  }
+  return { shNotas: shNotas, shAbas: shAbas };
+}
+
+function pertenciaAoUsuario_(rowUserId, rowUserEmail, userId, userEmail) {
+  const rEmail = (rowUserEmail || '').toString().trim().toLowerCase();
+  const uEmail = (userEmail || '').toString().trim().toLowerCase();
+  if (rEmail && uEmail && rEmail === uEmail) return true;
+
+  const rId = (rowUserId || '').toString().trim().toUpperCase();
+  const uId = (userId || '').toString().trim().toUpperCase();
+  if (rId && uId && rId === uId) return true;
+
+  return false;
+}
+
+function lerAnotacoesDoUsuario_(ss, currentUser, emailLogado) {
+  const { shNotas, shAbas } = ensureAnotacoesSheets_(ss);
+  const userId = currentUser && currentUser.id ? currentUser.id : 'USR-1';
+  const userEmail = (currentUser && currentUser.email ? currentUser.email : (emailLogado || ADMIN_EMAIL)).toLowerCase().trim();
+
+  const anotacoes = [];
+  if (shNotas && shNotas.getLastRow() > 1) {
+    const raw = shNotas.getRange(2, 1, shNotas.getLastRow() - 1, 10).getValues();
+    raw.forEach(r => {
+      if (!r[0]) return;
+      if (pertenciaAoUsuario_(r[1], r[2], userId, userEmail)) {
+        anotacoes.push({
+          id: r[0].toString().trim(),
+          aba: (r[3] || 'Geral').toString().trim() || 'Geral',
+          titulo: (r[4] || '').toString(),
+          conteudo: (r[5] || '').toString(),
+          cor: (r[6] || 'padrao').toString().trim(),
+          fixado: (r[7] === 'SIM' || r[7] === true),
+          dataCriacao: r[8] ? r[8].toString() : new Date().toISOString(),
+          dataAtualizacao: r[9] ? r[9].toString() : new Date().toISOString()
+        });
+      }
+    });
+  }
+
+  let abas = ['Geral'];
+  if (shAbas && shAbas.getLastRow() > 1) {
+    const rawAbas = shAbas.getRange(2, 1, shAbas.getLastRow() - 1, 4).getValues();
+    for (let i = 0; i < rawAbas.length; i++) {
+      if (pertenciaAoUsuario_(rawAbas[i][0], rawAbas[i][1], userId, userEmail)) {
+        try {
+          const parsed = JSON.parse(rawAbas[i][2] || '["Geral"]');
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            abas = parsed;
+            if (!abas.includes('Geral')) abas.unshift('Geral');
+          }
+        } catch (e) {}
+        break;
+      }
+    }
+  }
+
+  anotacoes.forEach(n => {
+    if (n.aba && !abas.includes(n.aba)) abas.push(n.aba);
+  });
+
+  return { anotacoes: anotacoes, abas: abas };
+}
+
+function salvarAnotacaoNoBanco(dados) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    const ss = getDatabaseSpreadsheet();
+    const { shNotas } = ensureAnotacoesSheets_(ss);
+
+    const nota = dados.anotacao || dados;
+    const notaId = (nota.id || ('NOTE-' + Date.now())).toString().trim();
+    const usuarioId = (dados.usuarioId || nota.usuarioId || 'USR-1').toString().trim();
+    const usuarioEmail = (dados.usuarioEmail || nota.usuarioEmail || ADMIN_EMAIL).toString().trim().toLowerCase();
+    const aba = (nota.aba || 'Geral').toString().trim() || 'Geral';
+    const titulo = (nota.titulo || 'Sem Título').toString().trim();
+    const conteudo = (nota.conteudo || '').toString();
+    const cor = (nota.cor || 'padrao').toString().trim();
+    const fixadoStr = (nota.fixado === true || nota.fixado === 'true' || nota.fixado === 'SIM') ? 'SIM' : 'NAO';
+    const agoraIso = new Date().toISOString();
+    const dataCriacao = nota.dataCriacao || agoraIso;
+    const dataAtualizacao = nota.dataAtualizacao || agoraIso;
+
+    if (shNotas.getLastRow() > 1) {
+      const range = shNotas.getRange(2, 1, shNotas.getLastRow() - 1, 10);
+      const rows = range.getValues();
+      for (let i = 0; i < rows.length; i++) {
+        if (rows[i][0] && rows[i][0].toString().trim() === notaId) {
+          rows[i][1] = usuarioId;
+          rows[i][2] = usuarioEmail;
+          rows[i][3] = aba;
+          rows[i][4] = titulo;
+          rows[i][5] = conteudo;
+          rows[i][6] = cor;
+          rows[i][7] = fixadoStr;
+          rows[i][9] = dataAtualizacao;
+          range.setValues(rows);
+          SpreadsheetApp.flush();
+          return { success: true, id: notaId };
+        }
+      }
+    }
+
+    shNotas.appendRow([
+      notaId,
+      usuarioId,
+      usuarioEmail,
+      aba,
+      titulo,
+      conteudo,
+      cor,
+      fixadoStr,
+      dataCriacao,
+      dataAtualizacao
+    ]);
+    SpreadsheetApp.flush();
+    return { success: true, id: notaId };
+  } catch (e) {
+    return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
+  }
+}
+
+function excluirAnotacaoDoBanco(dados) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    const ss = getDatabaseSpreadsheet();
+    const { shNotas } = ensureAnotacoesSheets_(ss);
+    if (shNotas.getLastRow() <= 1) return { success: true };
+
+    const targetId = (dados.anotacaoId || dados.id || '').toString().trim();
+    const rows = shNotas.getRange(2, 1, shNotas.getLastRow() - 1, 1).getValues();
+    for (let i = rows.length - 1; i >= 0; i--) {
+      if (rows[i][0] && rows[i][0].toString().trim() === targetId) {
+        shNotas.deleteRow(i + 2);
+      }
+    }
+    SpreadsheetApp.flush();
+    return { success: true };
+  } catch (e) {
+    return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
+  }
+}
+
+function salvarAbasAnotacoesNoBanco(dados) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    const ss = getDatabaseSpreadsheet();
+    const { shAbas } = ensureAnotacoesSheets_(ss);
+
+    const usuarioId = (dados.usuarioId || 'USR-1').toString().trim();
+    const usuarioEmail = (dados.usuarioEmail || ADMIN_EMAIL).toString().trim().toLowerCase();
+    let abas = Array.isArray(dados.abas) ? dados.abas : ['Geral'];
+    if (!abas.includes('Geral')) abas.unshift('Geral');
+    const abasJson = JSON.stringify(abas);
+    const agoraIso = new Date().toISOString();
+
+    if (shAbas.getLastRow() > 1) {
+      const range = shAbas.getRange(2, 1, shAbas.getLastRow() - 1, 4);
+      const rows = range.getValues();
+      for (let i = 0; i < rows.length; i++) {
+        if (pertenciaAoUsuario_(rows[i][0], rows[i][1], usuarioId, usuarioEmail)) {
+          rows[i][0] = usuarioId;
+          rows[i][1] = usuarioEmail;
+          rows[i][2] = abasJson;
+          rows[i][3] = agoraIso;
+          range.setValues(rows);
+          SpreadsheetApp.flush();
+          return { success: true };
+        }
+      }
+    }
+
+    shAbas.appendRow([usuarioId, usuarioEmail, abasJson, agoraIso]);
+    SpreadsheetApp.flush();
+    return { success: true };
+  } catch (e) {
+    return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
+  }
+}
+
+function sincronizarAnotacoesUsuarioNoBanco(dados) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(10000);
+    const ss = getDatabaseSpreadsheet();
+    const { shNotas } = ensureAnotacoesSheets_(ss);
+
+    const usuarioId = (dados.usuarioId || 'USR-1').toString().trim();
+    const usuarioEmail = (dados.usuarioEmail || ADMIN_EMAIL).toString().trim().toLowerCase();
+    const notasCliente = Array.isArray(dados.anotacoes) ? dados.anotacoes : [];
+
+    if (Array.isArray(dados.abas)) {
+      salvarAbasAnotacoesNoBanco({
+        usuarioId: usuarioId,
+        usuarioEmail: usuarioEmail,
+        abas: dados.abas
+      });
+    }
+
+    const outrasLinhas = [];
+    if (shNotas.getLastRow() > 1) {
+      const rows = shNotas.getRange(2, 1, shNotas.getLastRow() - 1, 10).getValues();
+      rows.forEach(r => {
+        if (r[0] && !pertenciaAoUsuario_(r[1], r[2], usuarioId, usuarioEmail)) {
+          outrasLinhas.push(r);
+        }
+      });
+    }
+
+    const agoraIso = new Date().toISOString();
+    const novasLinhasUsuario = notasCliente.map(n => [
+      (n.id || ('NOTE-' + Date.now() + '-' + Math.floor(Math.random() * 1000))).toString().trim(),
+      usuarioId,
+      usuarioEmail,
+      (n.aba || 'Geral').toString().trim() || 'Geral',
+      (n.titulo || 'Sem Título').toString().trim(),
+      (n.conteudo || '').toString(),
+      (n.cor || 'padrao').toString().trim(),
+      (n.fixado === true || n.fixado === 'true' || n.fixado === 'SIM') ? 'SIM' : 'NAO',
+      n.dataCriacao || agoraIso,
+      n.dataAtualizacao || agoraIso
+    ]);
+
+    const todasFinal = outrasLinhas.concat(novasLinhasUsuario);
+    if (shNotas.getLastRow() > 1) {
+      shNotas.getRange(2, 1, shNotas.getLastRow() - 1, 10).clearContent();
+    }
+    if (todasFinal.length > 0) {
+      shNotas.getRange(2, 1, todasFinal.length, 10).setValues(todasFinal);
+    }
+    SpreadsheetApp.flush();
+
+    return { success: true, total: novasLinhasUsuario.length };
+  } catch (e) {
+    return { success: false, message: e.message };
+  } finally {
+    try { lock.releaseLock(); } catch (e) {}
+  }
 }
