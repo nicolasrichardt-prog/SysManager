@@ -954,73 +954,7 @@
             </div>
           </div>
 
-          <!-- 2. EM ANDAMENTO -->
-          <div class="col">
-            <div class="card card-custom p-3 shadow-xs border-top border-primary border-3 hover-card-drawer h-100" 
-                 onclick="abrirDrawerLista('emAndamento')" role="button" tabindex="0" title="Clique para abrir o painel lateral com as demandas Em Andamento">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
-                    <i class="fa-solid fa-spinner fa-spin fs-6"></i>
-                  </div>
-                  <div>
-                    <h6 class="fw-bold mb-0 text-primary" style="font-size: 0.9rem;">Em Andamento</h6>
-                    <small class="text-muted" style="font-size: 0.72rem;">Na esteira de produção</small>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <span class="badge bg-primary text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdEmAndamentoAba">0</span>
-                  <div class="small text-primary fw-semibold mt-1" style="font-size: 0.7rem;">Ver lista &rarr;</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. ATRASADAS -->
-          <div class="col">
-            <div class="card card-custom p-3 shadow-xs border-top border-danger border-3 hover-card-drawer h-100" 
-                 onclick="abrirDrawerLista('atrasadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Atrasadas">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
-                    <i class="fa-solid fa-triangle-exclamation fs-6"></i>
-                  </div>
-                  <div>
-                    <h6 class="fw-bold mb-0 text-danger" style="font-size: 0.9rem;">Atrasadas</h6>
-                    <small class="text-muted" style="font-size: 0.72rem;">Fora do prazo previsto</small>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <span class="badge bg-danger text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdAtrasadasAba">0</span>
-                  <div class="small text-danger fw-semibold mt-1" style="font-size: 0.7rem;">Ver atrasos &rarr;</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4. CONCLUÍDAS -->
-          <div class="col">
-            <div class="card card-custom p-3 shadow-xs border-top border-success border-3 hover-card-drawer h-100" 
-                 onclick="abrirDrawerLista('concluidas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Concluídas">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
-                    <i class="fa-solid fa-circle-check fs-6"></i>
-                  </div>
-                  <div>
-                    <h6 class="fw-bold mb-0 text-success" style="font-size: 0.9rem;">Concluídas</h6>
-                    <small class="text-muted" style="font-size: 0.72rem;">Histórico de entregas</small>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <span class="badge bg-success text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdConcluidasAba">0</span>
-                  <div class="small text-success fw-semibold mt-1" style="font-size: 0.7rem;">Ver histórico &rarr;</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 5. DEMANDA FUTURA -->
+          <!-- 2. DEMANDA FUTURA -->
           <div class="col">
             <div class="card card-custom p-3 shadow-xs border-top border-3 hover-card-drawer h-100"
                  style="border-top-color: #6366f1 !important;"
@@ -1048,6 +982,72 @@
                     <span class="badge text-white fs-6 font-monospace px-2 py-1 rounded-pill" style="background-color: #4f46e5;" id="badgeQtdDemandasFuturasAba">0</span>
                   </div>
                   <div class="small fw-semibold" style="font-size: 0.7rem; color: #4f46e5;">Ver agendadas &rarr;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. EM ANDAMENTO -->
+          <div class="col">
+            <div class="card card-custom p-3 shadow-xs border-top border-primary border-3 hover-card-drawer h-100" 
+                 onclick="abrirDrawerLista('emAndamento')" role="button" tabindex="0" title="Clique para abrir o painel lateral com as demandas Em Andamento">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-spinner fa-spin fs-6"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold mb-0 text-primary" style="font-size: 0.9rem;">Em Andamento</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">Na esteira de produção</small>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-primary text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdEmAndamentoAba">0</span>
+                  <div class="small text-primary fw-semibold mt-1" style="font-size: 0.7rem;">Ver lista &rarr;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. ATRASADAS -->
+          <div class="col">
+            <div class="card card-custom p-3 shadow-xs border-top border-danger border-3 hover-card-drawer h-100" 
+                 onclick="abrirDrawerLista('atrasadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Atrasadas">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-triangle-exclamation fs-6"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold mb-0 text-danger" style="font-size: 0.9rem;">Atrasadas</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">Fora do prazo previsto</small>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-danger text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdAtrasadasAba">0</span>
+                  <div class="small text-danger fw-semibold mt-1" style="font-size: 0.7rem;">Ver atrasos &rarr;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. CONCLUÍDAS -->
+          <div class="col">
+            <div class="card card-custom p-3 shadow-xs border-top border-success border-3 hover-card-drawer h-100" 
+                 onclick="abrirDrawerLista('concluidas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Concluídas">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-circle-check fs-6"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold mb-0 text-success" style="font-size: 0.9rem;">Concluídas</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">Histórico de entregas</small>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-success text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdConcluidasAba">0</span>
+                  <div class="small text-success fw-semibold mt-1" style="font-size: 0.7rem;">Ver histórico &rarr;</div>
                 </div>
               </div>
             </div>
@@ -2006,21 +2006,45 @@
             <input type="text" class="form-control" id="futuroTitulo" placeholder="Ex: Implementar integração com módulo de Relatórios">
           </div>
 
-          <!-- HORÁRIO (COM TOOLTIP OBRIGATÓRIO) -->
+          <!-- HORÁRIO DE ENTRADA NA ESTEIRA (COM TOOLTIP OBRIGATÓRIO) -->
           <div class="mb-3">
             <label class="form-label small fw-bold d-inline-flex align-items-center gap-1"
                    for="futuroDataHora"
                    id="labelFuturoHorario"
                    data-bs-toggle="tooltip"
                    data-bs-placement="top"
-                   data-bs-title="Nesse horário a Demanda entrará automaticamente na Esteira de Produção e 24 horas antes dessa Demanda será enviado um e-mail informando"
-                   title="Nesse horário a Demanda entrará automaticamente na Esteira de Produção e 24 horas antes dessa Demanda será enviado um e-mail informando"
+                   data-bs-title="Nesse horário a Demanda entrará automaticamente na Esteira de Produção (Em Andamento e Em Foco) e 24 horas antes dessa Demanda será enviado um e-mail informando"
+                   title="Nesse horário a Demanda entrará automaticamente na Esteira de Produção (Em Andamento e Em Foco) e 24 horas antes dessa Demanda será enviado um e-mail informando"
                    style="cursor: help;">
               <i class="fa-regular fa-clock" style="color: #4f46e5;"></i>
-              <span style="border-bottom: 1px dotted #4f46e5;">Horário:</span>
+              <span style="border-bottom: 1px dotted #4f46e5;">Horário de Entrada na Esteira:</span>
               <i class="fa-solid fa-circle-info ms-1" style="color: #4f46e5;" aria-hidden="true"></i>
             </label>
-            <input type="datetime-local" class="form-control fw-semibold" id="futuroDataHora">
+            <input type="datetime-local" class="form-control fw-semibold" id="futuroDataHora" onchange="aoMudarDataHoraFuturo()">
+          </div>
+
+          <!-- PRAZO DE CONCLUSÃO DA DEMANDA FUTURA -->
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark d-flex align-items-center justify-content-between mb-1" for="futuroDataPrazo">
+              <span><i class="fa-regular fa-calendar-check me-1" style="color: #4f46e5;"></i> Quando irá terminar? (Prazo Final):</span>
+              <span class="text-danger small">* Obrigatório</span>
+            </label>
+            <input type="date" class="form-control fw-semibold" id="futuroDataPrazo" onchange="aoMudarDataPrazoFuturo()">
+            <div class="mt-2">
+              <label class="form-label small text-muted mb-1" style="font-size: 0.72rem;">Ajuste rápido de prazo a partir da entrada na esteira:</label>
+              <div class="d-flex flex-wrap gap-1">
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-2" style="font-size: 0.74rem;" onclick="definirPrazoRapidoDemandaFutura(1)">+1 dia</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-2" style="font-size: 0.74rem;" onclick="definirPrazoRapidoDemandaFutura(2)">+2 dias</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-2" style="font-size: 0.74rem;" onclick="definirPrazoRapidoDemandaFutura(3)">+3 dias</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-2" style="font-size: 0.74rem;" onclick="definirPrazoRapidoDemandaFutura(5)">+5 dias</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-2" style="font-size: 0.74rem;" onclick="definirPrazoRapidoDemandaFutura(7)">+7 dias</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 rounded-2" style="font-size: 0.74rem;" onclick="definirPrazoRapidoDemandaFutura(10)">+10 dias</button>
+              </div>
+            </div>
+            <div class="p-2 mt-2 rounded border d-flex align-items-center justify-content-between small fw-semibold" style="background-color: #eef2ff; border-color: #c7d2fe !important; color: #312e81;">
+              <span><i class="fa-solid fa-stopwatch me-1" style="color: #4f46e5;"></i> Prazo de Produção:</span>
+              <span id="lblFuturoDuracaoDias" class="fw-bold">2 dia(s)</span>
+            </div>
           </div>
 
           <!-- DESENVOLVEDOR RESPONSÁVEL -->
@@ -2971,7 +2995,7 @@
 
 
     // 🌐 URL Oficial da API Google Apps Script (Conecta a Vercel à sua Planilha Google Sheets)
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby582XKNrahfPd70pklz3SCyCRVTdP7WuVqT5kKnCDERXIzRK19LLJ7PeDiWNcbMiJ83w/exec';
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxg1nyoEAjUxaDJKnP1XujF5cbtFjbJ3gm8BKKQboAOaVVM-GfGWvAqMHjgRhfl3IT4/exec';
     const APPS_SCRIPT_URLS_LIST = [
       'https://script.google.com/macros/s/AKfycbxg1nyoEAjUxaDJKnP1XujF5cbtFjbJ3gm8BKKQboAOaVVM-GfGWvAqMHjgRhfl3IT4/exec',
       'https://script.google.com/macros/s/AKfycbxg1nyoEAjUxaDJKnP1XujF5cbtFjbJ3gm8BKKQboAOaVVM-GfGWvAqMHjgRhfI3lT4/exec',
@@ -3006,7 +3030,7 @@
         else if (action === 'cadastrarDemandaFutura') runner.cadastrarDemandaFutura(data);
         else if (action === 'atualizarDemandaFutura') runner.atualizarDemandaFutura(data);
         else if (action === 'excluirDemandaFutura') runner.excluirDemandaFutura(data.demandaFuturaId || data.id || data);
-        else if (action === 'processarDemandasFuturas') runner.processarDemandasFuturasAgendadas();
+        else if (action === 'processarDemandasFuturas') runner.processarDemandasFuturasAgendadas(data || {});
         else if (action === 'dispararEmailDemandaFuturaManual') runner.dispararEmailDemandaFuturaManual(data.demandaFuturaId || data.id);
         else if (action === 'salvarAnotacao') runner.salvarAnotacaoNoBanco(data);
         else if (action === 'excluirAnotacao') runner.excluirAnotacaoDoBanco(data);
@@ -3186,6 +3210,76 @@
       } catch (e) {}
     }
 
+    function aoMudarDataHoraFuturo() {
+      const dataHoraInput = document.getElementById('futuroDataHora');
+      const dataPrazoInput = document.getElementById('futuroDataPrazo');
+      if (!dataHoraInput || !dataPrazoInput) return;
+
+      const dtProg = parseDataHoraFuturoLocal(dataHoraInput.value);
+      if (!dtProg) return;
+
+      const dtIniIso = formatarDataIso(dtProg);
+      dataPrazoInput.min = dtIniIso;
+
+      if (!dataPrazoInput.value) {
+        const dtSug = new Date(dtProg.getTime());
+        dtSug.setDate(dtSug.getDate() + 2);
+        dataPrazoInput.value = formatarDataIso(dtSug);
+      } else {
+        const dPrazo = parseDataLocal(dataPrazoInput.value);
+        const dIni = parseDataLocal(dtIniIso);
+        if (dPrazo.getTime() < dIni.getTime()) {
+          const dtSug = new Date(dIni.getTime());
+          dtSug.setDate(dtSug.getDate() + 2);
+          dataPrazoInput.value = formatarDataIso(dtSug);
+        }
+      }
+      aoMudarDataPrazoFuturo();
+    }
+
+    function definirPrazoRapidoDemandaFutura(diasAdicionais) {
+      const dataHoraInput = document.getElementById('futuroDataHora');
+      const dataPrazoInput = document.getElementById('futuroDataPrazo');
+      if (!dataPrazoInput) return;
+
+      const dtProg = (dataHoraInput && dataHoraInput.value)
+        ? (parseDataHoraFuturoLocal(dataHoraInput.value) || new Date())
+        : new Date();
+
+      const novaData = new Date(dtProg.getFullYear(), dtProg.getMonth(), dtProg.getDate(), 12, 0, 0);
+      novaData.setDate(novaData.getDate() + diasAdicionais);
+      dataPrazoInput.value = formatarDataIso(novaData);
+      aoMudarDataPrazoFuturo();
+    }
+
+    function aoMudarDataPrazoFuturo() {
+      const dataHoraInput = document.getElementById('futuroDataHora');
+      const dataPrazoInput = document.getElementById('futuroDataPrazo');
+      const lbl = document.getElementById('lblFuturoDuracaoDias');
+      if (!dataPrazoInput || !lbl) return;
+
+      const valPrazo = dataPrazoInput.value;
+      if (!valPrazo) {
+        lbl.innerText = 'Selecione uma data de conclusão';
+        return;
+      }
+
+      const dtProg = (dataHoraInput && dataHoraInput.value)
+        ? (parseDataHoraFuturoLocal(dataHoraInput.value) || new Date())
+        : new Date();
+      const dIni = new Date(dtProg.getFullYear(), dtProg.getMonth(), dtProg.getDate(), 0, 0, 0, 0);
+      let dPrazo = parseDataLocal(valPrazo);
+      dPrazo.setHours(0, 0, 0, 0);
+
+      if (dPrazo.getTime() < dIni.getTime()) {
+        dataPrazoInput.value = formatarDataIso(dIni);
+        dPrazo = dIni;
+      }
+
+      const diffDias = Math.max(1, Math.round((dPrazo.getTime() - dIni.getTime()) / (1000 * 60 * 60 * 24)));
+      lbl.innerText = `${diffDias} dia(s) (conclusão em ${formatarData(dataPrazoInput.value)})`;
+    }
+
     function abrirModalNovaDemandaFutura(futuroId) {
       popularModulosUI();
       atualizarSelectsDev();
@@ -3198,6 +3292,7 @@
       const moduloInput = document.getElementById('futuroModuloInput');
       const tituloInput = document.getElementById('futuroTitulo');
       const dataHoraInput = document.getElementById('futuroDataHora');
+      const dataPrazoInput = document.getElementById('futuroDataPrazo');
       const devSelect = document.getElementById('futuroDevSelect');
 
       const existente = futuroId
@@ -3217,6 +3312,20 @@
 
         if (tituloInput) tituloInput.value = existente.titulo || '';
         if (dataHoraInput) dataHoraInput.value = (existente.dataHoraProgramada || '').slice(0, 16);
+
+        const dtProgExist = parseDataHoraFuturoLocal(existente.dataHoraProgramada) || new Date();
+        if (dataPrazoInput) {
+          dataPrazoInput.min = formatarDataIso(dtProgExist);
+          if (existente.dataPrazo) {
+            dataPrazoInput.value = formatarDataIso(parseDataLocal(existente.dataPrazo));
+          } else {
+            const dtSug = new Date(dtProgExist.getTime());
+            dtSug.setDate(dtSug.getDate() + (Number(existente.diasEstimados) || 2));
+            dataPrazoInput.value = formatarDataIso(dtSug);
+          }
+        }
+        aoMudarDataPrazoFuturo();
+
         if (devSelect && existente.devId) devSelect.value = existente.devId;
       } else {
         if (inputId) inputId.value = '';
@@ -3229,11 +3338,19 @@
         if (moduloInput) moduloInput.value = 'SIOPLEEx';
 
         if (tituloInput) tituloInput.value = '';
+        const padrao = new Date();
+        padrao.setDate(padrao.getDate() + 1);
         if (dataHoraInput) {
-          const padrao = new Date();
-          padrao.setDate(padrao.getDate() + 1);
           dataHoraInput.value = formatarInputDateTimeLocal(padrao);
         }
+        if (dataPrazoInput) {
+          const dtPrazoPadrao = new Date(padrao.getTime());
+          dtPrazoPadrao.setDate(dtPrazoPadrao.getDate() + 2);
+          dataPrazoInput.min = formatarDataIso(padrao);
+          dataPrazoInput.value = formatarDataIso(dtPrazoPadrao);
+        }
+        aoMudarDataPrazoFuturo();
+
         if (devSelect && appState.currentUser) {
           devSelect.value = appState.currentUser.id;
         }
@@ -3255,6 +3372,7 @@
       const modulo = isExterna ? 'Demanda Externa' : (moduloRaw || 'SIOPLEEx');
       const titulo = (document.getElementById('futuroTitulo')?.value || '').trim();
       const dataHoraProgramada = (document.getElementById('futuroDataHora')?.value || '').trim();
+      const dataPrazoRaw = (document.getElementById('futuroDataPrazo')?.value || '').trim();
 
       if (!titulo) {
         alert('Informe o Nome da Demanda.');
@@ -3265,20 +3383,33 @@
         alert('Informe um Horário válido.');
         return;
       }
+      if (!dataPrazoRaw) {
+        alert('Informe a data de Prazo Final em que a demanda será concluída.');
+        return;
+      }
+
+      const dIniProg = new Date(dtProgramada.getFullYear(), dtProgramada.getMonth(), dtProgramada.getDate(), 0, 0, 0, 0);
+      let dPrazoObj = parseDataLocal(dataPrazoRaw);
+      dPrazoObj.setHours(0, 0, 0, 0);
+      if (dPrazoObj.getTime() < dIniProg.getTime()) {
+        dPrazoObj = new Date(dIniProg.getTime());
+      }
+      const dataPrazoIso = formatarDataIso(dPrazoObj);
+      const diasEstimados = Math.max(1, Math.round((dPrazoObj.getTime() - dIniProg.getTime()) / (1000 * 60 * 60 * 24)));
 
       const devSelect = document.getElementById('futuroDevSelect');
       let devId = appState.currentUser ? appState.currentUser.id : 'USR-1';
-      let devNome = appState.currentUser ? appState.currentUser.nome : 'Ten Nicolas';
+      let devNome = appState.currentUser ? limparNomeDev(appState.currentUser.nome) : 'Ten Nicolas';
       let devEmail = appState.currentUser ? (appState.currentUser.email || '') : '';
 
       if (devSelect && devSelect.value) {
         devId = devSelect.value;
         const usr = (appState.usuarios || []).find(u => u.id === devId);
         if (usr) {
-          devNome = usr.nome;
+          devNome = limparNomeDev(usr.nome);
           devEmail = usr.email || '';
         } else if (devSelect.selectedOptions && devSelect.selectedOptions[0]) {
-          devNome = devSelect.selectedOptions[0].innerText.replace(/\s*\(.*\)$/, '');
+          devNome = limparNomeDev(devSelect.selectedOptions[0].innerText.replace(/\s*\(.*\)$/, ''));
         }
       }
 
@@ -3292,6 +3423,8 @@
         demandaExterna: isExterna,
         titulo: titulo,
         dataHoraProgramada: dataHoraProgramada.slice(0, 16),
+        dataPrazo: dataPrazoIso,
+        diasEstimados: diasEstimados,
         devId: devId,
         devNome: devNome,
         devEmail: devEmail,
@@ -3301,6 +3434,8 @@
         tarefaGeradaId: '',
         dataCriacao: (existente && existente.dataCriacao) || formatarInputDateTimeLocal(new Date())
       };
+
+      const payloadServidor = { ...objFuturo, status: 'Agendada' };
 
       if (!Array.isArray(appState.demandasFuturas)) appState.demandasFuturas = [];
       if (isEdicao) {
@@ -3323,32 +3458,41 @@
       if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
       mostrarToast(isEdicao ? 'Demanda Futura atualizada!' : 'Demanda Futura agendada!');
 
-      executarNoServidor(isEdicao ? 'atualizarDemandaFutura' : 'cadastrarDemandaFutura', objFuturo, (res) => {
+      executarNoServidor(isEdicao ? 'atualizarDemandaFutura' : 'cadastrarDemandaFutura', payloadServidor, (res) => {
         if (res && res.success) {
+          const oldTmpId = idFinal;
           if (!isEdicao && res.id) {
             objFuturo.id = res.id;
+            const taskPromovidaLocal = (appState.tarefas || []).find(t =>
+              t.demandaFuturaId === oldTmpId ||
+              t.id === ('TSK-DF-' + String(oldTmpId).replace(/^DFU-(?:TMP-)?/i, ''))
+            );
+            if (taskPromovidaLocal) {
+              limparEdicaoLocal(taskPromovidaLocal.id);
+              taskPromovidaLocal.demandaFuturaId = res.id;
+              if (res.tarefaGeradaId) {
+                taskPromovidaLocal.id = res.tarefaGeradaId;
+              }
+              salvarEdicaoLocalDemanda(taskPromovidaLocal);
+            }
           }
           if (res.email24hEnviado) {
             objFuturo.email24hEnviado = true;
             objFuturo.dataEmail24h = res.dataEmail24h || '';
-            mostrarToast('Demanda Futura salva e e-mail de aviso enviado!');
+            mostrarToast('Demanda Futura salva e e-mail de aviso 24h enviado!');
           }
-          if (res.status === 'Na Esteira') {
-            carregarDados();
-          }
-          if (res.emailErro) {
-            console.warn('Aviso ao enviar e-mail da Demanda Futura:', res.emailErro);
-          }
-          const atual = obterDemandasFuturasLocais().filter(x => x.id !== idFinal && x.id !== objFuturo.id);
+          const atual = obterDemandasFuturasLocais().filter(x => x.id !== oldTmpId && x.id !== objFuturo.id);
           salvarDemandasFuturasLocais(atual);
-          try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
-          atualizarAbaEsteira();
-          atualizarRelatorioMensal();
-          if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
-        } else if (res && res.message) {
-          console.warn('Servidor não processou Demanda Futura:', res.message);
-          if (res.message.toLowerCase().includes('não reconhecida')) {
-            mostrarToast('Salvo localmente. Reimplante o Code.gs no Apps Script para envio de e-mails!');
+
+          if (res.status === 'Na Esteira') {
+            objFuturo.status = 'Na Esteira';
+            if (res.tarefaGeradaId) limparEdicaoLocal(res.tarefaGeradaId);
+            carregarDados();
+          } else {
+            try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
+            atualizarAbaEsteira();
+            atualizarRelatorioMensal();
+            if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
           }
         }
       }, () => {});
@@ -3396,6 +3540,7 @@
       const vinteQuatroHorasMs = 24 * 60 * 60 * 1000;
       let houvePromocao = false;
       let precisaChamarServidor = false;
+      const idsPromovidosAgora = [];
 
       appState.demandasFuturas.forEach(df => {
         if (!df || df.status !== 'Agendada') return;
@@ -3410,41 +3555,67 @@
 
         if (diffMs <= 0) {
           df.status = 'Na Esteira';
-          const dtPrazo = new Date(dtProg.getTime());
-          dtPrazo.setDate(dtPrazo.getDate() + 1);
-
-          const taskIdGen = df.tarefaGeradaId || ('TSK-DF-' + Date.now() + '-' + Math.floor(Math.random() * 90 + 10));
+          const baseId = String(df.id || Date.now()).replace(/^DFU-(?:TMP-)?/i, '');
+          const taskIdGen = df.tarefaGeradaId || ('TSK-DF-' + baseId);
           df.tarefaGeradaId = taskIdGen;
 
-          const jaExisteNaLista = (appState.tarefas || []).some(t =>
+          let dataPrazoIso = df.dataPrazo || '';
+          if (!dataPrazoIso) {
+            const dtPrazoPadrao = new Date(dtProg.getTime());
+            dtPrazoPadrao.setDate(dtPrazoPadrao.getDate() + (Number(df.diasEstimados) || 2));
+            dataPrazoIso = formatarDataIso(dtPrazoPadrao);
+          }
+          const dIniProg = new Date(dtProg.getFullYear(), dtProg.getMonth(), dtProg.getDate(), 0, 0, 0, 0);
+          const dFimPrazo = parseDataLocal(dataPrazoIso);
+          dFimPrazo.setHours(0, 0, 0, 0);
+          const diasEst = Math.max(1, Number(df.diasEstimados) || Math.round((dFimPrazo.getTime() - dIniProg.getTime()) / (1000 * 60 * 60 * 24)) || 1);
+
+          // Remove o foco ("ativo") das demais demandas deste desenvolvedor para que a Demanda Futura entre Em Foco
+          (appState.tarefas || []).forEach(t => {
+            if (t && t.devId === df.devId && t.status !== 'Concluída' && t.ativo) {
+              t.ativo = false;
+              salvarEdicaoLocalDemanda(t);
+            }
+          });
+
+          const taskExistente = (appState.tarefas || []).find(t =>
             t.id === taskIdGen ||
             (t.demandaFuturaId && t.demandaFuturaId === df.id)
           );
 
-          if (!jaExisteNaLista) {
-            const devHasActive = (appState.tarefas || []).some(t => t.devId === df.devId && t.status !== 'Concluída' && t.ativo);
+          if (!taskExistente) {
             const novaTask = {
               id: taskIdGen,
               demandaFuturaId: df.id,
               modulo: df.demandaExterna ? 'Demanda Externa' : (df.modulo || 'SIOPLEEx'),
+              demandaExterna: Boolean(df.demandaExterna || df.modulo === 'Demanda Externa'),
               titulo: df.titulo,
               descricao: `Entrada automática na Esteira de Produção via Demanda Futura (${formatarDataHoraFuturoPtBr(df.dataHoraProgramada)}).`,
-              devId: df.devId,
-              devNome: df.devNome,
-              diasEstimados: 1,
-              diasTrabalhados: 0,
+              devId: df.devId || (appState.currentUser ? appState.currentUser.id : 'USR-1'),
+              devNome: limparNomeDev(df.devNome || (appState.currentUser ? appState.currentUser.nome : 'Ten Nicolas')),
+              diasEstimados: diasEst,
+              diasTrabalhados: 1,
               dataInicio: formatarDataIso(dtProg),
               dataInsercao: formatarDataIso(dtProg),
-              dataPrazo: formatarDataIso(dtPrazo),
+              dataPrazo: dataPrazoIso,
               status: 'Em Andamento',
-              ativo: !devHasActive,
+              ativo: true,
               urgencia: 'Media',
-              dataConclusao: ''
+              dataConclusao: '',
+              isNovaDemanda: true
             };
-            appState.tarefas.push(novaTask);
+            appState.tarefas.unshift(novaTask);
+            salvarEdicaoLocalDemanda(novaTask);
+          } else {
+            taskExistente.status = 'Em Andamento';
+            taskExistente.ativo = true;
+            taskExistente.dataPrazo = dataPrazoIso;
+            taskExistente.diasEstimados = diasEst;
+            salvarEdicaoLocalDemanda(taskExistente);
           }
 
           if (!String(df.id || '').startsWith('DFU-TMP-')) {
+            idsPromovidosAgora.push(df.id);
             precisaChamarServidor = true;
           }
           houvePromocao = true;
@@ -3452,32 +3623,30 @@
       });
 
       if (houvePromocao) {
-        const locais = obterDemandasFuturasLocais().map(l => {
+        const locais = obterDemandasFuturasLocais().filter(l => {
           const match = appState.demandasFuturas.find(d => d.id === l.id);
-          return match ? match : l;
+          return !match || match.status === 'Agendada';
         });
         salvarDemandasFuturasLocais(locais);
         try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
 
         if (precisaChamarServidor) {
-          executarNoServidor('processarDemandasFuturas', {}, (res) => {
-            if (res && res.success && Array.isArray(res.demandasFuturas)) {
-              res.demandasFuturas.forEach(srv => {
-                const loc = (appState.demandasFuturas || []).find(d => d.id === srv.id);
-                if (loc) {
-                  loc.email24hEnviado = Boolean(srv.email24hEnviado);
-                  loc.dataEmail24h = srv.dataEmail24h || '';
-                }
-              });
-              try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
-              if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
+          executarNoServidor('processarDemandasFuturas', { forcarIds: idsPromovidosAgora }, (res) => {
+            if (res && res.success) {
+              if (res.promovidas > 0) {
+                idsPromovidosAgora.forEach(fid => {
+                  const baseId = String(fid).replace(/^DFU-(?:TMP-)?/i, '');
+                  limparEdicaoLocal('TSK-DF-' + baseId);
+                });
+                carregarDados();
+              }
             }
           }, () => {});
         }
         atualizarAbaEsteira();
         atualizarRelatorioMensal();
         if (drawerTipoAtual) renderizarConteudoDrawer();
-        mostrarToast('Demanda Futura entrou automaticamente na Esteira de Produção!');
+        mostrarToast('Demanda Futura entrou na Esteira Em Andamento e Em Foco!');
       } else if (precisaChamarServidor) {
         executarNoServidor('processarDemandasFuturas', {}, (res) => {
           if (res && res.success && Array.isArray(res.demandasFuturas)) {
@@ -3569,7 +3738,7 @@
       atualizarLabelStatusRelatorio();
       setInterval(() => {
         verificarDemandasFuturasNoCliente();
-      }, 30000);
+      }, 10000);
 
       // Garantia global de desbloqueio de scroll ao fechar qualquer modal/drawer ou trocar aba
       document.addEventListener('hidden.bs.modal', () => {
@@ -3668,7 +3837,7 @@
     }
 
     function calcularDiasEmProducao(dataInicioStr, dataConclusaoStr, status, ativo) {
-      if (!ativo && status !== 'Concluída') {
+      if (status === 'Não Iniciada' || (!ativo && status !== 'Concluída' && status !== 'Em Andamento' && status !== 'Atrasada')) {
         return 0;
       }
       if (!dataInicioStr) return 1;
@@ -4706,9 +4875,14 @@
             </div>
             <h6 class="fw-bold text-dark mb-2" style="font-size: 0.96rem; line-height: 1.4;">${escapeHtml(task.titulo)}</h6>
             <div class="d-flex flex-wrap align-items-center gap-3 small text-muted mb-3 pt-1">
-              <span title="Nesse horário a Demanda entrará automaticamente na Esteira de Produção e 24 horas antes dessa Demanda será enviado um e-mail informando" style="cursor: help;">
-                <i class="fa-regular fa-clock me-1" style="color: #4f46e5;"></i>Horário: <strong style="color: #312e81;">${escapeHtml(horarioFmt)}</strong>
+              <span title="Nesse horário a Demanda entrará automaticamente na Esteira de Produção (Em Andamento e Em Foco) e 24 horas antes será enviado um e-mail informando" style="cursor: help;">
+                <i class="fa-regular fa-clock me-1" style="color: #4f46e5;"></i>Entrada: <strong style="color: #312e81;">${escapeHtml(horarioFmt)}</strong>
               </span>
+              ${task.dataPrazo ? `
+              <span>
+                <i class="fa-regular fa-calendar-check me-1 text-danger"></i>Prazo Final: <strong class="text-dark">${formatarData(task.dataPrazo)}</strong> <span class="text-muted">(${Number(task.diasEstimados) || 1}d)</span>
+              </span>
+              ` : ''}
               <span>
                 <i class="fa-solid fa-user me-1 text-secondary"></i>Responsável: <strong>${escapeHtml(task.devNome || 'Desenvolvedor')}</strong>
               </span>
@@ -6883,11 +7057,11 @@
               demandaExterna: df.demandaExterna === true || df.demandaExterna === 'true' || df.modulo === 'Demanda Externa',
               devId: df.devId,
               devNome: df.devNome,
-              diasEstimados: 0,
+              diasEstimados: Number(df.diasEstimados) || 2,
               diasTrabalhados: 0,
               dataInsercao: (df.dataCriacao ? String(df.dataCriacao).split('T')[0] : isoAg),
-              dataInicio: '',
-              dataPrazo: isoAg,
+              dataInicio: isoAg,
+              dataPrazo: df.dataPrazo || isoAg,
               dataHoraProgramada: df.dataHoraProgramada || '',
               urgencia: 'Agendada',
               status: 'Demanda Futura',
@@ -7084,7 +7258,7 @@
 
           let prazo = '';
           if (t.status === 'Demanda Futura') {
-            prazo = t.dataHoraProgramada ? formatarDataHoraFuturoPtBr(t.dataHoraProgramada) : (t.dataPrazo ? formatarData(t.dataPrazo) : 'A definir');
+            prazo = t.dataPrazo ? formatarData(t.dataPrazo) : (t.dataHoraProgramada ? formatarDataHoraFuturoPtBr(t.dataHoraProgramada) : 'A definir');
           } else if (t.status === 'Concluída') {
             prazo = formatarData(t.dataConclusao || t.dataPrazo);
           } else if (t.dataPrazo) {
@@ -7103,7 +7277,7 @@
                         ? `<span class="text-muted font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-clock me-1"></i>${prazo}</span>`
                         : `<span class="text-secondary font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar me-1"></i>${prazo}</span>`)));
 
-          const diasEstTexto = (t.isDemandaFutura || (t.status === 'Não Iniciada' && (!t.diasEstimados || t.diasEstimados === 0))) ? '-' : `${t.diasEstimados}d`;
+          const diasEstTexto = ((t.status === 'Não Iniciada' || t.isDemandaFutura) && (!t.diasEstimados || t.diasEstimados === 0)) ? '-' : `${t.diasEstimados}d`;
           const diasTrabTexto = (t.isDemandaFutura || (t.status === 'Não Iniciada' && (!t.diasTrabalhados || t.diasTrabalhados === 0))) ? '-' : `${t.diasTrabalhados}d`;
 
           const acaoEditarClick = t.isDemandaFutura ? `abrirModalNovaDemandaFutura('${t.id}')` : `abrirModalEditarTarefa('${t.id}')`;
