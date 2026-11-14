@@ -924,29 +924,7 @@
         <!-- BARRA HORIZONTAL DE ACESSO RÁPIDO: 5 CATEGORIAS EXECUTIVAS -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-3 mb-4" id="gatilhosDrawerDemandas">
           
-          <!-- 1. EM ANDAMENTO -->
-          <div class="col">
-            <div class="card card-custom p-3 shadow-xs border-top border-primary border-3 hover-card-drawer h-100" 
-                 onclick="abrirDrawerLista('emAndamento')" role="button" tabindex="0" title="Clique para abrir o painel lateral com as demandas Em Andamento">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
-                    <i class="fa-solid fa-spinner fa-spin fs-6"></i>
-                  </div>
-                  <div>
-                    <h6 class="fw-bold mb-0 text-primary" style="font-size: 0.9rem;">Em Andamento</h6>
-                    <small class="text-muted" style="font-size: 0.72rem;">Na esteira de produção</small>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <span class="badge bg-primary text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdEmAndamentoAba">0</span>
-                  <div class="small text-primary fw-semibold mt-1" style="font-size: 0.7rem;">Ver lista &rarr;</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 2. NÃO INICIADAS -->
+          <!-- 1. NÃO INICIADAS -->
           <div class="col">
             <div class="card card-custom p-3 shadow-xs border-top border-info border-3 hover-card-drawer h-100" 
                  onclick="abrirDrawerLista('naoIniciadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com a fila de Não Iniciadas">
@@ -971,6 +949,28 @@
                     <span class="badge bg-info text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdNaoIniciadasAba">0</span>
                   </div>
                   <div class="small text-info-emphasis fw-semibold" style="font-size: 0.7rem;">Ver fila &rarr;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. EM ANDAMENTO -->
+          <div class="col">
+            <div class="card card-custom p-3 shadow-xs border-top border-primary border-3 hover-card-drawer h-100" 
+                 onclick="abrirDrawerLista('emAndamento')" role="button" tabindex="0" title="Clique para abrir o painel lateral com as demandas Em Andamento">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-spinner fa-spin fs-6"></i>
+                  </div>
+                  <div>
+                    <h6 class="fw-bold mb-0 text-primary" style="font-size: 0.9rem;">Em Andamento</h6>
+                    <small class="text-muted" style="font-size: 0.72rem;">Na esteira de produção</small>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-primary text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdEmAndamentoAba">0</span>
+                  <div class="small text-primary fw-semibold mt-1" style="font-size: 0.7rem;">Ver lista &rarr;</div>
                 </div>
               </div>
             </div>
@@ -2203,16 +2203,30 @@
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-dark">
-              <i class="fa-solid fa-flag text-primary me-1"></i> Urgência / Prioridade:
-            </label>
-            <select class="form-select" id="editTaskUrgencia">
-              <option value="Baixa">🟢 Baixa</option>
-              <option value="Media">🟡 Média</option>
-              <option value="Alta">🟠 Alta</option>
-              <option value="Urgente">🚨 Urgente (Prioridade Alta)</option>
-            </select>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-dark">
+                <i class="fa-solid fa-flag text-primary me-1"></i> Urgência / Prioridade:
+              </label>
+              <select class="form-select" id="editTaskUrgencia">
+                <option value="Baixa">🟢 Baixa</option>
+                <option value="Media">🟡 Média</option>
+                <option value="Alta">🟠 Alta</option>
+                <option value="Urgente">🚨 Urgente (Prioridade Alta)</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-dark">
+                <i class="fa-solid fa-diagram-project text-primary me-1"></i> Status da Demanda:
+              </label>
+              <select class="form-select" id="editTaskStatus">
+                <option value="AUTO">⚡ Automático (Pelo Prazo)</option>
+                <option value="Não Iniciada">⏳ Não Iniciada (Fila)</option>
+                <option value="Em Andamento">🔄 Em Andamento (Na Esteira)</option>
+                <option value="Atrasada">⚠️ Atrasada</option>
+                <option value="Concluída">✅ Concluída</option>
+              </select>
+            </div>
           </div>
 
           <div class="mb-3">
@@ -2987,6 +3001,11 @@
         else if (action === 'atualizarDemandaFutura') runner.atualizarDemandaFutura(data);
         else if (action === 'excluirDemandaFutura') runner.excluirDemandaFutura(data.demandaFuturaId || data.id || data);
         else if (action === 'processarDemandasFuturas') runner.processarDemandasFuturasAgendadas();
+        else if (action === 'dispararEmailDemandaFuturaManual') runner.dispararEmailDemandaFuturaManual(data.demandaFuturaId || data.id);
+        else if (action === 'salvarAnotacao') runner.salvarAnotacaoNoBanco(data);
+        else if (action === 'excluirAnotacao') runner.excluirAnotacaoDoBanco(data);
+        else if (action === 'salvarAbasAnotacoes') runner.salvarAbasAnotacoesNoBanco(data);
+        else if (action === 'sincronizarAnotacoesUsuario') runner.sincronizarAnotacoesUsuarioNoBanco(data);
       } else if (APPS_SCRIPT_URL) {
         fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -3906,6 +3925,8 @@
         } catch(e) {}
       }
 
+      sincronizarAnotacoesRecebidasDoServidor(dados.anotacoes, dados.abasAnotacoes, isAuthoritative);
+
       atualizarNavbarUsuario();
       atualizarAbaEsteira();
       atualizarPainelGerente();
@@ -4081,7 +4102,18 @@
         }
       });
       atualizarAbaEsteira();
+      atualizarRelatorioMensal();
       mostrarToast(`Demanda "${task.titulo}" colocada em foco no painel.`);
+      executarNoServidor('selecionarTarefaAtiva', {
+        tarefaId: task.id,
+        devId: devId,
+        dataInicio: task.dataInicio,
+        dataPrazo: task.dataPrazo,
+        diasEstimados: task.diasEstimados,
+        status: task.status
+      }, res => {
+        if (res && res.success) limparEdicaoLocal(task.id);
+      });
     }
     window.alternarFocoProducao = alternarFocoProducao;
 
@@ -4657,6 +4689,9 @@
               <small class="text-muted"><i class="fa-solid fa-robot me-1" style="color: #4f46e5;"></i>Entrada automática na Esteira no horário</small>
               <div class="d-flex align-items-center gap-1">
                 ${podeGerenciarFutura ? `
+                  <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-2 py-1" title="Disparar ou reenviar agora o e-mail de aviso de 24h" onclick="enviarAvisoEmailDemandaFuturaManual('${task.id}')">
+                    <i class="fa-solid fa-paper-plane me-1"></i> Enviar Aviso
+                  </button>
                   <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" title="Editar Demanda Futura" onclick="abrirModalNovaDemandaFutura('${task.id}')">
                     <i class="fa-solid fa-pen-to-square me-1"></i> Editar
                   </button>
@@ -5614,13 +5649,48 @@
       const urgSelect = document.getElementById('editTaskUrgencia');
       if (urgSelect) urgSelect.value = tarefa.urgencia || 'Media';
 
+      const statusSelect = document.getElementById('editTaskStatus');
+      if (statusSelect) {
+        statusSelect.value = tarefa.status || 'AUTO';
+      }
+
       const devSelect = document.getElementById('editTaskDevSelect');
-      if (devSelect && tarefa.devId) {
-        devSelect.value = tarefa.devId;
+      if (devSelect) {
+        if (tarefa.devId && Array.from(devSelect.options).some(o => o.value === tarefa.devId)) {
+          devSelect.value = tarefa.devId;
+        } else if (tarefa.devNome) {
+          const uMatch = appState.usuarios.find(u => limparNomeDev(u.nome).toLowerCase() === limparNomeDev(tarefa.devNome).toLowerCase());
+          if (uMatch) devSelect.value = uMatch.id;
+        }
       }
 
       const el = document.getElementById('modalEditarTarefa');
       bootstrap.Modal.getOrCreateInstance(el).show();
+    }
+
+    function enviarAvisoEmailDemandaFuturaManual(futuroId) {
+      if (!futuroId) return;
+      mostrarToast('Enviando aviso por e-mail...');
+      executarNoServidor('dispararEmailDemandaFuturaManual', { demandaFuturaId: futuroId }, (res) => {
+        if (res && res.success) {
+          if (Array.isArray(res.demandasFuturas)) {
+            appState.demandasFuturas = res.demandasFuturas;
+          } else {
+            const item = (appState.demandasFuturas || []).find(x => x.id === futuroId);
+            if (item) {
+              item.email24hEnviado = true;
+              item.dataEmail24h = res.dataEmail24h || '';
+            }
+          }
+          try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (e) {}
+          atualizarAbaEsteira();
+          atualizarRelatorioMensal();
+          if (drawerTipoAtual === 'demandasFuturas') renderizarConteudoDrawer();
+          mostrarToast('E-mail 24h enviado para ' + (res.emailDestino || 'o responsável') + '!');
+        } else {
+          alert('Não foi possível enviar o e-mail: ' + ((res && res.message) || 'Verifique as permissões de MailApp no Apps Script.'));
+        }
+      });
     }
 
     /**
@@ -5839,13 +5909,11 @@
                 (matchTask.urgencia || '') === (ed.urgencia || '') &&
                 Number(matchTask.diasEstimados || 0) === Number(ed.diasEstimados || 0);
 
-              // Se o servidor já concluiu, ou se o snapshot local é legado/antigo (>2min) ou 100% idêntico ao servidor, limpa o local edit e confia no servidor
+              // Se o snapshot local é legado/antigo ou já está 100% refletido no servidor, limpa o local edit
               if (
-                serverStatus === 'Concluída' ||
                 edSemTimestampLegado ||
                 edExpirado ||
-                mesmoConteudo ||
-                (localStatus === 'Não Iniciada' && serverStatus !== 'Não Iniciada' && !ed.revertidoParaNaoIniciada)
+                mesmoConteudo
               ) {
                 delete edits[id];
                 editsAlterados = true;
@@ -6014,12 +6082,14 @@
         return;
       }
 
+      const tituloOriginal = tarefa.titulo;
       const tituloInput = document.getElementById('editTaskTitulo');
       const moduloInput = document.getElementById('editTaskModuloInput');
       const descInput = document.getElementById('editTaskDescricao');
       const dtInicioHidden = document.getElementById('editTaskDataInicio');
       const dtPrazoInput = document.getElementById('editTaskDataPrazo');
       const urgSelect = document.getElementById('editTaskUrgencia');
+      const statusSelect = document.getElementById('editTaskStatus');
       const devSelect = document.getElementById('editTaskDevSelect');
       const checkExterna = document.getElementById('editTaskDemandaExterna');
 
@@ -6030,85 +6100,72 @@
       }
 
       const isExterna = checkExterna ? checkExterna.checked : false;
-      let modulo = 'SIOPLEEx';
-      if (isExterna) {
-        modulo = 'Demanda Externa';
-      } else if (moduloInput && moduloInput.value.trim()) {
-        modulo = moduloInput.value.trim();
-      }
+      const modulo = isExterna
+        ? 'Demanda Externa'
+        : ((moduloInput && moduloInput.value.trim()) ? moduloInput.value.trim() : 'SIOPLEEx');
 
-      // Fecha modal imediatamente (0ms de atraso)
       fecharModalSeguro('modalEditarTarefa');
 
-      // Desenvolvedor Responsável
       let devId = tarefa.devId;
-      let devNome = tarefa.devNome;
+      let devNome = limparNomeDev(tarefa.devNome);
       if (devSelect && devSelect.value) {
         devId = devSelect.value;
         const foundUser = appState.usuarios.find(u => u.id === devId);
-        devNome = foundUser ? foundUser.nome : (devSelect.selectedOptions && devSelect.selectedOptions[0] ? devSelect.selectedOptions[0].text : devNome);
+        devNome = foundUser ? limparNomeDev(foundUser.nome) : devNome;
       }
 
-      // Data de Início é estritamente mantida da tarefa original
-      const dataInicioIso = tarefa.dataInicio || (dtInicioHidden ? dtInicioHidden.value : formatarDataIso(new Date()));
-      let dataPrazoIso = dtPrazoInput && dtPrazoInput.value ? dtPrazoInput.value : (tarefa.dataPrazo || '');
+      let dataInicioIso = tarefa.dataInicio || (dtInicioHidden && dtInicioHidden.value ? dtInicioHidden.value : '');
+      let dataPrazoIso = (dtPrazoInput && dtPrazoInput.value) ? dtPrazoInput.value.trim() : '';
+      const statusEscolhido = statusSelect ? statusSelect.value : 'AUTO';
 
-      const dtIniObj = new Date(dataInicioIso + 'T00:00:00');
-      let diasEstimados = tarefa.diasEstimados || 2;
-
-      if (dataPrazoIso) {
-        const dtFimObj = new Date(dataPrazoIso + 'T00:00:00');
-        if (dtFimObj >= dtIniObj) {
-          diasEstimados = Math.max(1, Math.round((dtFimObj - dtIniObj) / (1000 * 60 * 60 * 24)));
+      if (statusEscolhido === 'Não Iniciada') {
+        dataPrazoIso = '';
+        dataInicioIso = '';
+        tarefa.status = 'Não Iniciada';
+        tarefa.ativo = false;
+        tarefa.diasEstimados = 0;
+        tarefa.diasTrabalhados = 0;
+        tarefa.dataConclusao = '';
+      } else if (statusEscolhido === 'Concluída') {
+        if (!dataInicioIso) dataInicioIso = formatarDataIso(new Date());
+        if (!dataPrazoIso) dataPrazoIso = tarefa.dataPrazo || dataInicioIso;
+        tarefa.status = 'Concluída';
+        tarefa.ativo = false;
+        tarefa.dataConclusao = dataPrazoIso || tarefa.dataConclusao || formatarDataIso(new Date());
+      } else {
+        if (dataPrazoIso) {
+          if (!dataInicioIso) dataInicioIso = formatarDataIso(new Date());
+          const dtIniObj = parseDataLocal(dataInicioIso);
+          const dtFimObj = parseDataLocal(dataPrazoIso);
+          const hojeObj = parseDataLocal(new Date());
+          tarefa.diasEstimados = Math.max(1, Math.round((dtFimObj.getTime() - dtIniObj.getTime()) / (1000 * 60 * 60 * 24)));
+          tarefa.status = (hojeObj.getTime() > dtFimObj.getTime()) ? 'Atrasada' : 'Em Andamento';
+          tarefa.dataConclusao = '';
         } else {
-          dataPrazoIso = dataInicioIso;
-          diasEstimados = 1;
+          tarefa.status = 'Não Iniciada';
+          tarefa.ativo = false;
+          tarefa.diasEstimados = 0;
+          tarefa.diasTrabalhados = 0;
+          dataInicioIso = '';
         }
       }
 
-      // Atualiza propriedades da demanda no appState local (0ms instantâneo)
       tarefa.titulo = titulo;
       tarefa.descricao = (descInput ? descInput.value : '').trim();
       tarefa.modulo = modulo;
       tarefa.demandaExterna = isExterna;
       tarefa.devId = devId;
       tarefa.devNome = devNome;
-      tarefa.diasEstimados = diasEstimados;
+      tarefa.dataInicio = dataInicioIso;
       tarefa.dataPrazo = dataPrazoIso;
-      // tarefa.dataInicio NUNCA É ALTERADA!
       tarefa.urgencia = urgSelect ? urgSelect.value : (tarefa.urgencia || 'Media');
+      tarefa.diasTrabalhados = calcularDiasEmProducao(tarefa.dataInicio, tarefa.dataConclusao, tarefa.status, tarefa.ativo);
 
-      // Se a tarefa não estiver concluída, recalcula seu status com base nas regras oficiais da esteira:
-      if (tarefa.status !== 'Concluída') {
-        const hojeObj = new Date();
-        hojeObj.setHours(0, 0, 0, 0);
-        const semPrazo = !dataPrazoIso || dataPrazoIso.trim() === '' || dataPrazoIso === '-' || dataPrazoIso.toLowerCase() === 'a definir';
-        if (semPrazo) {
-          tarefa.status = 'Não Iniciada';
-          tarefa.ativo = false;
-          tarefa.dataInicio = '';
-          tarefa.diasTrabalhados = 0;
-          tarefa.diasEstimados = 0;
-        } else {
-          const prazoObj = parseDataLocal(dataPrazoIso);
-          prazoObj.setHours(0, 0, 0, 0);
-          if (prazoObj.getTime() < hojeObj.getTime()) {
-            tarefa.status = 'Atrasada';
-          } else {
-            tarefa.status = 'Em Andamento';
-          }
-        }
-      }
-
-      // 1. Grava no Local Edits Store (IMUNIDADE CONTRA F5)
       salvarEdicaoLocalDemanda(tarefa);
-
-      // 2. Salva no cache geral do appState
       try {
         localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
       } catch(e) {}
 
-      // 3. Atualiza toda a interface imediatamente (preservando a posição de rolagem no Relatório)
       const scrollYAntes = window.scrollY;
       atualizarAbaEsteira();
       renderizarGraficos();
@@ -6120,12 +6177,12 @@
       }
       mostrarToast('Demanda atualizada com sucesso!');
 
-      // 4. Sincroniza em segundo plano com o Google Sheets
       executarNoServidor(
         'atualizarTarefa',
         {
           id: tarefa.id,
           tarefaId: tarefa.id,
+          tituloOriginal: tituloOriginal,
           titulo: tarefa.titulo,
           descricao: tarefa.descricao,
           modulo: tarefa.modulo,
@@ -6136,29 +6193,28 @@
           dataPrazo: tarefa.dataPrazo,
           dataInicio: tarefa.dataInicio || '',
           urgencia: tarefa.urgencia,
-          status: tarefa.status
+          status: tarefa.status,
+          ativo: tarefa.ativo
         },
         res => {
           if (res && res.success) {
-            // Sincronizado com sucesso na planilha Google Sheets!
             limparEdicaoLocal(tarefa.id);
+            if (res.tarefa) {
+              Object.assign(tarefa, res.tarefa);
+              tarefa.diasTrabalhados = calcularDiasEmProducao(tarefa.dataInicio, tarefa.dataConclusao, tarefa.status, tarefa.ativo);
+            }
             try {
               localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
             } catch(e) {}
+            atualizarAbaEsteira();
+            atualizarRelatorioMensal();
           } else {
             const msg = (res && res.message) ? res.message : 'Resposta inesperada do servidor';
             console.warn('Aviso do servidor ao salvar:', msg);
-            if (typeof mostrarToast === 'function') {
-              mostrarToast('Edição salva localmente, mas o servidor retornou aviso: ' + msg, 'warning');
-            }
-            // Mantém a edição local protegida para o usuário não perder no F5
           }
         },
         err => {
           console.error('Erro de conexão ao salvar no servidor:', err);
-          if (typeof mostrarToast === 'function') {
-            mostrarToast('Sem resposta do servidor ao salvar edição; alteração preservada localmente.', 'warning');
-          }
         }
       );
     }
@@ -7740,6 +7796,60 @@
     /**
      * Carrega a lista de abas do usuário ativo. Se não houver, inicia com 'Geral'.
      */
+    function sincronizarAnotacoesRecebidasDoServidor(anotacoesServidor, abasServidor, isAuthoritative) {
+      if (!isAuthoritative) return;
+      const chaveNotas = obterChaveStorageUsuarioAnotacoes();
+      const chaveAbas = obterChaveStorageAbasUsuarioAnotacoes();
+
+      let notasLocais = [];
+      try {
+        const raw = localStorage.getItem(chaveNotas);
+        if (raw) notasLocais = JSON.parse(raw) || [];
+      } catch (e) {}
+
+      if (Array.isArray(abasServidor) && abasServidor.length > 0) {
+        const abasLocais = carregarAbasUsuarioAnotacoes();
+        const abasMescladas = Array.from(new Set(['Geral', ...abasServidor, ...abasLocais]));
+        try { localStorage.setItem(chaveAbas, JSON.stringify(abasMescladas)); } catch (e) {}
+      }
+
+      if (Array.isArray(anotacoesServidor)) {
+        if (anotacoesServidor.length === 0 && notasLocais.length > 0) {
+          sincronizarTodasAnotacoesComBanco(notasLocais, carregarAbasUsuarioAnotacoes());
+        } else if (anotacoesServidor.length > 0) {
+          const mapa = new Map();
+          anotacoesServidor.forEach(n => mapa.set(n.id, n));
+          let temNotaLocalNova = false;
+          notasLocais.forEach(loc => {
+            if (!loc || !loc.id || String(loc.id).startsWith('NOTE-INIT-')) return;
+            const srv = mapa.get(loc.id);
+            if (!srv) {
+              mapa.set(loc.id, loc);
+              temNotaLocalNova = true;
+            } else if (new Date(loc.dataAtualizacao || 0) > new Date(srv.dataAtualizacao || 0)) {
+              mapa.set(loc.id, loc);
+              temNotaLocalNova = true;
+            }
+          });
+          const listaFinal = Array.from(mapa.values());
+          try { localStorage.setItem(chaveNotas, JSON.stringify(listaFinal)); } catch (e) {}
+          if (temNotaLocalNova) {
+            sincronizarTodasAnotacoesComBanco(listaFinal, carregarAbasUsuarioAnotacoes());
+          }
+        }
+      }
+    }
+
+    function sincronizarTodasAnotacoesComBanco(listaNotas, listaAbas) {
+      const user = appState.currentUser || { id: 'USR-1', email: 'nicolasrichardt@gmail.com' };
+      executarNoServidor('sincronizarAnotacoesUsuario', {
+        usuarioId: user.id || 'USR-1',
+        usuarioEmail: user.email || localStorage.getItem('SYSMANAGER_USER_EMAIL') || '',
+        anotacoes: listaNotas || carregarMinhasAnotacoes(),
+        abas: listaAbas || carregarAbasUsuarioAnotacoes()
+      });
+    }
+
     function carregarAbasUsuarioAnotacoes() {
       const chave = obterChaveStorageAbasUsuarioAnotacoes();
       try {
@@ -7753,18 +7863,24 @@
         }
       } catch (e) {}
       const padrao = ['Geral'];
-      salvarAbasUsuarioAnotacoes(padrao);
+      try { localStorage.setItem(chave, JSON.stringify(padrao)); } catch (e) {}
       return padrao;
     }
 
     /**
-     * Salva a lista de abas no localStorage do usuário ativo.
+     * Salva a lista de abas no localStorage e no Banco de Dados (Google Sheets).
      */
     function salvarAbasUsuarioAnotacoes(abas) {
       const chave = obterChaveStorageAbasUsuarioAnotacoes();
       try {
         localStorage.setItem(chave, JSON.stringify(abas));
       } catch (e) {}
+      const user = appState.currentUser || { id: 'USR-1', email: 'nicolasrichardt@gmail.com' };
+      executarNoServidor('salvarAbasAnotacoes', {
+        usuarioId: user.id || 'USR-1',
+        usuarioEmail: user.email || localStorage.getItem('SYSMANAGER_USER_EMAIL') || '',
+        abas: abas
+      });
     }
 
     /**
@@ -7851,12 +7967,24 @@
     /**
      * Salva a lista de anotações no localStorage sob a chave privada do usuário.
      */
-    function salvarAnotacoesStorage(lista) {
+    function salvarAnotacoesStorage(lista, notaEspecificaSalva) {
       const chave = obterChaveStorageUsuarioAnotacoes();
       try {
         localStorage.setItem(chave, JSON.stringify(lista));
       } catch (e) {
         console.error('Erro ao gravar anotações no localStorage:', e);
+      }
+      const user = appState.currentUser || { id: 'USR-1', email: 'nicolasrichardt@gmail.com' };
+      const uId = user.id || 'USR-1';
+      const uEmail = user.email || localStorage.getItem('SYSMANAGER_USER_EMAIL') || '';
+      if (notaEspecificaSalva) {
+        executarNoServidor('salvarAnotacao', {
+          usuarioId: uId,
+          usuarioEmail: uEmail,
+          anotacao: notaEspecificaSalva
+        });
+      } else {
+        sincronizarTodasAnotacoesComBanco(lista, carregarAbasUsuarioAnotacoes());
       }
     }
 
@@ -8433,9 +8561,11 @@
 
       let notas = carregarMinhasAnotacoes();
       notas = notas.filter(x => x.id !== id);
-      salvarAnotacoesStorage(notas);
+      const chave = obterChaveStorageUsuarioAnotacoes();
+      try { localStorage.setItem(chave, JSON.stringify(notas)); } catch (e) {}
       atualizarAbaAnotacoes();
-      mostrarToast('🗑️ Anotação excluída!');
+      mostrarToast('🗑️ Anotação excluída do banco de dados!');
+      executarNoServidor('excluirAnotacao', { anotacaoId: id });
     }
 
     /**
