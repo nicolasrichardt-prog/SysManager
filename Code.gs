@@ -243,7 +243,20 @@ function doGet(e) {
     return processarRequisicaoApi(e.parameter.action, payloadGet);
   }
 
-  return HtmlService.createHtmlOutputFromFile('Index')
+  var htmlOutput = null;
+  var nomesPossiveis = ['index', 'Index'];
+  for (var i = 0; i < nomesPossiveis.length; i++) {
+    try {
+      htmlOutput = HtmlService.createHtmlOutputFromFile(nomesPossiveis[i]);
+      if (htmlOutput) break;
+    } catch (errHtml) {}
+  }
+
+  if (!htmlOutput) {
+    return HtmlService.createHtmlOutput('<h3>Arquivo index.html não encontrado.</h3>');
+  }
+
+  return htmlOutput
     .setTitle('SysManager - Gestão Ágil')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
