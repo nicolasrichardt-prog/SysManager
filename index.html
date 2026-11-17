@@ -1882,16 +1882,13 @@
       </div>
     </div>
   </div>
-      </div>
-    </div>
-  </div>
 
   <!-- MODAL: CADASTRAR DEMANDA -->
-  <div class="modal fade" id="modalNovaTarefa" tabindex="-1">
+  <div class="modal fade" id="modalNovaTarefa" tabindex="-1" aria-labelledby="modalNovaTarefaLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fw-bold"><i class="fa-solid fa-circle-plus me-2"></i>Cadastrar Demanda</h5>
+          <h5 class="modal-title fw-bold" id="modalNovaTarefaLabel"><i class="fa-solid fa-circle-plus me-2"></i>Cadastrar Demanda</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
@@ -2168,16 +2165,13 @@
       </div>
     </div>
   </div>
-      </div>
-    </div>
-  </div>
 
   <!-- MODAL: EDITAR DEMANDA (Permite alterar tudo MENOS a Data de Início) -->
-  <div class="modal fade" id="modalEditarTarefa" tabindex="-1">
+  <div class="modal fade" id="modalEditarTarefa" tabindex="-1" aria-labelledby="modalEditarTarefaLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg" style="border-radius: 18px;">
         <div class="modal-header bg-primary text-white" style="border-radius: 18px 18px 0 0;">
-          <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i>Editar Demanda</h5>
+          <h5 class="modal-title fw-bold" id="modalEditarTarefaLabel"><i class="fa-solid fa-pen-to-square me-2"></i>Editar Demanda</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body p-4">
@@ -4686,6 +4680,7 @@
 
       // HERO CARD: DEMANDA ATUAL EM PRODUÇÃO
       const demandaAtual = tarefasDev.find(t => t.ativo && t.status !== 'Concluída') || (emAndamento.length > 0 ? emAndamento[0] : (atrasadas.length > 0 ? atrasadas[0] : null));
+      window.demandaAtualHeroId = demandaAtual ? demandaAtual.id : null;
       const cardAtual = document.getElementById('cardDemandaAtual');
       const alertaAtraso = document.getElementById('alertaAtrasoAtual');
       const botoesAcao = document.getElementById('botoesAcaoAtual');
@@ -5264,10 +5259,37 @@
      * Abre o Drawer Lateral com o Dossiê Completo de uma Demanda Específica
      */
     function abrirDrawerDetalheDemanda(tarefaId) {
-      const tarefa = appState.tarefas.find(t => t.id === tarefaId);
+      let tarefa = appState.tarefas.find(t => t.id === tarefaId);
+      let isFuturaDossie = false;
+      if (!tarefa && Array.isArray(appState.demandasFuturas)) {
+        const df = appState.demandasFuturas.find(d => d.id === tarefaId);
+        if (df) {
+          isFuturaDossie = true;
+          const isoAg = df.dataHoraProgramada ? String(df.dataHoraProgramada).split('T')[0] : '';
+          tarefa = {
+            id: df.id,
+            titulo: df.titulo,
+            descricao: df.descricao || '',
+            modulo: df.modulo || 'SIOPLEEx',
+            demandaExterna: df.demandaExterna === true || df.demandaExterna === 'true' || df.modulo === 'Demanda Externa',
+            devId: df.devId,
+            devNome: df.devNome,
+            diasEstimados: Number(df.diasEstimados) || 2,
+            diasTrabalhados: 0,
+            dataInicio: isoAg,
+            dataPrazo: df.dataPrazo || isoAg,
+            dataHoraProgramada: df.dataHoraProgramada || '',
+            urgencia: df.urgencia || 'Media',
+            status: 'Demanda Futura',
+            ativo: false
+          };
+        }
+      }
       if (!tarefa) return;
 
-      const realIdx = appState.tarefas.findIndex(t => t.id === tarefa.id);
+      const realIdx = isFuturaDossie
+        ? Math.max(0, (appState.demandasFuturas || []).findIndex(d => d.id === tarefa.id))
+        : appState.tarefas.findIndex(t => t.id === tarefa.id);
       const isExterna = (tarefa.demandaExterna === true || tarefa.demandaExterna === 'true' || tarefa.modulo === 'Demanda Externa');
       const mod = isExterna ? 'Demanda Externa' : (tarefa.modulo || 'SIOPLEEx');
       const devNomeLimpo = limparNomeDev(tarefa.devNome);
@@ -5459,10 +5481,10 @@
             </div>
             <div class="d-flex align-items-center gap-2">
               ${podeEditarOuExcluir ? `
-                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" onclick="abrirModalEditarTarefa('${tarefa.id}')">
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" onclick="${isFuturaDossie ? `abrirModalNovaDemandaFutura('${tarefa.id}')` : `abrirModalEditarTarefa('${tarefa.id}')`}">
                   <i class="fa-solid fa-pen-to-square me-1"></i> Editar
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" onclick="excluirDemandaConfirm('${tarefa.id}')">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" onclick="${isFuturaDossie ? `excluirDemandaFuturaConfirm('${tarefa.id}')` : `excluirDemandaConfirm('${tarefa.id}')`}">
                   <i class="fa-solid fa-trash-can me-1"></i> Excluir
                 </button>
               ` : ''}
@@ -5654,11 +5676,25 @@
       abrirModalIniciarDemanda(tarefaId);
     }
 
-    function finalizarDemandaAtual() {
+    function obterDemandaAtualHero() {
+      if (window.demandaAtualHeroId) {
+        const byHeroId = (appState.tarefas || []).find(t => t && t.id === window.demandaAtualHeroId && t.status !== 'Concluída');
+        if (byHeroId) return byHeroId;
+      }
       const devSelect = document.getElementById('filtroDevEsteira');
       const devId = (devSelect && devSelect.value) ? devSelect.value : (appState.currentUser ? appState.currentUser.id : '');
-      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo && t.status !== 'Concluída') || 
-                          appState.tarefas.find(t => t.devId === devId && t.status === 'Em Andamento');
+      const devNome = appState.currentUser ? limparNomeDev(appState.currentUser.nome).toLowerCase() : '';
+      const tarefasDev = (appState.tarefas || []).filter(t =>
+        t && (t.devId === devId || (devNome && limparNomeDev(t.devNome).toLowerCase() === devNome))
+      );
+      return tarefasDev.find(t => t.ativo && t.status !== 'Concluída') ||
+             tarefasDev.find(t => t.status === 'Em Andamento') ||
+             tarefasDev.find(t => t.status === 'Atrasada') ||
+             null;
+    }
+
+    function finalizarDemandaAtual() {
+      const tarefaAtiva = obterDemandaAtualHero();
       if (!tarefaAtiva) {
         mostrarToast('Nenhuma demanda ativa no momento para concluir.');
         return;
@@ -5667,9 +5703,7 @@
     }
 
     function excluirDemandaAtualConfirm() {
-      const devSelect = document.getElementById('filtroDevEsteira');
-      const devId = (devSelect && devSelect.value) ? devSelect.value : (appState.currentUser ? appState.currentUser.id : '');
-      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo && t.status !== 'Concluída');
+      const tarefaAtiva = obterDemandaAtualHero();
       if (!tarefaAtiva) {
         mostrarToast('Nenhuma demanda ativa no momento para excluir.');
         return;
@@ -5985,9 +6019,7 @@
     }
 
     function editarDemandaAtualConfirm() {
-      const devSelect = document.getElementById('filtroDevEsteira');
-      const devId = (devSelect && devSelect.value) ? devSelect.value : (appState.currentUser ? appState.currentUser.id : '');
-      const tarefaAtiva = appState.tarefas.find(t => t.devId === devId && t.ativo && t.status !== 'Concluída');
+      const tarefaAtiva = obterDemandaAtualHero();
       if (!tarefaAtiva) {
         mostrarToast('Nenhuma demanda ativa no momento para editar.');
         return;
@@ -7423,14 +7455,10 @@
         exibidasNaTabela.forEach((t, index) => {
           const tr = document.createElement('tr');
           tr.className = 'linha-tabela-relatorio';
-          tr.title = t.isDemandaFutura ? 'Clique para editar esta demanda futura agendada' : 'Clique para editar ou visualizar detalhes desta demanda';
+          tr.title = 'Clique para ver o dossiê completo desta demanda';
           tr.onclick = function(e) {
             if (e.target.closest('button') || e.target.closest('a')) return;
-            if (t.isDemandaFutura) {
-              abrirModalNovaDemandaFutura(t.id);
-            } else {
-              abrirDrawerDetalheDemanda(t.id);
-            }
+            abrirDrawerDetalheDemanda(t.id);
           };
 
           const isExterna = (t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa');
@@ -7503,10 +7531,7 @@
                 <i class="fa-solid ${isExterna ? 'fa-arrow-up-right-from-square text-warning-emphasis' : 'fa-cube text-primary'} me-1"></i>${mod}
               </span>
             </td>
-            <td class="text-start text-break" style="font-size: 0.85rem;">
-              <div class="fw-semibold text-dark">${t.titulo}</div>
-              ${t.descricao ? `<div class="text-muted small fw-normal mt-1" style="font-size: 0.74rem; line-height: 1.35; white-space: pre-line;" data-html2canvas-ignore="true">${escapeHtml(t.descricao)}</div>` : ''}
-            </td>
+            <td class="text-start text-break fw-semibold text-dark" style="font-size: 0.85rem;">${t.titulo}</td>
             <td class="text-break" style="padding-left: 2px; padding-right: 2px;">
               <div class="d-inline-flex align-items-center gap-1">
                 <span class="dev-avatar-circle" title="${devNomeLimpo}">${iniciais}</span>
