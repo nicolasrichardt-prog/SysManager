@@ -1406,9 +1406,9 @@ function ensureDemandasFuturasSheet_(ss) {
       'ID', 'Modulo', 'DemandaExterna', 'Titulo', 'DataHoraProgramada',
       'DevID', 'DevNome', 'DevEmail', 'Status',
       'Email24hEnviado', 'DataEmail24h', 'TarefaGeradaID', 'DataCriacao',
-      'DataPrazo', 'DiasEstimados', 'Urgencia'
+      'DataPrazo', 'DiasEstimados', 'Urgencia', 'Descricao'
     ]);
-    sh.getRange(1, 1, 1, 16).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+    sh.getRange(1, 1, 1, 17).setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
     sh.getRange('E:E').setNumberFormat('@');
     sh.getRange('N:N').setNumberFormat('@');
   } else {
@@ -1419,6 +1419,10 @@ function ensureDemandasFuturasSheet_(ss) {
     }
     if (sh.getLastColumn() < 16) {
       sh.getRange(1, 16, 1, 1).setValues([['Urgencia']])
+        .setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
+    }
+    if (sh.getLastColumn() < 17) {
+      sh.getRange(1, 17, 1, 1).setValues([['Descricao']])
         .setFontWeight('bold').setBackground('#1e293b').setFontColor('#ffffff');
     }
   }
@@ -1499,7 +1503,7 @@ function lerDemandasFuturas_(ss) {
   const lista = [];
   if (!sh || sh.getLastRow() <= 1) return lista;
 
-  const numCols = Math.max(16, sh.getLastColumn());
+  const numCols = Math.max(17, sh.getLastColumn());
   const raw = sh.getRange(2, 1, sh.getLastRow() - 1, numCols).getValues();
   raw.forEach(r => {
     if (!r[0]) return;
@@ -1509,6 +1513,7 @@ function lerDemandasFuturas_(ss) {
     let dataPrazoIso = formatarDataIsoSegura_(r[13]);
     let diasEstimados = parseInt(r[14], 10) || 0;
     const urgencia = (r[15] ? r[15].toString().trim() : '') || 'Media';
+    const descricao = r[16] ? r[16].toString() : '';
 
     if (!dataPrazoIso && dtProg) {
       const dP = new Date(dtProg.getFullYear(), dtProg.getMonth(), dtProg.getDate(), 12, 0, 0);
@@ -1526,6 +1531,7 @@ function lerDemandasFuturas_(ss) {
       modulo: modulo,
       demandaExterna: demandaExterna,
       titulo: r[3] ? r[3].toString().trim() : '',
+      descricao: descricao,
       dataHoraProgramada: formatarDataHoraIsoLocal_(r[4]),
       devId: r[5] ? r[5].toString().trim() : '',
       devNome: r[6] ? r[6].toString().trim() : '',
@@ -1610,7 +1616,8 @@ function cadastrarDemandaFutura(dados) {
       agoraStr,
       dataPrazoIso,
       diasEstimados,
-      urgencia
+      urgencia,
+      (dados.descricao || '').toString()
     ]);
     sh.getRange(sh.getLastRow(), 5).setNumberFormat('@').setValue(dataHoraIso);
     sh.getRange(sh.getLastRow(), 14).setNumberFormat('@').setValue(dataPrazoIso);
@@ -1683,7 +1690,7 @@ function atualizarDemandaFutura(dados) {
       diasEstimados = Math.max(1, Math.round((dPrazo.getTime() - dIniProg.getTime()) / (1000 * 60 * 60 * 24)));
     }
 
-    const numCols = Math.max(16, sh.getLastColumn());
+    const numCols = Math.max(17, sh.getLastColumn());
     const range = sh.getRange(2, 1, sh.getLastRow() - 1, numCols);
     const rows = range.getValues();
     let encontrou = false;
@@ -1701,6 +1708,7 @@ function atualizarDemandaFutura(dados) {
         r[13] = dataPrazoIso;
         r[14] = diasEstimados;
         r[15] = urgencia;
+        if (dados.descricao !== undefined) r[16] = (dados.descricao || '').toString();
         if (oldIso !== dataHoraIso && r[8] === 'Agendada') {
           r[9] = 'NAO';
           r[10] = '';
@@ -1727,7 +1735,8 @@ function atualizarDemandaFutura(dados) {
         agoraStr,
         dataPrazoIso,
         diasEstimados,
-        urgencia
+        urgencia,
+        (dados.descricao || '').toString()
       ]);
       sh.getRange(sh.getLastRow(), 5).setNumberFormat('@').setValue(dataHoraIso);
       sh.getRange(sh.getLastRow(), 14).setNumberFormat('@').setValue(dataPrazoIso);
@@ -1948,7 +1957,7 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt, forcarIdsOpt) {
     });
   }
 
-  const numCols = Math.max(16, sh.getLastColumn());
+  const numCols = Math.max(17, sh.getLastColumn());
   const range = sh.getRange(2, 1, sh.getLastRow() - 1, numCols);
   const rows = range.getValues();
   let alterou = false;
@@ -2048,8 +2057,9 @@ function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt, forcarIdsOpt) {
         diasEst = Math.max(1, Math.round((prazoFinal.getTime() - dataIniLimpa.getTime()) / (1000 * 60 * 60 * 24)));
       }
 
-      const descAuto = 'Entrada automática na Esteira de Produção via Demanda Futura (' +
-        Utilities.formatDate(dtProgramada, tz, 'dd/MM/yyyy HH:mm') + ').';
+      const descSalva = (r[16] ? r[16].toString().trim() : '');
+      const descAuto = descSalva || ('Entrada automática na Esteira de Produção via Demanda Futura (' +
+        Utilities.formatDate(dtProgramada, tz, 'dd/MM/yyyy HH:mm') + ').');
 
       shTarefas.appendRow([
         newTaskId,
