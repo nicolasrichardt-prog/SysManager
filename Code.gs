@@ -12,7 +12,7 @@ const ADMIN_MESTRE_EMAIL = ADMIN_EMAIL; // Compatibilidade retroativa
 // ⚙️ CONFIGURAÇÃO DA PLANILHA (OPCIONAL):
 // - Se o script foi criado via "Extensões > Apps Script" dentro de uma Planilha Google, deixe vazio ('').
 // - Se o script for do tipo avulso (criado em script.google.com), cole o ID da sua planilha abaixo entre aspas:
-const SPREADSHEET_ID = '';
+const SPREADSHEET_ID = '1J0PdsSmIMhcYLn47ZK9Qiqps0vfZcuSK0SQj827DUKc';
 
 const SYSMANAGER_EMAIL = 'sysmanager.sm@gmail.com';
 const TIMEZONE_PADRAO = 'America/Sao_Paulo';
@@ -68,28 +68,112 @@ function formatarDataIsoSegura_(val) {
 }
 
 function getDatabaseSpreadsheet() {
+  const props = PropertiesService.getScriptProperties();
+
   if (typeof SPREADSHEET_ID !== 'undefined' && SPREADSHEET_ID && SPREADSHEET_ID.trim() !== '') {
-    try {
-      return SpreadsheetApp.openById(SPREADSHEET_ID.trim());
-    } catch (e) {
-      Logger.log('Aviso ao abrir SPREADSHEET_ID: ' + e.message);
+    const idFixo = SPREADSHEET_ID.trim();
+    const ssFixo = SpreadsheetApp.openById(idFixo);
+    if (props.getProperty('SYSMANAGER_SHEET_ID') !== idFixo) {
+      props.setProperty('SYSMANAGER_SHEET_ID', idFixo);
     }
+    return ssFixo;
   }
 
   let ss = SpreadsheetApp.getActiveSpreadsheet();
   if (ss) return ss;
 
-  const props = PropertiesService.getScriptProperties();
   let sheetId = props.getProperty('SYSMANAGER_SHEET_ID');
   if (sheetId) {
     try {
-      return SpreadsheetApp.openById(sheetId);
-    } catch (e) {}
+      const ssOpened = SpreadsheetApp.openById(sheetId);
+      // Se por acaso o SYSMANAGER_SHEET_ID apontou para uma planilha recém-criada com apenas 1 tarefa padrão (TSK-101),
+      // verifica se existe outra SysManager_Database no Drive com os dados reais para reconectar automaticamente
+      const shTar = ssOpened.getSheetByName(SHEETS.TAREFAS);
+      if (shTar && shTar.getLastRow() <= 2) {
+        try {
+          const recuperada = localizarPlanilhaComMaisDados_();
+          if (recuperada && recuperada.getId() !== ssOpened.getId()) {
+            props.setProperty('SYSMANAGER_SHEET_ID', recuperada.getId());
+            try { recuperada.addEditor(SYSMANAGER_EMAIL); } catch (eShare) {}
+            return recuperada;
+          }
+        } catch (eRec) {}
+      }
+      return ssOpened;
+    } catch (e) {
+      throw new Error(
+        'A conta que executa o script não tem permissão para abrir a planilha oficial (ID: ' + sheetId + '). ' +
+        'Abra a planilha "SysManager_Database" no Google Planilhas da conta ' + ADMIN_EMAIL +
+        ' e compartilhe como Editor com ' + SYSMANAGER_EMAIL + '.'
+      );
+    }
   }
+
+  // Antes de criar uma planilha nova do zero, procura se já existe a SysManager_Database com dados no Drive
+  try {
+    const existente = localizarPlanilhaComMaisDados_();
+    if (existente) {
+      props.setProperty('SYSMANAGER_SHEET_ID', existente.getId());
+      try { existente.addEditor(SYSMANAGER_EMAIL); } catch (eShare) {}
+      return existente;
+    }
+  } catch (eBusca) {}
 
   ss = SpreadsheetApp.create('SysManager_Database');
   props.setProperty('SYSMANAGER_SHEET_ID', ss.getId());
   return ss;
+}
+
+function localizarPlanilhaComMaisDados_() {
+  const files = DriveApp.getFilesByName('SysManager_Database');
+  let melhorSs = null;
+  let maiorPontuacao = -1;
+
+  while (files.hasNext()) {
+    const file = files.next();
+    if (file.isTrashed()) continue;
+    try {
+      const cand = SpreadsheetApp.openById(file.getId());
+      const shTar = cand.getSheetByName(SHEETS.TAREFAS);
+      const shUsr = cand.getSheetByName(SHEETS.USUARIOS);
+      const qtdTar = shTar ? Math.max(0, shTar.getLastRow() - 1) : 0;
+      const qtdUsr = shUsr ? Math.max(0, shUsr.getLastRow() - 1) : 0;
+      const temMaisDeUmaTarefa = qtdTar > 1 || (qtdTar === 1 && shTar.getRange(2, 1).getValue() !== 'TSK-101');
+      const pontuacao = (temMaisDeUmaTarefa ? 1000 : 0) + (qtdTar * 10) + qtdUsr;
+      if (pontuacao > maiorPontuacao) {
+        maiorPontuacao = pontuacao;
+        melhorSs = cand;
+      }
+    } catch (e) {}
+  }
+  return (maiorPontuacao >= 1000) ? melhorSs : null;
+}
+
+/**
+ * Execute esta função logado na conta nicolasrichardt@gmail.com para reconectar
+ * automaticamente a planilha original SysManager_Database e compartilhá-la com sysmanager.sm@gmail.com.
+ */
+function recuperarPlanilhaOriginal() {
+  const ssOriginal = localizarPlanilhaComMaisDados_();
+  if (!ssOriginal) {
+    Logger.log('Nenhuma planilha SysManager_Database com múltiplos registros foi localizada automaticamente nesta conta. Abra https://sheets.google.com na conta nicolasrichardt@gmail.com e copie o ID da planilha SysManager_Database.');
+    return { success: false };
+  }
+  const idOriginal = ssOriginal.getId();
+  PropertiesService.getScriptProperties().setProperty('SYSMANAGER_SHEET_ID', idOriginal);
+  try {
+    ssOriginal.addEditor(SYSMANAGER_EMAIL);
+    Logger.log('✅ Compartilhada automaticamente com ' + SYSMANAGER_EMAIL);
+  } catch (eShare) {
+    Logger.log('Aviso ao compartilhar: ' + eShare.message);
+  }
+  Logger.log('✅ Planilha original reconectada com sucesso! ID: ' + idOriginal);
+  Logger.log('URL da sua planilha original: ' + ssOriginal.getUrl());
+  return {
+    success: true,
+    spreadsheetId: idOriginal,
+    url: ssOriginal.getUrl()
+  };
 }
 
 /**
