@@ -3497,6 +3497,9 @@
             objFuturo.email24hEnviado = true;
             objFuturo.dataEmail24h = res.dataEmail24h || '';
             mostrarToast('Demanda Futura salva e e-mail de aviso 24h enviado!');
+          } else if (res.emailErro) {
+            console.warn('Aviso no envio do e-mail 24h:', res.emailErro);
+            alert('A Demanda Futura foi salva, mas o envio do e-mail pelo remetente ' + (appState.sysManagerEmail || 'sysmanager.sm@gmail.com') + ' retornou:\n\n' + res.emailErro);
           }
           const atual = obterDemandasFuturasLocais().filter(x => x.id !== oldTmpId && x.id !== objFuturo.id);
           salvarDemandasFuturasLocais(atual);
