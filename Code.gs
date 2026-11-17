@@ -12,9 +12,11 @@ const ADMIN_MESTRE_EMAIL = ADMIN_EMAIL; // Compatibilidade retroativa
 // ⚙️ CONFIGURAÇÃO DA PLANILHA (OPCIONAL):
 // - Se o script foi criado via "Extensões > Apps Script" dentro de uma Planilha Google, deixe vazio ('').
 // - Se o script for do tipo avulso (criado em script.google.com), cole o ID da sua planilha abaixo entre aspas:
-const SPREADSHEET_ID = '1J0PdsSmIMhcYLn47ZK9Qiqps0vfZcuSK0SQj827DUKc';
+const SPREADSHEET_ID = '';
 
 const SYSMANAGER_EMAIL = 'sysmanager.sm@gmail.com';
+// ✉️ (OPCIONAL) URL de Web App criado na conta sysmanager.sm@gmail.com exclusivamente para disparo nativo de e-mails:
+const SYSMANAGER_MAILER_URL = 'https://script.google.com/macros/s/AKfycbzJtc9FgHIiC03x2mOcQwD3E073xO_BbloNRJy5VrOgrARS7kvlij1FuGTr7c7kfjWi/exec';
 const TIMEZONE_PADRAO = 'America/Sao_Paulo';
 
 const SHEETS = {
@@ -1841,6 +1843,30 @@ function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
       </div>
     </div>
   `;
+
+  // 0. Se houver um micro-serviço de e-mail implantado na conta sysmanager.sm@gmail.com (SYSMANAGER_MAILER_URL),
+  // dispara diretamente pela conta sysmanager.sm@gmail.com (fica apenas nos Enviados de sysmanager.sm@gmail.com).
+  const mailerUrl = (typeof SYSMANAGER_MAILER_URL !== 'undefined' && SYSMANAGER_MAILER_URL)
+    ? SYSMANAGER_MAILER_URL.trim()
+    : (PropertiesService.getScriptProperties().getProperty('SYSMANAGER_MAILER_URL') || '').trim();
+  if (mailerUrl) {
+    const respMailer = UrlFetchApp.fetch(mailerUrl, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({
+        to: toEmail,
+        subject: assunto,
+        body: corpoTexto,
+        htmlBody: corpoHtml
+      }),
+      muteHttpExceptions: true
+    });
+    const codeHttp = respMailer.getResponseCode();
+    if (codeHttp >= 200 && codeHttp < 300) {
+      return;
+    }
+    throw new Error('Erro no micro-disparador SYSMANAGER_MAILER_URL (HTTP ' + codeHttp + '): ' + respMailer.getContentText());
+  }
 
   // Envia EXCLUSIVAMENTE com remetente DE: Sys Manager <sysmanager.sm@gmail.com>
   // Nunca faz fallback para MailApp se a conta executora for diferente de sysmanager.sm@gmail.com,
