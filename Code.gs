@@ -324,6 +324,8 @@ function processarRequisicaoApi(action, data) {
       result = processarDemandasFuturasAgendadas(data);
     } else if (action === 'dispararEmailDemandaFuturaManual') {
       result = dispararEmailDemandaFuturaManual(data.demandaFuturaId || data.id);
+    } else if (action === 'verificarStatusEmailRemetente') {
+      result = autorizarEValidarRemetenteEmail(false);
     } else if (action === 'salvarAnotacao') {
       result = salvarAnotacaoNoBanco(data);
     } else if (action === 'excluirAnotacao') {
@@ -1756,42 +1758,62 @@ function enviarEmailAvisoDemandaFutura_(item, dtProgramada) {
     </div>
   `;
 
-  // 1. Tenta enviar via GmailApp usando o alias sysmanager.sm@gmail.com (se configurado em "Enviar e-mail como" no Gmail)
-  let enviado = false;
+  // Envia EXCLUSIVAMENTE com remetente DE: Sys Manager <sysmanager.sm@gmail.com>
+  // Nunca faz fallback para MailApp se a conta executora for diferente de sysmanager.sm@gmail.com,
+  // pois o MailApp ignora o parâmetro 'from' e força o envio pelo e-mail pessoal (via maestro.bounces.google.com).
+  let contaExecucao = '';
   try {
-    const aliases = GmailApp.getAliases() || [];
-    const aliasOficial = aliases.find(a => String(a || '').trim().toLowerCase() === SYSMANAGER_EMAIL.toLowerCase());
-    if (aliasOficial) {
+    contaExecucao = (Session.getEffectiveUser().getEmail() || '').toString().trim().toLowerCase();
+  } catch (e) {}
+
+  if (contaExecucao === SYSMANAGER_EMAIL.toLowerCase()) {
+    // Se o próprio projeto/gatilho estiver rodando diretamente na conta sysmanager.sm@gmail.com
+    try {
       GmailApp.sendEmail(toEmail, assunto, corpoTexto, {
-        from: aliasOficial,
+        from: SYSMANAGER_EMAIL,
         name: 'Sys Manager',
         replyTo: SYSMANAGER_EMAIL,
         htmlBody: corpoHtml
       });
-      enviado = true;
-    } else {
-      GmailApp.sendEmail(toEmail, assunto, corpoTexto, {
-        name: 'Sys Manager',
+      return;
+    } catch (eGmailSelf) {
+      MailApp.sendEmail({
+        to: toEmail,
         replyTo: SYSMANAGER_EMAIL,
+        name: 'Sys Manager',
+        subject: assunto,
+        body: corpoTexto,
         htmlBody: corpoHtml
       });
-      enviado = true;
+      return;
     }
-  } catch (errGmail) {
-    Logger.log('Fallback para MailApp: ' + errGmail.message);
   }
 
-  // 2. Fallback via MailApp caso GmailApp ainda não tenha sido autorizado
-  if (!enviado) {
-    MailApp.sendEmail({
-      to: toEmail,
-      replyTo: SYSMANAGER_EMAIL,
-      name: 'Sys Manager',
-      subject: assunto,
-      body: corpoTexto,
-      htmlBody: corpoHtml
-    });
+  let aliases = [];
+  try {
+    aliases = GmailApp.getAliases() || [];
+  } catch (errPerm) {
+    throw new Error(
+      'Permissão do GmailApp pendente no Apps Script. Abra o editor do Apps Script, selecione a função "autorizarEValidarRemetenteEmail" na barra superior, clique em "Executar" e aceite as permissões. Detalhe: ' +
+      errPerm.message
+    );
   }
+
+  const aliasOficial = aliases.find(a => String(a || '').trim().toLowerCase() === SYSMANAGER_EMAIL.toLowerCase());
+  if (!aliasOficial) {
+    throw new Error(
+      'O endereço "' + SYSMANAGER_EMAIL + '" não foi retornado por GmailApp.getAliases() (aliases ativos: ' + JSON.stringify(aliases) + '). ' +
+      'No Gmail de ' + (contaExecucao || ADMIN_EMAIL) + ', acesse Configurações > Contas e importação > Enviar e-mail como > clique em "editar informações" ao lado de ' +
+      SYSMANAGER_EMAIL + ' e certifique-se de que a opção "Tratar como um alias" está marcada.'
+    );
+  }
+
+  GmailApp.sendEmail(toEmail, assunto, corpoTexto, {
+    from: aliasOficial,
+    name: 'Sys Manager',
+    replyTo: SYSMANAGER_EMAIL,
+    htmlBody: corpoHtml
+  });
 }
 
 function processarDemandasFuturasAgendadas_(ssOpt, usuariosOpt, forcarIdsOpt) {
@@ -2062,16 +2084,58 @@ function instalarGatilhoDemandasFuturas() {
 
 /**
  * Execute esta função uma vez pelo botão "Executar" na barra superior do Apps Script
- * para autorizar o GmailApp e verificar se o alias sysmanager.sm@gmail.com está ativo.
+ * para autorizar o GmailApp, validar o alias sysmanager.sm@gmail.com e testar o envio com DE: sysmanager.sm@gmail.com.
  */
-function autorizarEValidarRemetenteEmail() {
-  const usuarioAtivo = Session.getEffectiveUser().getEmail();
-  const aliases = GmailApp.getAliases();
+function autorizarEValidarRemetenteEmail(enviarEmailTeste) {
+  const dispararTeste = (enviarEmailTeste === undefined) ? true : Boolean(enviarEmailTeste);
+  const usuarioAtivo = (Session.getEffectiveUser().getEmail() || '').toString().trim().toLowerCase();
+  const aliases = GmailApp.getAliases() || [];
+  const aliasOficial = aliases.find(a => String(a || '').trim().toLowerCase() === SYSMANAGER_EMAIL.toLowerCase());
+
   Logger.log('Conta que executa o script: ' + usuarioAtivo);
-  Logger.log('Aliases configurados no Gmail desta conta: ' + JSON.stringify(aliases));
+  Logger.log('Aliases retornados por GmailApp.getAliases(): ' + JSON.stringify(aliases));
+
+  try {
+    instalarGatilhoDemandasFuturas();
+  } catch (eTrig) {
+    Logger.log('Aviso ao instalar gatilho: ' + eTrig.message);
+  }
+
+  if (usuarioAtivo !== SYSMANAGER_EMAIL.toLowerCase() && !aliasOficial) {
+    const msgErro = 'ATENÇÃO: O endereço ' + SYSMANAGER_EMAIL + ' NÃO apareceu em GmailApp.getAliases(). ' +
+      'No Gmail (' + usuarioAtivo + '), vá em Configurações > Contas e importação > Enviar e-mail como > ' +
+      'clique em "editar informações" ao lado de ' + SYSMANAGER_EMAIL + ' e marque a opção "Tratar como um alias".';
+    Logger.log(msgErro);
+    return {
+      success: false,
+      contaExecucao: usuarioAtivo,
+      aliases: aliases,
+      aliasAtivo: false,
+      message: msgErro
+    };
+  }
+
+  const remetenteUsado = aliasOficial || SYSMANAGER_EMAIL;
+  if (dispararTeste) {
+    GmailApp.sendEmail(
+      ADMIN_EMAIL,
+      '[Sys Manager] Teste de Remetente Oficial (' + SYSMANAGER_EMAIL + ')',
+      'Teste concluído com sucesso! Os avisos de 24h de Demanda Futura agora são enviados com DE: Sys Manager <' + remetenteUsado + '>.',
+      {
+        from: remetenteUsado,
+        name: 'Sys Manager',
+        replyTo: SYSMANAGER_EMAIL
+      }
+    );
+    Logger.log('✅ SUCESSO! E-mail de teste enviado com DE: Sys Manager <' + remetenteUsado + '> para ' + ADMIN_EMAIL);
+  }
+
   return {
+    success: true,
     contaExecucao: usuarioAtivo,
-    aliases: aliases
+    aliases: aliases,
+    aliasAtivo: true,
+    remetenteOficial: remetenteUsado
   };
 }
 
