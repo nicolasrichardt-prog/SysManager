@@ -2194,22 +2194,50 @@ function instalarGatilhoDemandasFuturas() {
 
 /**
  * Execute esta função uma vez pelo botão "Executar" na barra superior do Apps Script
- * para autorizar o GmailApp, validar o alias sysmanager.sm@gmail.com e testar o envio com DE: sysmanager.sm@gmail.com.
+ * para autorizar o UrlFetchApp / GmailApp e testar o envio com DE: sysmanager.sm@gmail.com.
  */
 function autorizarEValidarRemetenteEmail(enviarEmailTeste) {
   const dispararTeste = (enviarEmailTeste === undefined) ? true : Boolean(enviarEmailTeste);
   const usuarioAtivo = (Session.getEffectiveUser().getEmail() || '').toString().trim().toLowerCase();
-  const aliases = GmailApp.getAliases() || [];
-  const aliasOficial = aliases.find(a => String(a || '').trim().toLowerCase() === SYSMANAGER_EMAIL.toLowerCase());
-
-  Logger.log('Conta que executa o script: ' + usuarioAtivo);
-  Logger.log('Aliases retornados por GmailApp.getAliases(): ' + JSON.stringify(aliases));
 
   try {
     instalarGatilhoDemandasFuturas();
   } catch (eTrig) {
     Logger.log('Aviso ao instalar gatilho: ' + eTrig.message);
   }
+
+  const mailerUrl = (typeof SYSMANAGER_MAILER_URL !== 'undefined' && SYSMANAGER_MAILER_URL)
+    ? SYSMANAGER_MAILER_URL.trim()
+    : (PropertiesService.getScriptProperties().getProperty('SYSMANAGER_MAILER_URL') || '').trim();
+
+  if (mailerUrl) {
+    if (dispararTeste) {
+      const resp = UrlFetchApp.fetch(mailerUrl, {
+        method: 'post',
+        contentType: 'application/json',
+        payload: JSON.stringify({
+          to: ADMIN_EMAIL,
+          subject: '[Sys Manager] Teste de Disparo Direto (' + SYSMANAGER_EMAIL + ')',
+          body: 'Teste concluído com sucesso! O envio foi feito diretamente pela conta ' + SYSMANAGER_EMAIL + '.',
+          htmlBody: '<p>Teste concluído com sucesso! O envio foi feito diretamente pela conta <strong>' + SYSMANAGER_EMAIL + '</strong>.</p>'
+        }),
+        muteHttpExceptions: true
+      });
+      Logger.log('✅ Resposta do SYSMANAGER_MAILER_URL (HTTP ' + resp.getResponseCode() + '): ' + resp.getContentText());
+    }
+    return {
+      success: true,
+      contaExecucao: usuarioAtivo,
+      mailerAtivo: true,
+      remetenteOficial: SYSMANAGER_EMAIL
+    };
+  }
+
+  const aliases = GmailApp.getAliases() || [];
+  const aliasOficial = aliases.find(a => String(a || '').trim().toLowerCase() === SYSMANAGER_EMAIL.toLowerCase());
+
+  Logger.log('Conta que executa o script: ' + usuarioAtivo);
+  Logger.log('Aliases retornados por GmailApp.getAliases(): ' + JSON.stringify(aliases));
 
   if (usuarioAtivo !== SYSMANAGER_EMAIL.toLowerCase() && !aliasOficial) {
     const msgErro = 'ATENÇÃO: O endereço ' + SYSMANAGER_EMAIL + ' NÃO apareceu em GmailApp.getAliases(). ' +
