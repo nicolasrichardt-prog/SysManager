@@ -859,7 +859,7 @@
           <div id="conteudoDemandaAtual">
             <div class="mb-2">
               <h5 class="fw-bold mb-1 text-dark text-truncate" id="tituloDemandaAtual" style="font-size: 1.05rem; letter-spacing: -0.2px;">Nenhuma demanda ativa no momento</h5>
-              <p class="text-muted small mb-0 text-truncate" id="descDemandaAtual">Selecione uma demanda nas listas ou cadastre uma nova para começar.</p>
+              <p class="text-muted small mb-0" id="descDemandaAtual" style="white-space: pre-line; line-height: 1.45;">Selecione uma demanda nas listas ou cadastre uma nova para começar.</p>
             </div>
 
             <!-- ALERTA DE ATRASO COM AJUSTE DIRETO DE PRAZO -->
@@ -1924,7 +1924,12 @@
           <div class="mb-3">
             <label class="form-label small fw-bold"><i class="fa-solid fa-list-check text-primary me-1"></i>Demanda:</label>
             <input type="text" class="form-control" id="taskTitulo" placeholder="Ex: Criar tela de login com OAuth">
-            <input type="hidden" id="taskDescricao" value="">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold" for="taskDescricao">
+              <i class="fa-solid fa-align-left text-primary me-1"></i>Descrição / Observações <span class="text-muted fw-normal">(Opcional)</span>:
+            </label>
+            <textarea class="form-control" id="taskDescricao" rows="3" placeholder="Descreva os detalhes, escopo ou observações da demanda..."></textarea>
           </div>
           <div class="mb-3">
             <label class="form-label small fw-bold text-dark">
@@ -2004,6 +2009,14 @@
               <i class="fa-solid fa-list-check me-1" style="color: #4f46e5;"></i> Nome da Demanda:
             </label>
             <input type="text" class="form-control" id="futuroTitulo" placeholder="Ex: Implementar integração com módulo de Relatórios">
+          </div>
+
+          <!-- DESCRIÇÃO DA DEMANDA FUTURA -->
+          <div class="mb-3">
+            <label class="form-label small fw-bold" for="futuroDescricao">
+              <i class="fa-solid fa-align-left me-1" style="color: #4f46e5;"></i> Descrição / Observações <span class="text-muted fw-normal">(Opcional)</span>:
+            </label>
+            <textarea class="form-control" id="futuroDescricao" rows="2" placeholder="Descreva os detalhes, escopo ou observações da demanda..."></textarea>
           </div>
 
           <!-- HORÁRIO DE ENTRADA NA ESTEIRA (COM TOOLTIP OBRIGATÓRIO) -->
@@ -2197,7 +2210,12 @@
           <div class="mb-3">
             <label class="form-label small fw-bold"><i class="fa-solid fa-list-check text-primary me-1"></i>Demanda:</label>
             <input type="text" class="form-control" id="editTaskTitulo" placeholder="Ex: Criar tela de login com OAuth">
-            <input type="hidden" id="editTaskDescricao" value="">
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold" for="editTaskDescricao">
+              <i class="fa-solid fa-align-left text-primary me-1"></i>Descrição / Observações <span class="text-muted fw-normal">(Opcional)</span>:
+            </label>
+            <textarea class="form-control" id="editTaskDescricao" rows="3" placeholder="Descreva os detalhes, escopo ou observações da demanda..."></textarea>
           </div>
 
           <!-- DATAS: DATA DE INÍCIO (FIXA/BLOQUEADA) E DATA DE TÉRMINO/PRAZO (EDITÁVEL) -->
@@ -3303,6 +3321,7 @@
       const checkExterna = document.getElementById('futuroDemandaExterna');
       const moduloInput = document.getElementById('futuroModuloInput');
       const tituloInput = document.getElementById('futuroTitulo');
+      const descInput = document.getElementById('futuroDescricao');
       const dataHoraInput = document.getElementById('futuroDataHora');
       const dataPrazoInput = document.getElementById('futuroDataPrazo');
       const urgSelect = document.getElementById('futuroUrgencia');
@@ -3324,6 +3343,7 @@
         if (!isExterna && moduloInput) moduloInput.value = existente.modulo || 'SIOPLEEx';
 
         if (tituloInput) tituloInput.value = existente.titulo || '';
+        if (descInput) descInput.value = existente.descricao || '';
         if (dataHoraInput) dataHoraInput.value = (existente.dataHoraProgramada || '').slice(0, 16);
 
         const dtProgExist = parseDataHoraFuturoLocal(existente.dataHoraProgramada) || new Date();
@@ -3352,6 +3372,7 @@
         if (moduloInput) moduloInput.value = 'SIOPLEEx';
 
         if (tituloInput) tituloInput.value = '';
+        if (descInput) descInput.value = '';
         const padrao = new Date();
         padrao.setDate(padrao.getDate() + 1);
         if (dataHoraInput) {
@@ -3386,6 +3407,7 @@
       const moduloRaw = (document.getElementById('futuroModuloInput')?.value || 'SIOPLEEx').trim();
       const modulo = isExterna ? 'Demanda Externa' : (moduloRaw || 'SIOPLEEx');
       const titulo = (document.getElementById('futuroTitulo')?.value || '').trim();
+      const descricao = (document.getElementById('futuroDescricao')?.value || '').trim();
       const dataHoraProgramada = (document.getElementById('futuroDataHora')?.value || '').trim();
       const dataPrazoRaw = (document.getElementById('futuroDataPrazo')?.value || '').trim();
       const urgencia = (document.getElementById('futuroUrgencia')?.value || 'Media').trim();
@@ -3438,6 +3460,7 @@
         modulo: modulo,
         demandaExterna: isExterna,
         titulo: titulo,
+        descricao: descricao,
         dataHoraProgramada: dataHoraProgramada.slice(0, 16),
         dataPrazo: dataPrazoIso,
         diasEstimados: diasEstimados,
@@ -3730,7 +3753,9 @@
           const dFimPrazo = parseDataLocal(dataPrazoIso);
           dFimPrazo.setHours(0, 0, 0, 0);
           const diasEst = Math.max(1, Number(df.diasEstimados) || Math.round((dFimPrazo.getTime() - dIniProg.getTime()) / (1000 * 60 * 60 * 24)) || 1);
-          const descAuto = `Entrada automática na Esteira de Produção via Demanda Futura (${formatarDataHoraFuturoPtBr(df.dataHoraProgramada)}).`;
+          const descAuto = (df.descricao && df.descricao.trim())
+            ? df.descricao.trim()
+            : `Entrada automática na Esteira de Produção via Demanda Futura (${formatarDataHoraFuturoPtBr(df.dataHoraProgramada)}).`;
           const devIdAlvo = df.devId || (appState.currentUser ? appState.currentUser.id : 'USR-1');
           const devNomeAlvo = limparNomeDev(df.devNome || (appState.currentUser ? appState.currentUser.nome : 'Ten Nicolas'));
 
@@ -5058,7 +5083,8 @@
                 ${task.email24hEnviado ? 'E-mail 24h enviado' : 'E-mail agendado (24h antes)'}
               </span>
             </div>
-            <h6 class="fw-bold text-dark mb-2" style="font-size: 0.96rem; line-height: 1.4;">${escapeHtml(task.titulo)}</h6>
+            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.96rem; line-height: 1.4;">${escapeHtml(task.titulo)}</h6>
+            ${task.descricao ? `<p class="text-muted small mb-2" style="white-space: pre-wrap; line-height: 1.45;">${escapeHtml(task.descricao)}</p>` : ''}
             <div class="d-flex flex-wrap align-items-center gap-3 small text-muted mb-3 pt-1">
               <span title="Nesse horário a Demanda entrará automaticamente na Esteira de Produção (Em Andamento e Em Foco) e 24 horas antes será enviado um e-mail informando" style="cursor: help;">
                 <i class="fa-regular fa-clock me-1" style="color: #4f46e5;"></i>Entrada: <strong style="color: #312e81;">${escapeHtml(horarioFmt)}</strong>
@@ -7239,7 +7265,7 @@
             return {
               id: df.id,
               titulo: df.titulo,
-              descricao: '',
+              descricao: df.descricao || '',
               modulo: df.modulo || 'SIOPLEEx',
               demandaExterna: df.demandaExterna === true || df.demandaExterna === 'true' || df.modulo === 'Demanda Externa',
               devId: df.devId,
@@ -7477,7 +7503,10 @@
                 <i class="fa-solid ${isExterna ? 'fa-arrow-up-right-from-square text-warning-emphasis' : 'fa-cube text-primary'} me-1"></i>${mod}
               </span>
             </td>
-            <td class="text-start text-break fw-semibold text-dark" style="font-size: 0.85rem;">${t.titulo}</td>
+            <td class="text-start text-break" style="font-size: 0.85rem;">
+              <div class="fw-semibold text-dark">${t.titulo}</div>
+              ${t.descricao ? `<div class="text-muted small fw-normal mt-1" style="font-size: 0.74rem; line-height: 1.35; white-space: pre-line;" data-html2canvas-ignore="true">${escapeHtml(t.descricao)}</div>` : ''}
+            </td>
             <td class="text-break" style="padding-left: 2px; padding-right: 2px;">
               <div class="d-inline-flex align-items-center gap-1">
                 <span class="dev-avatar-circle" title="${devNomeLimpo}">${iniciais}</span>
