@@ -7304,22 +7304,28 @@
         return emAndamentoNoPeriodo || isAtrasada || concluidaNoPeriodo || naoIniciadaNoPeriodo;
       });
 
-      // 5. + Demandas Futuras agendadas para entrada na esteira
+      // 5. + Demandas Futuras agendadas: aparecem apenas no período da atividade (do dia agendado de início até a data de término/prazo), nunca pela data de cadastro
       if (Array.isArray(appState.demandasFuturas) && appState.demandasFuturas.length > 0) {
         const futurasFiltradas = appState.demandasFuturas
           .filter(df => (df.status || 'Agendada') === 'Agendada')
           .filter(df => {
             const isoAg = df.dataHoraProgramada ? String(df.dataHoraProgramada).split('T')[0] : '';
-            const dAg = isoAg ? parseDataLocal(isoAg) : null;
-            if (dAg) dAg.setHours(0, 0, 0, 0);
-            const dCri = parseDataLocal(df.dataCriacao || isoAg);
-            dCri.setHours(0, 0, 0, 0);
-            if (dataInicioFiltro && dataFimFiltro) {
-              const agNoPer = dAg && dAg.getTime() >= dataInicioFiltro.getTime() && dAg.getTime() <= dataFimFiltro.getTime();
-              const criNoPer = dCri.getTime() >= dataInicioFiltro.getTime() && dCri.getTime() <= dataFimFiltro.getTime();
-              return agNoPer || criNoPer;
+            if (!isoAg) return false;
+            const dInicioAtiv = parseDataLocal(isoAg);
+            dInicioAtiv.setHours(0, 0, 0, 0);
+
+            const isoFim = df.dataPrazo ? String(df.dataPrazo).split('T')[0] : isoAg;
+            let dFimAtiv = isoFim ? parseDataLocal(isoFim) : new Date(dInicioAtiv.getTime());
+            dFimAtiv.setHours(0, 0, 0, 0);
+            if (dFimAtiv.getTime() < dInicioAtiv.getTime()) {
+              dFimAtiv = new Date(dInicioAtiv.getTime());
             }
-            if (dataFimFiltro && dCri.getTime() > dataFimFiltro.getTime() && (!dAg || dAg.getTime() > dataFimFiltro.getTime())) return false;
+
+            if (dataInicioFiltro && dataFimFiltro) {
+              return dInicioAtiv.getTime() <= dataFimFiltro.getTime() && dFimAtiv.getTime() >= dataInicioFiltro.getTime();
+            }
+            if (dataInicioFiltro && dFimAtiv.getTime() < dataInicioFiltro.getTime()) return false;
+            if (dataFimFiltro && dInicioAtiv.getTime() > dataFimFiltro.getTime()) return false;
             return true;
           })
           .map(df => {
@@ -7334,7 +7340,7 @@
               devNome: df.devNome,
               diasEstimados: Number(df.diasEstimados) || 2,
               diasTrabalhados: 0,
-              dataInsercao: (df.dataCriacao ? String(df.dataCriacao).split('T')[0] : isoAg),
+              dataInsercao: isoAg,
               dataInicio: isoAg,
               dataPrazo: df.dataPrazo || isoAg,
               dataHoraProgramada: df.dataHoraProgramada || '',
