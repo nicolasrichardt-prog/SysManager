@@ -1254,11 +1254,11 @@
             </div>
           </div>
 
-          <!-- DASHBOARD DO RELATÓRIO: 5 CARDS DOS STATUS OFICIAIS -->
-          <div class="row row-cols-2 row-cols-md-5 g-2 mb-3">
+          <!-- DASHBOARD DO RELATÓRIO: 7 CARDS EXECUTIVOS (5 STATUS + EXTERNAS E SIOPLEEx) -->
+          <div class="mb-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(136px, 1fr)); gap: 8px;">
             <!-- 1. Demandas Concluídas -->
-            <div class="col">
-              <div class="report-kpi-card kpi-concluidas" id="kpiCardRel_Concluida" onclick="filtrarRelatorioPorKpi('Concluída')" role="button" tabindex="0" title="Clique para filtrar apenas Concluídas">
+            <div>
+              <div class="report-kpi-card kpi-concluidas h-100" id="kpiCardRel_Concluida" onclick="filtrarRelatorioPorKpi('Concluída')" role="button" tabindex="0" title="Clique para filtrar apenas Concluídas">
                 <div class="kpi-label text-success">
                   <span>Demandas Concluídas</span>
                   <i class="fa-solid fa-circle-check text-success"></i>
@@ -1271,8 +1271,8 @@
             </div>
 
             <!-- 2. Demandas Em Andamento -->
-            <div class="col">
-              <div class="report-kpi-card kpi-andamento" id="kpiCardRel_EmAndamento" onclick="filtrarRelatorioPorKpi('Em Andamento')" role="button" tabindex="0" title="Clique para filtrar apenas Em Andamento">
+            <div>
+              <div class="report-kpi-card kpi-andamento h-100" id="kpiCardRel_EmAndamento" onclick="filtrarRelatorioPorKpi('Em Andamento')" role="button" tabindex="0" title="Clique para filtrar apenas Em Andamento">
                 <div class="kpi-label text-primary">
                   <span>Em Produção</span>
                   <i class="fa-solid fa-bars-progress text-primary"></i>
@@ -1285,8 +1285,8 @@
             </div>
 
             <!-- 3. Demandas Não Iniciadas -->
-            <div class="col">
-              <div class="report-kpi-card kpi-naoiniciada" id="kpiCardRel_NaoIniciada" onclick="filtrarRelatorioPorKpi('Não Iniciada')" role="button" tabindex="0" title="Clique para filtrar apenas Não Iniciadas">
+            <div>
+              <div class="report-kpi-card kpi-naoiniciada h-100" id="kpiCardRel_NaoIniciada" onclick="filtrarRelatorioPorKpi('Não Iniciada')" role="button" tabindex="0" title="Clique para filtrar apenas Não Iniciadas">
                 <div class="kpi-label" style="color: #0891b2;">
                   <span>Não Iniciadas</span>
                   <i class="fa-solid fa-hourglass-start" style="color: #0891b2;"></i>
@@ -1299,10 +1299,10 @@
             </div>
 
             <!-- 4. Demandas Futuras -->
-            <div class="col">
-              <div class="report-kpi-card" id="kpiCardRel_DemandaFutura" onclick="filtrarRelatorioPorKpi('Demanda Futura')" role="button" tabindex="0" title="Clique para filtrar apenas Demandas Futuras" style="border-top: 3px solid #6366f1;">
+            <div>
+              <div class="report-kpi-card h-100" id="kpiCardRel_DemandaFutura" onclick="filtrarRelatorioPorKpi('Demanda Futura')" role="button" tabindex="0" title="Clique para filtrar apenas Demandas Futuras" style="border-top: 3px solid #6366f1; background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%);">
                 <div class="kpi-label" style="color: #4f46e5;">
-                  <span>Demanda Futura</span>
+                  <span>Demandas Futuras</span>
                   <i class="fa-solid fa-calendar-days" style="color: #4f46e5;"></i>
                 </div>
                 <div class="kpi-number" style="color: #4f46e5;" id="relDemandasFuturas">0</div>
@@ -1313,8 +1313,8 @@
             </div>
 
             <!-- 5. Demandas Atrasadas -->
-            <div class="col">
-              <div class="report-kpi-card kpi-atrasadas" id="kpiCardRel_Atrasada" onclick="filtrarRelatorioPorKpi('Atrasada')" role="button" tabindex="0" title="Clique para filtrar apenas Atrasadas">
+            <div>
+              <div class="report-kpi-card kpi-atrasadas h-100" id="kpiCardRel_Atrasada" onclick="filtrarRelatorioPorKpi('Atrasada')" role="button" tabindex="0" title="Clique para filtrar apenas Atrasadas">
                 <div class="kpi-label text-danger">
                   <span>Demandas Atrasadas</span>
                   <i class="fa-solid fa-triangle-exclamation text-danger"></i>
@@ -1322,6 +1322,34 @@
                 <div class="kpi-number text-danger" id="relAtrasadas">0</div>
                 <span class="kpi-badge bg-danger-subtle text-danger border border-danger-subtle" id="relAtrasadasDesc">
                   nenhum atraso
+                </span>
+              </div>
+            </div>
+
+            <!-- 6. Demandas Externas -->
+            <div>
+              <div class="report-kpi-card h-100" id="kpiCardRel_Externa" onclick="filtrarRelatorioPorKpi('ORIGEM_EXTERNA')" role="button" tabindex="0" title="Clique para filtrar apenas Demandas Externas" style="border-top: 3px solid #d97706; background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);">
+                <div class="kpi-label" style="color: #b45309;">
+                  <span>Demandas Externas</span>
+                  <i class="fa-solid fa-arrow-up-right-from-square" style="color: #d97706;"></i>
+                </div>
+                <div class="kpi-number" style="color: #d97706;" id="relDemandasExternas">0</div>
+                <span class="kpi-badge border" style="background-color: #fef3c7; color: #92400e; border-color: #fde68a;" id="relDemandasExternasDesc">
+                  0 demandas externas
+                </span>
+              </div>
+            </div>
+
+            <!-- 7. Demandas SIOPLEEx -->
+            <div>
+              <div class="report-kpi-card h-100" id="kpiCardRel_Siopleex" onclick="filtrarRelatorioPorKpi('ORIGEM_SIOPLEEX')" role="button" tabindex="0" title="Clique para filtrar apenas Demandas SIOPLEEx (quando não marcado Demanda Externa)" style="border-top: 3px solid #0f172a; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);">
+                <div class="kpi-label" style="color: #0f172a;">
+                  <span>Demandas SIOPLEEx</span>
+                  <i class="fa-solid fa-cube" style="color: #2563eb;"></i>
+                </div>
+                <div class="kpi-number" style="color: #0f172a;" id="relDemandasSiopleex">0</div>
+                <span class="kpi-badge border" style="background-color: #f1f5f9; color: #334155; border-color: #cbd5e1;" id="relDemandasSiopleexDesc">
+                  0 módulos SIOPLEEx
                 </span>
               </div>
             </div>
@@ -7031,13 +7059,15 @@
         kpiFiltroAtivoRelatorio = tipo;
       }
 
-      // Atualiza visual nos 5 cards de status + indicador de total
+      // Atualiza visual nos 7 cards executivos + indicador de total
       const mapeamento = {
         'Concluída': 'kpiCardRel_Concluida',
         'Em Andamento': 'kpiCardRel_EmAndamento',
         'Não Iniciada': 'kpiCardRel_NaoIniciada',
         'Atrasada': 'kpiCardRel_Atrasada',
-        'Demanda Futura': 'kpiCardRel_DemandaFutura'
+        'Demanda Futura': 'kpiCardRel_DemandaFutura',
+        'ORIGEM_EXTERNA': 'kpiCardRel_Externa',
+        'ORIGEM_SIOPLEEX': 'kpiCardRel_Siopleex'
       };
 
       Object.entries(mapeamento).forEach(([status, elementId]) => {
@@ -7110,7 +7140,7 @@
       if (btnLimpar) btnLimpar.classList.add('d-none');
 
       kpiFiltroAtivoRelatorio = null;
-      ['kpiCardRel_TODOS', 'kpiCardRel_Concluida', 'kpiCardRel_EmAndamento', 'kpiCardRel_NaoIniciada', 'kpiCardRel_Atrasada', 'kpiCardRel_DemandaFutura'].forEach(id => {
+      ['kpiCardRel_TODOS', 'kpiCardRel_Concluida', 'kpiCardRel_EmAndamento', 'kpiCardRel_NaoIniciada', 'kpiCardRel_Atrasada', 'kpiCardRel_DemandaFutura', 'kpiCardRel_Externa', 'kpiCardRel_Siopleex'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('kpi-filtro-ativo');
       });
@@ -7361,13 +7391,15 @@
       renderizarPainelMultiSort();
       atualizarIconesMultiSort();
 
-      // Guarda métricas consolidadas do período filtrado conforme os 5 status oficiais
+      // Guarda métricas consolidadas do período filtrado conforme os 5 status oficiais + Origens (Externa vs SIOPLEEx)
       const totalDemandas = filtradas.length;
       const totalConcluidas = filtradas.filter(t => t.status === 'Concluída').length;
       const totalEmAndamento = filtradas.filter(t => t.status === 'Em Andamento').length;
       const totalNaoIniciadas = filtradas.filter(t => t.status === 'Não Iniciada').length;
       const totalAtrasadas = filtradas.filter(t => t.status === 'Atrasada').length;
       const totalDemandasFuturas = filtradas.filter(t => t.status === 'Demanda Futura').length;
+      const totalDemandasExternas = filtradas.filter(t => t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa').length;
+      const totalDemandasSiopleex = filtradas.filter(t => !(t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa')).length;
 
       // 1. Demandas Concluídas
       const elConcluidas = document.getElementById('relConcluidas');
@@ -7411,6 +7443,24 @@
         elDemandasFuturasDesc.innerText = totalDemandasFuturas === 1 ? '1 agendada p/ esteira' : `${totalDemandasFuturas} agendadas p/ esteira`;
       }
 
+      // 6. Demandas Externas
+      const elDemandasExternas = document.getElementById('relDemandasExternas');
+      if (elDemandasExternas) elDemandasExternas.innerText = totalDemandasExternas;
+      const elDemandasExternasDesc = document.getElementById('relDemandasExternasDesc');
+      if (elDemandasExternasDesc) {
+        const pctExt = totalDemandas > 0 ? Math.round((totalDemandasExternas / totalDemandas) * 100) : 0;
+        elDemandasExternasDesc.innerText = `${pctExt}% do total (${totalDemandasExternas === 1 ? '1 externa' : `${totalDemandasExternas} externas`})`;
+      }
+
+      // 7. Demandas SIOPLEEx (quando não marcado o checkbox de Demanda Externa)
+      const elDemandasSiopleex = document.getElementById('relDemandasSiopleex');
+      if (elDemandasSiopleex) elDemandasSiopleex.innerText = totalDemandasSiopleex;
+      const elDemandasSiopleexDesc = document.getElementById('relDemandasSiopleexDesc');
+      if (elDemandasSiopleexDesc) {
+        const pctSiop = totalDemandas > 0 ? Math.round((totalDemandasSiopleex / totalDemandas) * 100) : 0;
+        elDemandasSiopleexDesc.innerText = `${pctSiop}% do total (módulos SIOPLEEx)`;
+      }
+
       // Indicador Total Geral de Demandas
       const elTotal = document.getElementById('relTotalDemandas');
       if (elTotal) elTotal.innerText = totalDemandas;
@@ -7418,7 +7468,13 @@
       // Aplica Filtro Rápido de KPI clicado e Barra de Pesquisa Textual da Tabela
       let exibidasNaTabela = [...filtradas];
       if (kpiFiltroAtivoRelatorio && kpiFiltroAtivoRelatorio !== 'TODOS') {
-        exibidasNaTabela = exibidasNaTabela.filter(t => t.status === kpiFiltroAtivoRelatorio);
+        if (kpiFiltroAtivoRelatorio === 'ORIGEM_EXTERNA') {
+          exibidasNaTabela = exibidasNaTabela.filter(t => t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa');
+        } else if (kpiFiltroAtivoRelatorio === 'ORIGEM_SIOPLEEX') {
+          exibidasNaTabela = exibidasNaTabela.filter(t => !(t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa'));
+        } else {
+          exibidasNaTabela = exibidasNaTabela.filter(t => t.status === kpiFiltroAtivoRelatorio);
+        }
       }
 
       const inputBuscaTab = document.getElementById('pesquisaTabelaRelatorio');
@@ -7621,10 +7677,12 @@
       const emAndamento = demandas.filter(t => t.status === 'Em Andamento').length;
       const naoIniciadas = demandas.filter(t => t.status === 'Não Iniciada').length;
       const demandasFuturas = demandas.filter(t => t.status === 'Demanda Futura').length;
+      const demandasExternas = demandas.filter(t => t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa').length;
+      const demandasSiopleex = demandas.filter(t => !(t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa')).length;
 
       dadosRelatorioPdfAtual = {
         mesTexto, anoTexto, devTexto, modTexto, statusTexto, periodoDesc,
-        totalDemandas, concluidas, atrasadas, emAndamento, naoIniciadas, demandasFuturas, demandas
+        totalDemandas, concluidas, atrasadas, emAndamento, naoIniciadas, demandasFuturas, demandasExternas, demandasSiopleex, demandas
       };
 
       // Tags de filtros adicionais ativos (não duplica se for personalizado)
@@ -7777,28 +7835,43 @@
                 </div>
               </div>
 
-              <!-- 4 CARDS RESUMO EXECUTIVO -->
-              <div style="display: table; width: 100%; margin-bottom: 10px; border-collapse: separate; border-spacing: 8px 0;">
+              <!-- 7 CARDS RESUMO EXECUTIVO (STATUS + DEMANDA FUTURA + EXTERNAS + SIOPLEEx) -->
+              <div style="display: table; width: 100%; margin-bottom: 10px; border-collapse: separate; border-spacing: 5px 0; table-layout: fixed;">
                 <div style="display: table-row;">
-                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); border: 1px solid #bbf7d0; border-top: 3px solid #16a34a; border-radius: 8px; padding: 7px 10px; text-align: center;">
-                    <div style="font-size: 9px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Concluídas</div>
-                    <div style="font-size: 22px; font-weight: 800; color: #16a34a; margin: 2px 0; line-height: 1.1;">${concluidas}</div>
-                    <div style="font-size: 9px; color: #15803d; font-weight: 700;">${totalDemandas > 0 ? Math.round((concluidas / totalDemandas) * 100) : 0}% entregues no período</div>
+                  <div style="display: table-cell; width: 14.28%; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); border: 1px solid #bbf7d0; border-top: 3px solid #16a34a; border-radius: 8px; padding: 6px 6px; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 8px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.3px;">Demandas Concluídas</div>
+                    <div style="font-size: 19px; font-weight: 800; color: #16a34a; margin: 2px 0; line-height: 1.1;">${concluidas}</div>
+                    <div style="font-size: 8px; color: #15803d; font-weight: 700;">${totalDemandas > 0 ? Math.round((concluidas / totalDemandas) * 100) : 0}% entregues</div>
                   </div>
-                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; border-top: 3px solid #2563eb; border-radius: 8px; padding: 7px 10px; text-align: center;">
-                    <div style="font-size: 9px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">Em Andamento</div>
-                    <div style="font-size: 22px; font-weight: 800; color: #2563eb; margin: 2px 0; line-height: 1.1;">${emAndamento}</div>
-                    <div style="font-size: 9px; color: #1d4ed8; font-weight: 700;">produção ativa na esteira</div>
+                  <div style="display: table-cell; width: 14.28%; background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%); border: 1px solid #bfdbfe; border-top: 3px solid #2563eb; border-radius: 8px; padding: 6px 6px; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 8px; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.3px;">Em Andamento</div>
+                    <div style="font-size: 19px; font-weight: 800; color: #2563eb; margin: 2px 0; line-height: 1.1;">${emAndamento}</div>
+                    <div style="font-size: 8px; color: #1d4ed8; font-weight: 700;">em produção ativa</div>
                   </div>
-                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #ecfeff 0%, #ffffff 100%); border: 1px solid #a5f3fc; border-top: 3px solid #0891b2; border-radius: 8px; padding: 7px 10px; text-align: center;">
-                    <div style="font-size: 9px; font-weight: 800; color: #0e7490; text-transform: uppercase; letter-spacing: 0.5px;">Não Iniciadas</div>
-                    <div style="font-size: 22px; font-weight: 800; color: #0891b2; margin: 2px 0; line-height: 1.1;">${naoIniciadas}</div>
-                    <div style="font-size: 9px; color: #0891b2; font-weight: 700;">aguardando na fila</div>
+                  <div style="display: table-cell; width: 14.28%; background: linear-gradient(180deg, #ecfeff 0%, #ffffff 100%); border: 1px solid #a5f3fc; border-top: 3px solid #0891b2; border-radius: 8px; padding: 6px 6px; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 8px; font-weight: 800; color: #0e7490; text-transform: uppercase; letter-spacing: 0.3px;">Não Iniciadas</div>
+                    <div style="font-size: 19px; font-weight: 800; color: #0891b2; margin: 2px 0; line-height: 1.1;">${naoIniciadas}</div>
+                    <div style="font-size: 8px; color: #0891b2; font-weight: 700;">aguardando na fila</div>
                   </div>
-                  <div style="display: table-cell; width: 25%; background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%); border: 1px solid #fecaca; border-top: 3px solid #dc2626; border-radius: 8px; padding: 7px 10px; text-align: center;">
-                    <div style="font-size: 9px; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.5px;">Demandas Atrasadas</div>
-                    <div style="font-size: 22px; font-weight: 800; color: #dc2626; margin: 2px 0; line-height: 1.1;">${atrasadas}</div>
-                    <div style="font-size: 9px; color: #b91c1c; font-weight: 700;">${atrasadas === 0 ? 'Nenhum atraso registrado' : `${atrasadas} fora do prazo limite`}</div>
+                  <div style="display: table-cell; width: 14.28%; background: linear-gradient(180deg, #eef2ff 0%, #ffffff 100%); border: 1px solid #c7d2fe; border-top: 3px solid #4f46e5; border-radius: 8px; padding: 6px 6px; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 8px; font-weight: 800; color: #4338ca; text-transform: uppercase; letter-spacing: 0.3px;">Demandas Futuras</div>
+                    <div style="font-size: 19px; font-weight: 800; color: #4f46e5; margin: 2px 0; line-height: 1.1;">${demandasFuturas}</div>
+                    <div style="font-size: 8px; color: #4338ca; font-weight: 700;">agendadas p/ esteira</div>
+                  </div>
+                  <div style="display: table-cell; width: 14.28%; background: linear-gradient(180deg, #fef2f2 0%, #ffffff 100%); border: 1px solid #fecaca; border-top: 3px solid #dc2626; border-radius: 8px; padding: 6px 6px; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 8px; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.3px;">Demandas Atrasadas</div>
+                    <div style="font-size: 19px; font-weight: 800; color: #dc2626; margin: 2px 0; line-height: 1.1;">${atrasadas}</div>
+                    <div style="font-size: 8px; color: #b91c1c; font-weight: 700;">${atrasadas === 0 ? 'nenhum atraso' : `${atrasadas} fora do prazo`}</div>
+                  </div>
+                  <div style="display: table-cell; width: 14.28%; background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%); border: 1px solid #fde68a; border-top: 3px solid #d97706; border-radius: 8px; padding: 6px 6px; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 8px; font-weight: 800; color: #92400e; text-transform: uppercase; letter-spacing: 0.3px;">Demandas Externas</div>
+                    <div style="font-size: 19px; font-weight: 800; color: #d97706; margin: 2px 0; line-height: 1.1;">${demandasExternas}</div>
+                    <div style="font-size: 8px; color: #b45309; font-weight: 700;">${totalDemandas > 0 ? Math.round((demandasExternas / totalDemandas) * 100) : 0}% do total</div>
+                  </div>
+                  <div style="display: table-cell; width: 14.28%; background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); border: 1px solid #cbd5e1; border-top: 3px solid #0f172a; border-radius: 8px; padding: 6px 6px; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 8px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.3px;">Demandas SIOPLEEx</div>
+                    <div style="font-size: 19px; font-weight: 800; color: #0f172a; margin: 2px 0; line-height: 1.1;">${demandasSiopleex}</div>
+                    <div style="font-size: 8px; color: #334155; font-weight: 700;">${totalDemandas > 0 ? Math.round((demandasSiopleex / totalDemandas) * 100) : 0}% do total</div>
                   </div>
                 </div>
               </div>
@@ -7809,12 +7882,14 @@
                   <span style="font-weight: 800; font-size: 9.5px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">Detalhamento das Demandas do Período</span>
                 </div>
                 <div style="display: table-cell; text-align: right; vertical-align: middle;">
-                  <span style="display: inline-block; background: #e2e8f0; color: #334155; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Total: ${totalDemandas}</span>
-                  <span style="display: inline-block; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Concluídas: ${concluidas}</span>
-                  <span style="display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Em Produção: ${emAndamento}</span>
-                  <span style="display: inline-block; background: #cffafe; color: #0e7490; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Não Iniciadas: ${naoIniciadas}</span>
-                  <span style="display: inline-block; background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Atrasadas: ${atrasadas}</span>
-                  ${demandasFuturas > 0 ? `<span style="display: inline-block; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 9px; margin-left: 3px;">Demandas Futuras: ${demandasFuturas}</span>` : ''}
+                  <span style="display: inline-block; background: #e2e8f0; color: #334155; padding: 2px 7px; border-radius: 10px; font-weight: 700; font-size: 8.5px; margin-left: 2px;">Total: ${totalDemandas}</span>
+                  <span style="display: inline-block; background: #dcfce7; color: #15803d; padding: 2px 7px; border-radius: 10px; font-weight: 700; font-size: 8.5px; margin-left: 2px;">Concluídas: ${concluidas}</span>
+                  <span style="display: inline-block; background: #dbeafe; color: #1d4ed8; padding: 2px 7px; border-radius: 10px; font-weight: 700; font-size: 8.5px; margin-left: 2px;">Em Produção: ${emAndamento}</span>
+                  <span style="display: inline-block; background: #cffafe; color: #0e7490; padding: 2px 7px; border-radius: 10px; font-weight: 700; font-size: 8.5px; margin-left: 2px;">Não Iniciadas: ${naoIniciadas}</span>
+                  <span style="display: inline-block; background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 10px; font-weight: 700; font-size: 8.5px; margin-left: 2px;">Demandas Futuras: ${demandasFuturas}</span>
+                  <span style="display: inline-block; background: #fee2e2; color: #b91c1c; padding: 2px 7px; border-radius: 10px; font-weight: 700; font-size: 8.5px; margin-left: 2px;">Atrasadas: ${atrasadas}</span>
+                  <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 10px; font-weight: 700; font-size: 8.5px; margin-left: 2px;">Externas: ${demandasExternas}</span>
+                  <span style="display: inline-block; background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; padding: 1px 7px; border-radius: 10px; font-weight: 700; font-size: 8.5px; margin-left: 2px;">SIOPLEEx: ${demandasSiopleex}</span>
                 </div>
               </div>
 
