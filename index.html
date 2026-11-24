@@ -767,6 +767,54 @@
       70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
       100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
+
+    /* Quadro Semanal (Segunda a Sexta) */
+    .semana-col {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 10px;
+      min-height: 225px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .semana-col.semana-col-hoje {
+      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 32%);
+      border-color: #60a5fa;
+      box-shadow: 0 4px 14px -4px rgba(37, 99, 235, 0.16);
+    }
+    .semana-col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed #cbd5e1;
+      margin-bottom: 2px;
+    }
+    .semana-col-hoje .semana-col-header {
+      border-bottom-color: #bfdbfe;
+    }
+    .semana-item-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-left-width: 4px;
+      border-radius: 10px;
+      padding: 8px 9px;
+      cursor: pointer;
+      transition: transform 0.14s ease, box-shadow 0.14s ease;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .semana-item-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.10);
+    }
+    .semana-item-card.tipo-foco { border-left-color: #2563eb; }
+    .semana-item-card.tipo-futura { border-left-color: #4f46e5; background-color: #fafaff; }
+    .semana-item-card.tipo-atrasada { border-left-color: #ef4444; background-color: #fff8f8; }
+    .semana-item-card.tipo-concluida { border-left-color: #10b981; background-color: #f6fef9; }
+    .semana-item-card.tipo-afastamento { border-left-color: #f59e0b; background-color: #fffbeb; }
   </style>
 </head>
 <body>
@@ -1115,6 +1163,66 @@
             </div>
           </div>
 
+        </div>
+
+        <!-- QUADRO SEMANAL PERSONALIZADO (SEGUNDA A SEXTA) -->
+        <div class="card card-custom p-3 p-md-4 shadow-xs mt-1 mb-3" id="painelSemanaAgil">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3 mb-3 border-bottom">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
+                <i class="fa-solid fa-calendar-week"></i>
+              </div>
+              <div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <h6 class="fw-bold text-dark mb-0">Semana Ágil (Segunda a Sexta)</h6>
+                  <span class="badge bg-light text-secondary border font-monospace" id="lblIntervaloSemanaAgil" style="font-size: 0.72rem;">-</span>
+                </div>
+                <small class="text-muted" style="font-size: 0.75rem;">
+                  Registro automático do decorrer da semana • Demanda Em Foco entra após 5 min ativos
+                </small>
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+              <div class="d-none align-items-center gap-2" id="wrapFiltroDevSemana">
+                <label class="small fw-semibold text-muted mb-0 text-nowrap" for="filtroDevSemana">
+                  <i class="fa-solid fa-user-check me-1 text-primary"></i>Exibir:
+                </label>
+                <select class="form-select form-select-sm rounded-pill px-3 fw-semibold" id="filtroDevSemana" onchange="aoMudarDevSemana()" style="min-width: 175px;"></select>
+              </div>
+
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 fw-semibold" id="badgePessoaSemanaAgil" style="font-size: 0.76rem;">
+                <i class="fa-solid fa-user me-1"></i>Minha Semana
+              </span>
+
+              <div class="btn-group btn-group-sm" role="group" aria-label="Navegação da semana">
+                <button type="button" class="btn btn-outline-secondary rounded-start-pill px-2" onclick="navegarSemanaAgil(-1)" title="Semana anterior">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button type="button" class="btn btn-outline-primary fw-semibold px-3" onclick="navegarSemanaAgil(0)">
+                  Esta Semana
+                </button>
+                <button type="button" class="btn btn-outline-secondary rounded-end-pill px-2" onclick="navegarSemanaAgil(1)" title="Próxima semana">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div class="d-flex flex-wrap align-items-center gap-2" style="font-size: 0.72rem;">
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-crosshairs me-1"></i>Em Foco (&ge;5 min)</span>
+              <span class="badge rounded-pill px-2 py-1" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe;"><i class="fa-solid fa-calendar-days me-1"></i>Demanda Futura</span>
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Atrasada</span>
+              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>Concluída</span>
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-umbrella-beach me-1"></i>Férias / Dispensa</span>
+            </div>
+            <small class="text-muted" id="lblStatusSemanaAgil" style="font-size: 0.72rem;"></small>
+          </div>
+
+          <div class="row row-cols-1 row-cols-md-5 g-2" id="gridSemanaAgil">
+            <div class="col-12 text-center text-muted small py-4">Carregando semana ágil...</div>
+          </div>
         </div>
 
       </div>
@@ -2873,7 +2981,8 @@
       tarefas: [],
       solicitacoes: [],
       demandasFuturas: [],
-      afastamentos: []
+      afastamentos: [],
+      historicoFoco: []
     };
 
     // 22 Módulos Oficiais do Sistema
@@ -3438,6 +3547,7 @@
         else if (action === 'configurarGatilhoPushDiario') runner.instalarGatilhoPushDiario(data && data.hora);
         else if (action === 'salvarAfastamento') runner.salvarAfastamento(data);
         else if (action === 'excluirAfastamento') runner.excluirAfastamento(data);
+        else if (action === 'confirmarFoco5Min') runner.confirmarFoco5Min(data);
       } else {
         const urlsToTry = [activeAppsScriptUrl, ...APPS_SCRIPT_URLS_LIST.filter(u => u !== activeAppsScriptUrl)];
         const tentarRequisicao = (idx) => {
@@ -4586,6 +4696,7 @@
       appState.tarefas = Array.isArray(dados.tarefas) ? dados.tarefas.map(t => ({ ...t })) : [];
       appState.solicitacoes = dados.solicitacoes || [];
       appState.afastamentos = Array.isArray(dados.afastamentos) ? dados.afastamentos.map(a => ({ ...a })) : [];
+      appState.historicoFoco = Array.isArray(dados.historicoFoco) ? dados.historicoFoco.map(h => ({ ...h })) : [];
 
       // Reconcilia Demandas Futuras do servidor com pendências/edições locais
       let servidorFuturas = Array.isArray(dados.demandasFuturas) ? dados.demandasFuturas.map(d => ({ ...d })) : [];
@@ -4705,6 +4816,7 @@
       sincronizarAnotacoesRecebidasDoServidor(dados.anotacoes, dados.abasAnotacoes, isAuthoritative);
 
       atualizarNavbarUsuario();
+      popularDropdownSemanaAgil();
       atualizarAbaEsteira();
       atualizarPainelGerente();
       renderizarGraficos();
@@ -4714,6 +4826,7 @@
       atualizarTabelaUsuarios();
       inicializarTooltips();
       inicializarPushAposLogin();
+      agendarTimerConfirmacaoFoco5Min();
     }
 
     /**
@@ -4830,13 +4943,20 @@
 
       // Se a demanda concluída era a que estava em foco, promove outra em andamento para foco
       let outraPromovidaId = null;
+      let outraPromovidaObj = null;
       if (eraAtiva) {
         const outraEmAndamento = appState.tarefas.find(t => t.devId === tarefa.devId && t.id !== tarefa.id && t.status === 'Em Andamento');
         if (outraEmAndamento) {
           outraEmAndamento.ativo = true;
           outraPromovidaId = outraEmAndamento.id;
+          outraPromovidaObj = outraEmAndamento;
           salvarEdicaoLocalDemanda(outraEmAndamento);
         }
+      }
+
+      confirmarFocoLocalPorTarefa(tarefa.id, tarefa.devId);
+      if (outraPromovidaObj) {
+        registrarEntradaFocoLocal(outraPromovidaObj, outraPromovidaObj.devId);
       }
 
       try {
@@ -4881,6 +5001,7 @@
           }
         }
       });
+      registrarEntradaFocoLocal(task, devId);
       atualizarAbaEsteira();
       atualizarRelatorioMensal();
       mostrarToast(`Demanda "${task.titulo}" colocada em foco no painel.`);
@@ -5252,6 +5373,9 @@
           }
         }
       }
+
+      // Atualiza Quadro Semanal (Segunda a Sexta)
+      renderizarQuadroSemanaAgil();
 
       // Se o Drawer Lateral estiver aberto, atualiza o conteúdo em tempo real (0ms)
       const elDrawer = document.getElementById('drawerLateralDemandas');
@@ -6150,6 +6274,7 @@
 
       // Salva no Local Edits Store para imunidade total contra F5 enquanto aguarda confirmação do servidor
       salvarEdicaoLocalDemanda(task);
+      registrarEntradaFocoLocal(task, devId);
 
       verificarEAtualizarStatusTarefas();
       try {
@@ -6245,6 +6370,7 @@
 
       // Remoção otimista em 0ms
       appState.tarefas = appState.tarefas.filter(t => t.id !== tarefaId);
+      appState.historicoFoco = (appState.historicoFoco || []).filter(h => !h || h.tarefaId !== tarefaId);
       limparEdicaoLocal(tarefaId);
       try {
         localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState));
@@ -10251,7 +10377,8 @@
         ],
         solicitacoes: [],
         demandasFuturas: [],
-        afastamentos: []
+        afastamentos: [],
+        historicoFoco: []
       };
     }
 
@@ -11631,6 +11758,485 @@
           alert('Erro ao remover afastamento: ' + ((err && err.message) || err));
         }
       );
+    }
+
+    // =========================================================================
+    // SEMANA ÁGIL (5 Colunas: Segunda a Sexta + Regra dos 5 Minutos Em Foco)
+    // =========================================================================
+
+    const FOCO_MIN_MS = 5 * 60 * 1000;
+    let semanaAgilOffset = 0;
+    let semanaDevSelecionadoId = '';
+    let foco5MinTimerId = null;
+
+    function usuarioPodeVerDropdownSemana(user) {
+      if (!user) return false;
+      const email = (user.email || '').toLowerCase().trim();
+      const nome = limparNomeDev(user.nome || '').toLowerCase();
+      return (
+        email === 'nicolasrichardt@gmail.com' ||
+        email === 'rodneyrodrigues@gmail.com' ||
+        nome.includes('nicolas') ||
+        nome.includes('rodney')
+      );
+    }
+
+    function obterDevObjSemana(devId) {
+      const lista = Array.isArray(appState.usuarios) ? appState.usuarios : [];
+      const found = lista.find(u => u && u.id === devId);
+      if (found) return found;
+      if (appState.currentUser && appState.currentUser.id === devId) return appState.currentUser;
+      return appState.currentUser || null;
+    }
+
+    function obterDevSelecionadoSemana() {
+      const myId = (appState.currentUser && appState.currentUser.id) || '';
+      if (!usuarioPodeVerDropdownSemana(appState.currentUser)) {
+        return myId;
+      }
+      if (semanaDevSelecionadoId) {
+        return semanaDevSelecionadoId;
+      }
+      return myId || (appState.usuarios && appState.usuarios[0] && appState.usuarios[0].id) || '';
+    }
+
+    function popularDropdownSemanaAgil() {
+      const wrap = document.getElementById('wrapFiltroDevSemana');
+      const sel = document.getElementById('filtroDevSemana');
+      const badgePessoa = document.getElementById('badgePessoaSemanaAgil');
+      const podeDropdown = usuarioPodeVerDropdownSemana(appState.currentUser);
+      const myId = (appState.currentUser && appState.currentUser.id) || '';
+
+      if (podeDropdown && sel && wrap) {
+        wrap.classList.remove('d-none');
+        wrap.classList.add('d-flex');
+        if (badgePessoa) badgePessoa.classList.add('d-none');
+
+        const lista = Array.isArray(appState.usuarios) ? appState.usuarios : [];
+        const existeAtual = semanaDevSelecionadoId && lista.some(u => u && u.id === semanaDevSelecionadoId);
+        if (!existeAtual) {
+          semanaDevSelecionadoId = myId || (lista[0] && lista[0].id) || '';
+        }
+
+        sel.innerHTML = lista.map(u => {
+          const nomeLimpo = limparNomeDev(u.nome || u.email || 'Membro');
+          const selectedAttr = (u.id === semanaDevSelecionadoId) ? ' selected' : '';
+          return `<option value="${escaparHtmlPush(u.id)}"${selectedAttr}>${escaparHtmlPush(nomeLimpo)}</option>`;
+        }).join('');
+        if (semanaDevSelecionadoId) {
+          sel.value = semanaDevSelecionadoId;
+        }
+      } else {
+        semanaDevSelecionadoId = myId;
+        if (wrap) {
+          wrap.classList.add('d-none');
+          wrap.classList.remove('d-flex');
+        }
+        if (badgePessoa) {
+          badgePessoa.classList.remove('d-none');
+          const meuNome = limparNomeDev((appState.currentUser && appState.currentUser.nome) || 'Minha Semana');
+          badgePessoa.innerHTML = `<i class="fa-solid fa-user me-1"></i>Semana de ${escaparHtmlPush(meuNome)}`;
+        }
+      }
+    }
+
+    function aoMudarDevSemana() {
+      const sel = document.getElementById('filtroDevSemana');
+      if (sel && sel.value) {
+        semanaDevSelecionadoId = sel.value;
+      }
+      renderizarQuadroSemanaAgil();
+    }
+
+    function navegarSemanaAgil(delta) {
+      if (delta === 0) {
+        semanaAgilOffset = 0;
+      } else {
+        semanaAgilOffset += Number(delta) || 0;
+      }
+      renderizarQuadroSemanaAgil();
+    }
+
+    function obterDiasUteisSemana(offsetSemanas) {
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const dow = hoje.getDay(); // 0=Dom, 1=Seg .. 6=Sab
+      const diffSeg = (dow === 0) ? -6 : (1 - dow);
+      const segunda = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + diffSeg + ((Number(offsetSemanas) || 0) * 7), 0, 0, 0, 0);
+
+      const nomes = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+      const dias = [];
+      for (let i = 0; i < 5; i++) {
+        const d = new Date(segunda.getFullYear(), segunda.getMonth(), segunda.getDate() + i, 0, 0, 0, 0);
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        dias.push({
+          nomeDia: nomes[i],
+          dataIso: formatarDataIso(d),
+          dataBr: `${dd}/${mm}`,
+          ano: d.getFullYear()
+        });
+      }
+      return dias;
+    }
+
+    function tarefaPertenceAoDevSemana(t, devId, devObj) {
+      if (!t) return false;
+      const tId = (t.devId || '').toString().trim().toUpperCase();
+      const dId = (devId || (devObj && devObj.id) || '').toString().trim().toUpperCase();
+      if (dId && tId && tId === dId) return true;
+
+      const tNome = limparNomeDev(t.devNome || '').toLowerCase();
+      const dNome = limparNomeDev((devObj && devObj.nome) || '').toLowerCase();
+      return Boolean(dNome && tNome && tNome === dNome);
+    }
+
+    function historicoPertenceAoDevSemana(h, devId, devObj) {
+      if (!h) return false;
+      const dEmail = (devObj && devObj.email ? devObj.email : '').toString().trim().toLowerCase();
+      const hEmail = (h.devEmail || '').toString().trim().toLowerCase();
+      if (dEmail && hEmail && dEmail === hEmail) return true;
+
+      const dId = (devId || (devObj && devObj.id) || '').toString().trim().toUpperCase();
+      const hId = (h.devId || '').toString().trim().toUpperCase();
+      if (dId && hId && dId === hId) return true;
+
+      const dNome = limparNomeDev((devObj && devObj.nome) || '').toLowerCase();
+      const hNome = limparNomeDev(h.devNome || '').toLowerCase();
+      return Boolean(dNome && hNome && dNome === hNome);
+    }
+
+    function confirmarFocoLocalPorTarefa(tarefaId, devId) {
+      if (!tarefaId || !Array.isArray(appState.historicoFoco)) return;
+      const targetUpper = String(tarefaId).trim().toUpperCase();
+      const agoraMs = Date.now();
+      appState.historicoFoco.forEach(h => {
+        if (!h || h.saiuEmMs) return;
+        if (String(h.tarefaId || '').trim().toUpperCase() === targetUpper) {
+          h.saiuEmMs = agoraMs;
+          h.confirmado = true;
+        }
+      });
+    }
+
+    function registrarEntradaFocoLocal(task, devId) {
+      if (!task || !task.id) return;
+      if (!Array.isArray(appState.historicoFoco)) appState.historicoFoco = [];
+
+      const hojeIso = formatarDataIso(new Date());
+      const agoraMs = Date.now();
+      const devObj = obterDevObjSemana(devId || task.devId);
+      const devIdFinal = (devId || (devObj && devObj.id) || task.devId || '').toString().trim();
+      const devEmailFinal = (devObj && devObj.email ? devObj.email : '').toString().trim().toLowerCase();
+      const devNomeFinal = limparNomeDev((devObj && devObj.nome) || task.devNome || '');
+
+      for (let i = appState.historicoFoco.length - 1; i >= 0; i--) {
+        const h = appState.historicoFoco[i];
+        if (!h || h.saiuEmMs) continue;
+        if (!historicoPertenceAoDevSemana(h, devIdFinal, devObj)) continue;
+
+        if (String(h.tarefaId || '').trim().toUpperCase() === String(task.id).trim().toUpperCase() && h.dataIso === hojeIso) {
+          agendarTimerConfirmacaoFoco5Min();
+          return;
+        }
+
+        const duracao = agoraMs - (Number(h.entrouEmMs) || 0);
+        if (!h.confirmado && duracao < FOCO_MIN_MS) {
+          appState.historicoFoco.splice(i, 1);
+        } else {
+          h.saiuEmMs = agoraMs;
+          h.confirmado = true;
+        }
+      }
+
+      appState.historicoFoco.push({
+        id: 'FOC-LOC-' + agoraMs,
+        dataIso: hojeIso,
+        devId: devIdFinal,
+        devEmail: devEmailFinal,
+        devNome: devNomeFinal,
+        tarefaId: task.id,
+        tarefaTitulo: task.titulo || '',
+        modulo: task.modulo || 'SIOPLEEx',
+        entrouEmMs: agoraMs,
+        saiuEmMs: 0,
+        confirmado: false
+      });
+
+      agendarTimerConfirmacaoFoco5Min();
+    }
+
+    function agendarTimerConfirmacaoFoco5Min() {
+      if (foco5MinTimerId) {
+        clearTimeout(foco5MinTimerId);
+        foco5MinTimerId = null;
+      }
+
+      const lista = Array.isArray(appState.historicoFoco) ? appState.historicoFoco : [];
+      if (lista.length === 0) return;
+
+      const agoraMs = Date.now();
+      const hojeIso = formatarDataIso(new Date());
+      let precisaConfirmarServidor = false;
+      let menorRestanteMs = Infinity;
+
+      lista.forEach(h => {
+        if (!h || h.saiuEmMs || h.confirmado || !h.entrouEmMs) return;
+        const decorrido = agoraMs - Number(h.entrouEmMs);
+        if (decorrido >= FOCO_MIN_MS) {
+          h.confirmado = true;
+          precisaConfirmarServidor = true;
+        } else if (h.dataIso === hojeIso) {
+          const rest = FOCO_MIN_MS - decorrido;
+          if (rest < menorRestanteMs) menorRestanteMs = rest;
+        }
+      });
+
+      if (precisaConfirmarServidor) {
+        executarNoServidor('confirmarFoco5Min', {}, function (res) {
+          if (res && res.success && Array.isArray(res.historicoFoco)) {
+            appState.historicoFoco = res.historicoFoco;
+          }
+          renderizarQuadroSemanaAgil();
+        });
+        renderizarQuadroSemanaAgil();
+      }
+
+      if (menorRestanteMs < Infinity) {
+        foco5MinTimerId = setTimeout(function () {
+          agendarTimerConfirmacaoFoco5Min();
+        }, Math.max(500, menorRestanteMs + 250));
+      }
+    }
+
+    function renderizarQuadroSemanaAgil() {
+      const grid = document.getElementById('gridSemanaAgil');
+      const lblIntervalo = document.getElementById('lblIntervaloSemanaAgil');
+      const lblStatus = document.getElementById('lblStatusSemanaAgil');
+      if (!grid) return;
+
+      const devId = obterDevSelecionadoSemana();
+      const devObj = obterDevObjSemana(devId);
+      const dias = obterDiasUteisSemana(semanaAgilOffset);
+      const hojeIso = formatarDataIso(new Date());
+      const agoraMs = Date.now();
+
+      if (lblIntervalo && dias.length === 5) {
+        lblIntervalo.innerText = `${dias[0].dataBr} a ${dias[4].dataBr}/${dias[4].ano}`;
+      }
+      if (lblStatus) {
+        const nomeExib = limparNomeDev((devObj && devObj.nome) || (appState.currentUser && appState.currentUser.nome) || 'Equipe');
+        lblStatus.innerHTML = `<i class="fa-solid fa-user-clock me-1 text-primary"></i>Visualizando semana de <strong>${escaparHtmlPush(nomeExib)}</strong>`;
+      }
+
+      const tarefasDev = (appState.tarefas || []).filter(t => tarefaPertenceAoDevSemana(t, devId, devObj));
+      const afastDev = (appState.afastamentos || []).filter(af => af && af.dataInicio && af.dataFim && afastamentoPertenceAoDev(af, devId, devObj));
+      const histDev = (appState.historicoFoco || []).filter(h => historicoPertenceAoDevSemana(h, devId, devObj));
+      const futurasDev = (appState.demandasFuturas || []).filter(df => {
+        if (!df || df.status !== 'Agendada') return false;
+        const dId = (devId || '').toString().trim().toUpperCase();
+        const fId = (df.devId || '').toString().trim().toUpperCase();
+        if (dId && fId && dId === fId) return true;
+        const dEmail = (devObj && devObj.email ? devObj.email : '').toLowerCase().trim();
+        const fEmail = (df.devEmail || '').toLowerCase().trim();
+        if (dEmail && fEmail && dEmail === fEmail) return true;
+        const dNome = limparNomeDev((devObj && devObj.nome) || '').toLowerCase();
+        const fNome = limparNomeDev(df.devNome || '').toLowerCase();
+        return Boolean(dNome && fNome && dNome === fNome);
+      });
+
+      const colsHtml = dias.map(dia => {
+        const isHoje = (dia.dataIso === hojeIso);
+        const isFuturo = (dia.dataIso > hojeIso);
+        const cards = [];
+        const idsJaNoDia = new Set();
+        let temAfastamentoDia = false;
+        let pendente5MinHoje = false;
+
+        // 1. Afastamentos (Férias, Dispensa, Outros) que cobrem esse dia
+        afastDev.forEach(af => {
+          if (af.dataInicio <= dia.dataIso && dia.dataIso <= af.dataFim) {
+            temAfastamentoDia = true;
+            cards.push(`
+              <div class="semana-item-card tipo-afastamento" onclick="abrirDrawerDetalheDemanda('${escaparHtmlPush(af.id)}')" title="Clique para ver detalhes do afastamento">
+                <div class="d-flex justify-content-between align-items-center mb-1 gap-1">
+                  <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.65rem;">
+                    <i class="fa-solid fa-umbrella-beach me-1"></i>${escaparHtmlPush(af.tipo || 'Afastamento')}
+                  </span>
+                  <small class="text-muted font-monospace" style="font-size: 0.66rem;">Pausa</small>
+                </div>
+                <div class="fw-bold text-dark lh-sm" style="font-size: 0.8rem; word-break: break-word;">${escaparHtmlPush(af.motivo || af.tipo)}</div>
+                <div class="text-muted mt-1" style="font-size: 0.68rem;">${escaparHtmlPush(formatarData(af.dataInicio))} a ${escaparHtmlPush(formatarData(af.dataFim))}</div>
+              </div>
+            `);
+          }
+        });
+
+        // Para dias até hoje (passado e hoje): Concluídas, Atrasadas dia a dia e Em Foco (>= 5 min)
+        if (!isFuturo) {
+          // 2. Concluídas neste exato dia
+          tarefasDev.forEach(t => {
+            if (t.status === 'Concluída') {
+              const dtConclIso = String(t.dataConclusao || '').split('T')[0];
+              if (dtConclIso === dia.dataIso) {
+                idsJaNoDia.add(t.id);
+                cards.push(`
+                  <div class="semana-item-card tipo-concluida" onclick="abrirDrawerDetalheDemanda('${escaparHtmlPush(t.id)}')" title="Clique para ver o dossiê desta demanda">
+                    <div class="d-flex justify-content-between align-items-center mb-1 gap-1">
+                      <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size: 0.65rem;">
+                        <i class="fa-solid fa-circle-check me-1"></i>Concluída
+                      </span>
+                      <small class="text-muted font-monospace text-truncate" style="font-size: 0.65rem; max-width: 90px;">${escaparHtmlPush(t.modulo || 'SIOPLEEx')}</small>
+                    </div>
+                    <div class="fw-semibold text-dark lh-sm" style="font-size: 0.8rem; word-break: break-word;">${escaparHtmlPush(t.titulo)}</div>
+                  </div>
+                `);
+              }
+            }
+          });
+
+          // Verifica entradas de foco confirmadas (>= 5 min) para este dia
+          const focosConfirmadosDia = [];
+          const focosIdsDiaSet = new Set();
+
+          histDev.forEach(h => {
+            if (h.dataIso !== dia.dataIso) return;
+            const duracao = h.saiuEmMs > 0 ? (Number(h.saiuEmMs) - Number(h.entrouEmMs)) : (agoraMs - Number(h.entrouEmMs));
+            const passou5Min = h.confirmado === true || duracao >= FOCO_MIN_MS;
+            if (!passou5Min) {
+              if (isHoje && !h.saiuEmMs) {
+                pendente5MinHoje = true;
+              }
+              return;
+            }
+            const tId = (h.tarefaId || '').toString().trim();
+            if (tId && !focosIdsDiaSet.has(tId)) {
+              const tarefaExiste = (appState.tarefas || []).find(tx => tx.id === tId);
+              if (!tarefaExiste) return;
+              focosIdsDiaSet.add(tId);
+              focosConfirmadosDia.push({
+                tarefaId: tId,
+                titulo: tarefaExiste.titulo || h.tarefaTitulo || 'Demanda',
+                modulo: tarefaExiste.modulo || h.modulo || 'SIOPLEEx',
+                dataPrazo: tarefaExiste.dataPrazo || ''
+              });
+            }
+          });
+
+          if (isHoje && !temAfastamentoDia && !pendente5MinHoje) {
+            const ativoHoje = tarefasDev.find(t => t.ativo === true && t.status !== 'Concluída');
+            if (ativoHoje && !focosIdsDiaSet.has(ativoHoje.id)) {
+              focosIdsDiaSet.add(ativoHoje.id);
+              focosConfirmadosDia.push({
+                tarefaId: ativoHoje.id,
+                titulo: ativoHoje.titulo,
+                modulo: ativoHoje.modulo || 'SIOPLEEx',
+                dataPrazo: ativoHoje.dataPrazo || ''
+              });
+            }
+          }
+
+          // 3. Atrasadas aparecendo dia após dia (de dataPrazo + 1 até hoje, ou até o dia anterior à conclusão)
+          tarefasDev.forEach(t => {
+            if (!t.dataPrazo || idsJaNoDia.has(t.id)) return;
+            if (t.status !== 'Atrasada' && t.status !== 'Concluída') return;
+
+            const dPrazo = parseDataLocal(t.dataPrazo);
+            dPrazo.setHours(0, 0, 0, 0);
+            const dIniAtraso = new Date(dPrazo.getFullYear(), dPrazo.getMonth(), dPrazo.getDate() + 1, 0, 0, 0, 0);
+            const iniAtrasoIso = formatarDataIso(dIniAtraso);
+
+            const dtConclIso = t.status === 'Concluída' ? String(t.dataConclusao || '').split('T')[0] : '';
+            const estavaAtrasadaNesseDia = (t.status === 'Atrasada')
+              ? (dia.dataIso >= iniAtrasoIso && dia.dataIso <= hojeIso)
+              : (dtConclIso && dia.dataIso >= iniAtrasoIso && dia.dataIso < dtConclIso);
+
+            if (!estavaAtrasadaNesseDia) return;
+            idsJaNoDia.add(t.id);
+            const tambemEmFoco = focosIdsDiaSet.has(t.id);
+
+            cards.push(`
+              <div class="semana-item-card tipo-atrasada" onclick="abrirDrawerDetalheDemanda('${escaparHtmlPush(t.id)}')" title="Clique para ver o dossiê desta demanda">
+                <div class="d-flex justify-content-between align-items-center mb-1 gap-1 flex-wrap">
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" style="font-size: 0.65rem;">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>Atrasada${tambemEmFoco ? ' • Foco' : ''}
+                  </span>
+                  <small class="text-danger font-monospace" style="font-size: 0.65rem;">Prazo: ${escaparHtmlPush(formatarData(t.dataPrazo))}</small>
+                </div>
+                <div class="fw-semibold text-dark lh-sm" style="font-size: 0.8rem; word-break: break-word;">${escaparHtmlPush(t.titulo)}</div>
+              </div>
+            `);
+          });
+
+          // 4. Em Foco (>= 5 min) do dia (sem repetir quem já entrou como Concluída ou Atrasada no mesmo dia)
+          focosConfirmadosDia.forEach(item => {
+            if (idsJaNoDia.has(item.tarefaId)) return;
+            idsJaNoDia.add(item.tarefaId);
+            cards.push(`
+              <div class="semana-item-card tipo-foco" onclick="abrirDrawerDetalheDemanda('${escaparHtmlPush(item.tarefaId)}')" title="Clique para ver o dossiê desta demanda">
+                <div class="d-flex justify-content-between align-items-center mb-1 gap-1">
+                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill" style="font-size: 0.65rem;">
+                    <i class="fa-solid fa-crosshairs me-1"></i>Em Foco
+                  </span>
+                  <small class="text-muted font-monospace text-truncate" style="font-size: 0.65rem; max-width: 90px;">${escaparHtmlPush(item.modulo || 'SIOPLEEx')}</small>
+                </div>
+                <div class="fw-semibold text-dark lh-sm" style="font-size: 0.8rem; word-break: break-word;">${escaparHtmlPush(item.titulo)}</div>
+                ${item.dataPrazo ? `<div class="text-muted mt-1" style="font-size: 0.67rem;">Prazo: ${escaparHtmlPush(formatarData(item.dataPrazo))}</div>` : ''}
+              </div>
+            `);
+          });
+        }
+
+        // 5. Demandas Futuras (aparecem em qualquer dia agendado da semana — passado, hoje ou futuro!)
+        const futurasDia = futurasDev
+          .filter(df => String(df.dataHoraProgramada || '').split('T')[0] === dia.dataIso)
+          .sort((a, b) => (a.dataHoraProgramada || '').localeCompare(b.dataHoraProgramada || ''));
+
+        futurasDia.forEach(df => {
+          const horaPart = ((df.dataHoraProgramada || '').split('T')[1] || '').substring(0, 5);
+          cards.push(`
+            <div class="semana-item-card tipo-futura" onclick="abrirDrawerDetalheDemanda('${escaparHtmlPush(df.id)}')" title="Clique para ver detalhes desta Demanda Futura">
+              <div class="d-flex justify-content-between align-items-center mb-1 gap-1">
+                <span class="badge rounded-pill" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe;">
+                  <i class="fa-solid fa-calendar-days me-1"></i>Futura${horaPart ? ' • ' + escaparHtmlPush(horaPart) : ''}
+                </span>
+                <small class="text-muted font-monospace text-truncate" style="font-size: 0.65rem; max-width: 80px;">${escaparHtmlPush(df.modulo || 'SIOPLEEx')}</small>
+              </div>
+              <div class="fw-semibold text-dark lh-sm" style="font-size: 0.8rem; word-break: break-word;">${escaparHtmlPush(df.titulo)}</div>
+            </div>
+          `);
+        });
+
+        const aviso5MinHtml = (isHoje && pendente5MinHoje)
+          ? `<div class="text-muted text-center border border-dashed rounded-3 py-1 px-2 mt-auto" style="font-size: 0.69rem; background: #f8fafc;">
+               <i class="fa-regular fa-clock me-1 text-primary"></i>Novo foco entra aqui após 5 min
+             </div>`
+          : '';
+
+        const corpoDiaHtml = cards.length > 0
+          ? cards.join('')
+          : `<div class="text-muted text-center my-auto py-3" style="font-size: 0.74rem; opacity: 0.72;">
+               ${isFuturo ? 'Sem agendamentos' : 'Sem registros'}
+             </div>`;
+
+        return `
+          <div class="col">
+            <div class="semana-col ${isHoje ? 'semana-col-hoje' : ''}">
+              <div class="semana-col-header">
+                <div class="d-flex align-items-center gap-1">
+                  <span class="fw-bold ${isHoje ? 'text-primary' : 'text-dark'}" style="font-size: 0.86rem;">${dia.nomeDia}</span>
+                  ${isHoje ? '<span class="badge bg-primary rounded-pill" style="font-size: 0.62rem;">Hoje</span>' : ''}
+                </div>
+                <span class="font-monospace small ${isHoje ? 'text-primary fw-bold' : 'text-muted'}" style="font-size: 0.74rem;">${dia.dataBr}</span>
+              </div>
+              ${corpoDiaHtml}
+              ${aviso5MinHtml}
+            </div>
+          </div>
+        `;
+      });
+
+      grid.innerHTML = colsHtml.join('');
     }
   </script>
 </body>
