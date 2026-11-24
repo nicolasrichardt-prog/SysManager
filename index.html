@@ -104,24 +104,119 @@
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    .esteira-secoes-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding-bottom: 12px;
+    }
+    .esteira-secao-cabecalho {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .esteira-secao-identidade {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .esteira-secao-icone {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      flex-shrink: 0;
+    }
+    .esteira-secao-icone.icone-foco {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+    .esteira-secao-icone.icone-listas {
+      background: #ffffff;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .esteira-secao-titulo {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.75px;
+      color: #0f172a;
+    }
+    .esteira-secao-sub {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .esteira-secao-linha {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, #cbd5e1 0%, rgba(203, 213, 225, 0) 100%);
+      min-width: 24px;
+    }
+
     .hero-task {
-      border: 1px solid #e2e8f0;
+      border: 1.5px solid #93c5fd;
       border-left: 6px solid var(--primary-color);
-      border-radius: 16px;
-      background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
-      box-shadow: 0 4px 16px -2px rgba(37, 99, 235, 0.08);
+      border-radius: 18px;
+      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 42%, #f8fbff 100%);
+      box-shadow: 0 10px 28px -10px rgba(37, 99, 235, 0.24), 0 2px 6px rgba(15, 23, 42, 0.04);
       position: relative;
+      padding: 18px 22px !important;
     }
     .hero-task.atrasada {
+      border-color: #fca5a5;
       border-left: 6px solid var(--danger-color);
-      background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
-      box-shadow: 0 4px 16px -2px rgba(239, 68, 68, 0.08);
+      background: linear-gradient(135deg, #fef2f2 0%, #ffffff 42%, #fff8f8 100%);
+      box-shadow: 0 10px 28px -10px rgba(239, 68, 68, 0.22), 0 2px 6px rgba(15, 23, 42, 0.04);
     }
     .hero-task.afastamento {
+      border-color: #fcd34d;
       border-left: 6px solid #f59e0b;
-      background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
-      box-shadow: 0 4px 16px -2px rgba(245, 158, 11, 0.14);
+      background: linear-gradient(135deg, #fffbeb 0%, #ffffff 45%, #fefce8 100%);
+      box-shadow: 0 10px 28px -10px rgba(245, 158, 11, 0.24), 0 2px 6px rgba(15, 23, 42, 0.04);
     }
+    .hero-footer-strip {
+      background: rgba(241, 245, 249, 0.80);
+      border: 1px solid rgba(203, 213, 225, 0.72);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-top: 12px;
+    }
+
+    /* Zona 2: Dock agrupado para Listas & Filas da Esteira */
+    .esteira-bloco-listas {
+      background: #eef2f7;
+      border: 1px solid #dbe3ee;
+      border-radius: 18px;
+      padding: 16px 18px 18px;
+    }
+    .esteira-fila-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-top-width: 4px;
+      border-top-style: solid;
+      border-radius: 13px;
+      padding: 13px 14px;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      cursor: pointer;
+    }
+    .esteira-fila-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -6px rgba(15, 23, 42, 0.12);
+    }
+    .esteira-fila-card.fila-nao-iniciada { border-top-color: #06b6d4; }
+    .esteira-fila-card.fila-futura { border-top-color: #6366f1; }
+    .esteira-fila-card.fila-andamento { border-top-color: #2563eb; }
+    .esteira-fila-card.fila-atrasada { border-top-color: #ef4444; }
+    .esteira-fila-card.fila-concluida { border-top-color: #10b981; }
 
     /* Pulse Live Dot */
     .pulse-live-dot {
@@ -378,44 +473,55 @@
     .relatorio-filtros-grid > div {
       min-width: 0;
     }
-    .relatorio-filtros-barra-inferior {
+    .relatorio-detalhamento-topo {
       display: flex;
-      align-items: flex-end;
-      gap: 12px;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px dashed #e2e8f0;
       flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 16px;
     }
-    .relatorio-pesquisa-wrap {
-      flex: 1 1 320px;
-      min-width: 0;
-    }
-    .relatorio-search-field {
+    .relatorio-pesquisa-destaque-wrap {
       position: relative;
       display: flex;
       align-items: center;
+      flex: 1 1 380px;
+      max-width: 580px;
+      min-width: 280px;
     }
-    .relatorio-search-field .relatorio-search-icon {
+    .relatorio-pesquisa-destaque-icon {
       position: absolute;
-      left: 12px;
-      color: #64748b;
-      font-size: 0.82rem;
-      pointer-events: none;
-      transition: color 0.15s ease;
-    }
-    .relatorio-search-field:focus-within .relatorio-search-icon {
+      left: 15px;
       color: #2563eb;
+      font-size: 0.95rem;
+      pointer-events: none;
     }
-    .relatorio-search-field .form-control {
-      padding-left: 36px;
-      padding-right: 34px;
+    .relatorio-pesquisa-destaque-input {
+      height: 44px;
+      border-radius: 12px;
+      border: 1.5px solid #93c5fd;
+      background-color: #ffffff;
+      padding-left: 42px;
+      padding-right: 40px;
+      font-size: 0.90rem;
+      font-weight: 500;
+      color: #0f172a;
+      box-shadow: 0 3px 10px -2px rgba(37, 99, 235, 0.12);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .relatorio-pesquisa-destaque-input:hover {
+      border-color: #60a5fa;
+      box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.18);
+    }
+    .relatorio-pesquisa-destaque-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16);
+      background-color: #ffffff;
+      outline: none;
     }
     .relatorio-search-clear {
       position: absolute;
-      right: 7px;
-      width: 24px;
-      height: 24px;
+      right: 9px;
+      width: 26px;
+      height: 26px;
       border: none;
       border-radius: 50%;
       background: #e2e8f0;
@@ -423,7 +529,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.72rem;
+      font-size: 0.78rem;
       cursor: pointer;
       transition: background-color 0.15s ease, color 0.15s ease;
     }
@@ -438,15 +544,15 @@
       flex-shrink: 0;
     }
     .relatorio-acoes-wrap .btn {
-      height: 38px;
+      height: 36px;
       border-radius: 9px;
-      font-size: 0.83rem;
+      font-size: 0.82rem;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 0 15px;
+      padding: 0 14px;
       white-space: nowrap;
     }
     .relatorio-acoes-wrap .btn-reset-filtros {
@@ -468,6 +574,11 @@
     @media (max-width: 767.98px) {
       .relatorio-filtros-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .relatorio-pesquisa-destaque-wrap {
+        min-width: 0;
+        flex: 1 1 100%;
+        max-width: 100%;
       }
       .relatorio-acoes-wrap {
         width: 100%;
@@ -950,6 +1061,84 @@
     .semana-item-card.tipo-atrasada { border-left-color: #ef4444; background-color: #fff8f8; }
     .semana-item-card.tipo-concluida { border-left-color: #10b981; background-color: #f6fef9; }
     .semana-item-card.tipo-afastamento { border-left-color: #f59e0b; background-color: #fffbeb; }
+
+    /* Zona 3: Card Executivo Semana Ágil */
+    .card-semana-agil {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px -10px rgba(15, 23, 42, 0.12);
+    }
+    .semana-agil-topo {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .semana-topo-icone {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: rgba(59, 130, 246, 0.22);
+      color: #93c5fd;
+      border: 1px solid rgba(147, 197, 253, 0.30);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .semana-topo-badge-periodo {
+      background: rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.20);
+      font-size: 0.72rem;
+    }
+    .semana-topo-badge-pessoa {
+      background: rgba(59, 130, 246, 0.24);
+      color: #dbeafe;
+      border: 1px solid rgba(147, 197, 253, 0.38);
+      font-size: 0.76rem;
+    }
+    .semana-topo-select {
+      background-color: #ffffff;
+      color: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      min-width: 175px;
+      font-weight: 600;
+    }
+    .btn-semana-nav {
+      background: rgba(255, 255, 255, 0.10);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+    .btn-semana-nav:hover {
+      background: rgba(255, 255, 255, 0.20);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+    .btn-semana-hoje {
+      background: #2563eb;
+      color: #ffffff;
+      border: 1px solid #3b82f6;
+      font-weight: 600;
+    }
+    .btn-semana-hoje:hover {
+      background: #1d4ed8;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+    .semana-agil-corpo {
+      padding: 16px 20px 20px;
+      background: #ffffff;
+    }
+    .semana-legenda-barra {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 11px;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+    }
   </style>
 </head>
 <body>
@@ -1075,291 +1264,319 @@
       <!-- ABA 1: ESTEIRA ÁGIL                        -->
       <!-- ========================================== -->
       <div class="tab-pane fade show active" id="tab-esteira" role="tabpanel">
-        
-        <!-- DEMANDA ATUAL EM PRODUÇÃO (COMPACTO E HARMÔNICO) -->
-        <div class="card card-custom hero-task mb-3 p-3 shadow-sm" id="cardDemandaAtual">
-          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-            <div class="d-flex align-items-center flex-wrap gap-2">
-              <span class="badge bg-dark text-white px-2 py-1 rounded-pill shadow-xs d-inline-flex align-items-center" style="font-size: 0.7rem;">
-                <span class="pulse-live-dot me-1" id="dotHeroModoAtual"></span>
-                <span class="fw-bold" id="lblHeroModoAtual" style="letter-spacing: 0.5px;">PRODUÇÃO ATIVA</span>
-              </span>
-              <span class="badge bg-secondary-subtle text-secondary border font-monospace px-2 py-1" id="badgeModuloAtual" style="font-size: 0.72rem;">SIOPLEEx</span>
-              <span id="badgeStatusAtual" class="badge-status-dia" style="font-size: 0.72rem; padding: 2px 8px;">Em Dia</span>
-              <span id="badgeUrgenciaAtual" class="badge badge-media" style="font-size: 0.72rem; padding: 2px 8px;">Média</span>
-            </div>
-            <div class="text-muted small d-flex align-items-center bg-white px-2 py-1 rounded-pill border shadow-2xs" style="font-size: 0.75rem;">
-              <i class="fa-solid fa-user-circle me-1 text-primary"></i> Responsável: <strong id="devNomeAtual" class="text-dark ms-1">-</strong>
-            </div>
-          </div>
+        <div class="esteira-secoes-stack">
 
-          <div id="conteudoDemandaAtual">
-            <div class="mb-2">
-              <h5 class="fw-bold mb-1 text-dark text-truncate" id="tituloDemandaAtual" style="font-size: 1.05rem; letter-spacing: -0.2px;">Nenhuma demanda ativa no momento</h5>
-              <p class="text-muted small mb-0" id="descDemandaAtual" style="white-space: pre-line; line-height: 1.45;">Selecione uma demanda nas listas ou cadastre uma nova para começar.</p>
+          <!-- ZONA 1: DEMANDA EM FOCO (PRODUÇÃO PRIORITÁRIA) -->
+          <section class="esteira-secao">
+            <div class="esteira-secao-cabecalho">
+              <div class="esteira-secao-identidade">
+                <span class="esteira-secao-icone icone-foco"><i class="fa-solid fa-crosshairs"></i></span>
+                <span class="esteira-secao-titulo">Demanda em Foco</span>
+                <span class="esteira-secao-sub">Produção prioritária atual na esteira</span>
+              </div>
+              <div class="esteira-secao-linha"></div>
             </div>
 
-            <!-- ALERTA DE ATRASO COM AJUSTE DIRETO DE PRAZO -->
-            <div class="alert alert-danger d-none align-items-center justify-content-between p-2 my-2 rounded-3" id="alertaAtrasoAtual" style="font-size: 0.78rem;">
-              <div class="d-flex align-items-center gap-2">
-                <i class="fa-solid fa-triangle-exclamation text-danger fs-6"></i>
-                <div>
-                  <strong class="text-danger">Atenção:</strong> Esta demanda excedeu o prazo previsto!
+            <div class="card hero-task mb-0 shadow-sm" id="cardDemandaAtual">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                  <span class="badge bg-dark text-white px-2 py-1 rounded-pill shadow-xs d-inline-flex align-items-center" style="font-size: 0.7rem;">
+                    <span class="pulse-live-dot me-1" id="dotHeroModoAtual"></span>
+                    <span class="fw-bold" id="lblHeroModoAtual" style="letter-spacing: 0.5px;">PRODUÇÃO ATIVA</span>
+                  </span>
+                  <span class="badge bg-secondary-subtle text-secondary border font-monospace px-2 py-1" id="badgeModuloAtual" style="font-size: 0.72rem;">SIOPLEEx</span>
+                  <span id="badgeStatusAtual" class="badge-status-dia" style="font-size: 0.72rem; padding: 2px 8px;">Em Dia</span>
+                  <span id="badgeUrgenciaAtual" class="badge badge-media" style="font-size: 0.72rem; padding: 2px 8px;">Média</span>
+                </div>
+                <div class="text-muted small d-flex align-items-center bg-white px-2 py-1 rounded-pill border shadow-2xs" style="font-size: 0.75rem;">
+                  <i class="fa-solid fa-user-circle me-1 text-primary"></i> Responsável: <strong id="devNomeAtual" class="text-dark ms-1">-</strong>
                 </div>
               </div>
-              <button type="button" class="btn btn-danger btn-sm px-2 py-1 fw-semibold rounded-pill" onclick="editarDemandaAtualConfirm()" style="font-size: 0.75rem;">
-                <i class="fa-solid fa-calendar-pen me-1"></i> Ajustar Prazo
-              </button>
-            </div>
 
-            <!-- FAIXA INTEGRADA: INDICADORES + BOTÕES DE AÇÃO -->
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-2 mt-1 border-top border-light-subtle">
-              <!-- Indicadores compactos em linha -->
-              <div class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 text-secondary" style="font-size: 0.78rem;">
-                <span class="d-inline-flex align-items-center" title="Prazo estimado original">
-                  <i class="fa-regular fa-clock me-1 text-primary"></i>
-                  <span class="text-muted me-1">Estimado:</span>
-                  <strong class="text-primary font-monospace" id="tempoEstimadoAtual">0 dias</strong>
-                </span>
-                <span class="text-muted opacity-50 d-none d-sm-inline">•</span>
-                <span class="d-inline-flex align-items-center" title="Tempo em produção">
-                  <i class="fa-solid fa-stopwatch me-1 text-primary"></i>
-                  <span class="text-muted me-1">Em Prod.:</span>
-                  <strong class="text-dark font-monospace me-1" id="tempoDemandadoAtual">1 dia</strong>
-                  <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace" style="font-size: 0.65rem; padding: 1px 4px;">Ativa</span>
-                </span>
-                <span class="text-muted opacity-50 d-none d-sm-inline">•</span>
-                <span class="d-inline-flex align-items-center" title="Data de início na esteira">
-                  <i class="fa-regular fa-calendar-plus me-1 text-secondary"></i>
-                  <span class="text-muted me-1">Início:</span>
-                  <strong class="text-secondary font-monospace" id="dataInicioAtual">-</strong>
-                </span>
-                <span class="text-muted opacity-50 d-none d-sm-inline">•</span>
-                <span class="d-inline-flex align-items-center" title="Data de prazo final">
-                  <i class="fa-regular fa-calendar-check me-1 text-danger"></i>
-                  <span class="text-muted me-1">Prazo:</span>
-                  <strong class="text-danger font-monospace" id="dataPrazoAtual">-</strong>
-                </span>
-              </div>
-
-              <!-- Botões de Ação Harmônicos e Compactos -->
-              <div class="d-inline-flex align-items-center gap-2" id="botoesAcaoAtual">
-                <button type="button" class="btn btn-success btn-sm px-3 py-1 fw-bold rounded-pill shadow-xs" onclick="finalizarDemandaAtual()" style="font-size: 0.8rem;">
-                  <i class="fa-solid fa-circle-check me-1"></i> Concluir Demanda
-                </button>
-                <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1 fw-semibold rounded-pill" id="btnEditarDemandaAtual" onclick="editarDemandaAtualConfirm()" style="font-size: 0.8rem;" title="Editar Demanda">
-                  <i class="fa-solid fa-pen-to-square me-1"></i> Editar
-                </button>
-                <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1 fw-semibold rounded-pill" id="btnExcluirDemandaAtual" onclick="excluirDemandaAtualConfirm()" style="font-size: 0.8rem;" title="Excluir Demanda">
-                  <i class="fa-solid fa-trash-can me-1"></i> Excluir
-                </button>
-              </div>
-              <div class="d-none align-items-center gap-2" id="botoesAcaoAfastamento">
-                <button type="button" class="btn btn-outline-warning text-dark btn-sm px-3 py-1 fw-semibold rounded-pill" id="btnEditarAfastamentoHero" onclick="editarAfastamentoHeroAtual()" style="font-size: 0.8rem;" title="Editar Afastamento">
-                  <i class="fa-solid fa-pen-to-square me-1"></i> Editar Afastamento
-                </button>
-                <button type="button" class="btn btn-outline-danger btn-sm px-3 py-1 fw-semibold rounded-pill" id="btnExcluirAfastamentoHero" onclick="encerrarAfastamentoHeroAtual()" style="font-size: 0.8rem;" title="Encerrar ou Remover Afastamento">
-                  <i class="fa-solid fa-trash-can me-1"></i> Encerrar Afastamento
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- BARRA HORIZONTAL DE ACESSO RÁPIDO: 5 CATEGORIAS EXECUTIVAS -->
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-3 mb-4" id="gatilhosDrawerDemandas">
-          
-          <!-- 1. NÃO INICIADAS -->
-          <div class="col">
-            <div class="card card-custom p-3 shadow-xs border-top border-info border-3 hover-card-drawer h-100" 
-                 onclick="abrirDrawerLista('naoIniciadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com a fila de Não Iniciadas">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
-                    <i class="fa-solid fa-hourglass-start fs-6"></i>
-                  </div>
-                  <div>
-                    <h6 class="fw-bold mb-0 text-info-emphasis" style="font-size: 0.9rem;">Não Iniciadas</h6>
-                    <small class="text-muted" style="font-size: 0.72rem;">Fila de espera aguardando</small>
-                  </div>
+              <div id="conteudoDemandaAtual">
+                <div class="mb-2">
+                  <h5 class="mb-1 text-dark text-truncate" id="tituloDemandaAtual" style="font-size: 1.18rem; font-weight: 800; letter-spacing: -0.3px;">Nenhuma demanda ativa no momento</h5>
+                  <p class="text-muted small mb-0" id="descDemandaAtual" style="white-space: pre-line; line-height: 1.45;">Selecione uma demanda nas listas ou cadastre uma nova para começar.</p>
                 </div>
-                <div class="text-end">
-                  <div class="d-flex align-items-center justify-content-end gap-1 mb-1">
-                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-2 py-0 fw-bold shadow-2xs" 
-                            style="font-size: 0.7rem; line-height: 1.5;" 
-                            onclick="event.stopPropagation(); abrirModalNovaDemanda();" 
-                            title="Cadastrar Nova Demanda">
-                      <i class="fa-solid fa-plus me-1"></i>Nova
+
+                <!-- ALERTA DE ATRASO COM AJUSTE DIRETO DE PRAZO -->
+                <div class="alert alert-danger d-none align-items-center justify-content-between p-2 my-2 rounded-3" id="alertaAtrasoAtual" style="font-size: 0.78rem;">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-danger fs-6"></i>
+                    <div>
+                      <strong class="text-danger">Atenção:</strong> Esta demanda excedeu o prazo previsto!
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-danger btn-sm px-2 py-1 fw-semibold rounded-pill" onclick="editarDemandaAtualConfirm()" style="font-size: 0.75rem;">
+                    <i class="fa-solid fa-calendar-pen me-1"></i> Ajustar Prazo
+                  </button>
+                </div>
+
+                <!-- FAIXA INTEGRADA: INDICADORES + BOTÕES DE AÇÃO -->
+                <div class="hero-footer-strip d-flex flex-wrap align-items-center justify-content-between gap-3">
+                  <!-- Indicadores compactos em linha -->
+                  <div class="d-flex flex-wrap align-items-center gap-2 gap-sm-3 text-secondary" style="font-size: 0.78rem;">
+                    <span class="d-inline-flex align-items-center" title="Prazo estimado original">
+                      <i class="fa-regular fa-clock me-1 text-primary"></i>
+                      <span class="text-muted me-1">Estimado:</span>
+                      <strong class="text-primary font-monospace" id="tempoEstimadoAtual">0 dias</strong>
+                    </span>
+                    <span class="text-muted opacity-50 d-none d-sm-inline">•</span>
+                    <span class="d-inline-flex align-items-center" title="Tempo em produção">
+                      <i class="fa-solid fa-stopwatch me-1 text-primary"></i>
+                      <span class="text-muted me-1">Em Prod.:</span>
+                      <strong class="text-dark font-monospace me-1" id="tempoDemandadoAtual">1 dia</strong>
+                      <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace" style="font-size: 0.65rem; padding: 1px 4px;">Ativa</span>
+                    </span>
+                    <span class="text-muted opacity-50 d-none d-sm-inline">•</span>
+                    <span class="d-inline-flex align-items-center" title="Data de início na esteira">
+                      <i class="fa-regular fa-calendar-plus me-1 text-secondary"></i>
+                      <span class="text-muted me-1">Início:</span>
+                      <strong class="text-secondary font-monospace" id="dataInicioAtual">-</strong>
+                    </span>
+                    <span class="text-muted opacity-50 d-none d-sm-inline">•</span>
+                    <span class="d-inline-flex align-items-center" title="Data de prazo final">
+                      <i class="fa-regular fa-calendar-check me-1 text-danger"></i>
+                      <span class="text-muted me-1">Prazo:</span>
+                      <strong class="text-danger font-monospace" id="dataPrazoAtual">-</strong>
+                    </span>
+                  </div>
+
+                  <!-- Botões de Ação Harmônicos e Compactos -->
+                  <div class="d-inline-flex align-items-center gap-2" id="botoesAcaoAtual">
+                    <button type="button" class="btn btn-success btn-sm px-3 py-1 fw-bold rounded-pill shadow-xs" onclick="finalizarDemandaAtual()" style="font-size: 0.8rem;">
+                      <i class="fa-solid fa-circle-check me-1"></i> Concluir Demanda
                     </button>
-                    <span class="badge bg-info text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdNaoIniciadasAba">0</span>
-                  </div>
-                  <div class="small text-info-emphasis fw-semibold" style="font-size: 0.7rem;">Ver fila &rarr;</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 2. DEMANDA FUTURA -->
-          <div class="col">
-            <div class="card card-custom p-3 shadow-xs border-top border-3 hover-card-drawer h-100"
-                 style="border-top-color: #6366f1 !important;"
-                 id="cardListaDemandaFutura"
-                 onclick="abrirDrawerLista('demandasFuturas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com Demandas Futuras agendadas">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: #eef2ff; color: #4f46e5;">
-                    <i class="fa-solid fa-calendar-days fs-6"></i>
-                  </div>
-                  <div>
-                    <h6 class="fw-bold mb-0" style="font-size: 0.9rem; color: #4f46e5;">Demanda Futura</h6>
-                    <small class="text-muted" style="font-size: 0.72rem;">Agendadas p/ esteira</small>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <div class="d-flex align-items-center justify-content-end gap-1 mb-1">
-                    <button type="button" class="btn btn-sm rounded-pill px-2 py-0 fw-bold shadow-2xs"
-                            id="btnNovaDemandaFuturaCard"
-                            style="font-size: 0.7rem; line-height: 1.5; background-color: #4f46e5; color: #ffffff;"
-                            onclick="event.stopPropagation(); abrirModalNovaDemandaFutura();"
-                            title="Nova Demanda Futura">
-                      <i class="fa-solid fa-plus me-1"></i>Nova
+                    <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1 fw-semibold rounded-pill" id="btnEditarDemandaAtual" onclick="editarDemandaAtualConfirm()" style="font-size: 0.8rem;" title="Editar Demanda">
+                      <i class="fa-solid fa-pen-to-square me-1"></i> Editar
                     </button>
-                    <span class="badge text-white fs-6 font-monospace px-2 py-1 rounded-pill" style="background-color: #4f46e5;" id="badgeQtdDemandasFuturasAba">0</span>
+                    <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1 fw-semibold rounded-pill" id="btnExcluirDemandaAtual" onclick="excluirDemandaAtualConfirm()" style="font-size: 0.8rem;" title="Excluir Demanda">
+                      <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                    </button>
                   </div>
-                  <div class="small fw-semibold" style="font-size: 0.7rem; color: #4f46e5;">Ver agendadas &rarr;</div>
+                  <div class="d-none align-items-center gap-2" id="botoesAcaoAfastamento">
+                    <button type="button" class="btn btn-outline-warning text-dark btn-sm px-3 py-1 fw-semibold rounded-pill" id="btnEditarAfastamentoHero" onclick="editarAfastamentoHeroAtual()" style="font-size: 0.8rem;" title="Editar Afastamento">
+                      <i class="fa-solid fa-pen-to-square me-1"></i> Editar Afastamento
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm px-3 py-1 fw-semibold rounded-pill" id="btnExcluirAfastamentoHero" onclick="encerrarAfastamentoHeroAtual()" style="font-size: 0.8rem;" title="Encerrar ou Remover Afastamento">
+                      <i class="fa-solid fa-trash-can me-1"></i> Encerrar Afastamento
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <!-- 3. EM ANDAMENTO -->
-          <div class="col">
-            <div class="card card-custom p-3 shadow-xs border-top border-primary border-3 hover-card-drawer h-100" 
-                 onclick="abrirDrawerLista('emAndamento')" role="button" tabindex="0" title="Clique para abrir o painel lateral com as demandas Em Andamento">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
-                    <i class="fa-solid fa-spinner fa-spin fs-6"></i>
-                  </div>
-                  <div>
-                    <h6 class="fw-bold mb-0 text-primary" style="font-size: 0.9rem;">Em Andamento</h6>
-                    <small class="text-muted" style="font-size: 0.72rem;">Na esteira de produção</small>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <span class="badge bg-primary text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdEmAndamentoAba">0</span>
-                  <div class="small text-primary fw-semibold mt-1" style="font-size: 0.7rem;">Ver lista &rarr;</div>
-                </div>
+          <!-- ZONA 2: DOCK AGRUPADO — LISTAS & FILAS DA ESTEIRA -->
+          <section class="esteira-secao esteira-bloco-listas">
+            <div class="esteira-secao-cabecalho">
+              <div class="esteira-secao-identidade">
+                <span class="esteira-secao-icone icone-listas"><i class="fa-solid fa-layer-group"></i></span>
+                <span class="esteira-secao-titulo">Listas &amp; Filas da Esteira</span>
+                <span class="esteira-secao-sub">Clique em uma categoria para abrir o painel lateral</span>
               </div>
+              <div class="esteira-secao-linha"></div>
+              <span class="badge bg-white text-secondary border rounded-pill px-2 py-1 fw-semibold" style="font-size: 0.71rem;">5 filas rápidas</span>
             </div>
-          </div>
 
-          <!-- 4. ATRASADAS -->
-          <div class="col">
-            <div class="card card-custom p-3 shadow-xs border-top border-danger border-3 hover-card-drawer h-100" 
-                 onclick="abrirDrawerLista('atrasadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Atrasadas">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
-                    <i class="fa-solid fa-triangle-exclamation fs-6"></i>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-5 g-3 mb-0" id="gatilhosDrawerDemandas">
+
+              <!-- 1. NÃO INICIADAS -->
+              <div class="col">
+                <div class="esteira-fila-card fila-nao-iniciada h-100" 
+                     onclick="abrirDrawerLista('naoIniciadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com a fila de Não Iniciadas">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-hourglass-start fs-6"></i>
+                      </div>
+                      <div>
+                        <h6 class="fw-bold mb-0 text-info-emphasis" style="font-size: 0.9rem;">Não Iniciadas</h6>
+                        <small class="text-muted" style="font-size: 0.72rem;">Fila de espera aguardando</small>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <div class="d-flex align-items-center justify-content-end gap-1 mb-1">
+                        <button type="button" class="btn btn-primary btn-sm rounded-pill px-2 py-0 fw-bold shadow-2xs" 
+                                style="font-size: 0.7rem; line-height: 1.5;" 
+                                onclick="event.stopPropagation(); abrirModalNovaDemanda();" 
+                                title="Cadastrar Nova Demanda">
+                          <i class="fa-solid fa-plus me-1"></i>Nova
+                        </button>
+                        <span class="badge bg-info text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdNaoIniciadasAba">0</span>
+                      </div>
+                      <div class="small text-info-emphasis fw-semibold" style="font-size: 0.7rem;">Ver fila &rarr;</div>
+                    </div>
                   </div>
-                  <div>
-                    <h6 class="fw-bold mb-0 text-danger" style="font-size: 0.9rem;">Atrasadas</h6>
-                    <small class="text-muted" style="font-size: 0.72rem;">Fora do prazo previsto</small>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <span class="badge bg-danger text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdAtrasadasAba">0</span>
-                  <div class="small text-danger fw-semibold mt-1" style="font-size: 0.7rem;">Ver atrasos &rarr;</div>
                 </div>
               </div>
+
+              <!-- 2. DEMANDA FUTURA -->
+              <div class="col">
+                <div class="esteira-fila-card fila-futura h-100"
+                     id="cardListaDemandaFutura"
+                     onclick="abrirDrawerLista('demandasFuturas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com Demandas Futuras agendadas">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background-color: #eef2ff; color: #4f46e5;">
+                        <i class="fa-solid fa-calendar-days fs-6"></i>
+                      </div>
+                      <div>
+                        <h6 class="fw-bold mb-0" style="font-size: 0.9rem; color: #4f46e5;">Demanda Futura</h6>
+                        <small class="text-muted" style="font-size: 0.72rem;">Agendadas p/ esteira</small>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <div class="d-flex align-items-center justify-content-end gap-1 mb-1">
+                        <button type="button" class="btn btn-sm rounded-pill px-2 py-0 fw-bold shadow-2xs"
+                                id="btnNovaDemandaFuturaCard"
+                                style="font-size: 0.7rem; line-height: 1.5; background-color: #4f46e5; color: #ffffff;"
+                                onclick="event.stopPropagation(); abrirModalNovaDemandaFutura();"
+                                title="Nova Demanda Futura">
+                          <i class="fa-solid fa-plus me-1"></i>Nova
+                        </button>
+                        <span class="badge text-white fs-6 font-monospace px-2 py-1 rounded-pill" style="background-color: #4f46e5;" id="badgeQtdDemandasFuturasAba">0</span>
+                      </div>
+                      <div class="small fw-semibold" style="font-size: 0.7rem; color: #4f46e5;">Ver agendadas &rarr;</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. EM ANDAMENTO -->
+              <div class="col">
+                <div class="esteira-fila-card fila-andamento h-100" 
+                     onclick="abrirDrawerLista('emAndamento')" role="button" tabindex="0" title="Clique para abrir o painel lateral com as demandas Em Andamento">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-spinner fa-spin fs-6"></i>
+                      </div>
+                      <div>
+                        <h6 class="fw-bold mb-0 text-primary" style="font-size: 0.9rem;">Em Andamento</h6>
+                        <small class="text-muted" style="font-size: 0.72rem;">Na esteira de produção</small>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <span class="badge bg-primary text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdEmAndamentoAba">0</span>
+                      <div class="small text-primary fw-semibold mt-1" style="font-size: 0.7rem;">Ver lista &rarr;</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. ATRASADAS -->
+              <div class="col">
+                <div class="esteira-fila-card fila-atrasada h-100" 
+                     onclick="abrirDrawerLista('atrasadas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Atrasadas">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-triangle-exclamation fs-6"></i>
+                      </div>
+                      <div>
+                        <h6 class="fw-bold mb-0 text-danger" style="font-size: 0.9rem;">Atrasadas</h6>
+                        <small class="text-muted" style="font-size: 0.72rem;">Fora do prazo previsto</small>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <span class="badge bg-danger text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdAtrasadasAba">0</span>
+                      <div class="small text-danger fw-semibold mt-1" style="font-size: 0.7rem;">Ver atrasos &rarr;</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5. CONCLUÍDAS -->
+              <div class="col">
+                <div class="esteira-fila-card fila-concluida h-100" 
+                     onclick="abrirDrawerLista('concluidas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Concluídas">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-circle-check fs-6"></i>
+                      </div>
+                      <div>
+                        <h6 class="fw-bold mb-0 text-success" style="font-size: 0.9rem;">Concluídas</h6>
+                        <small class="text-muted" style="font-size: 0.72rem;">Histórico de entregas</small>
+                      </div>
+                    </div>
+                    <div class="text-end">
+                      <span class="badge bg-success text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdConcluidasAba">0</span>
+                      <div class="small text-success fw-semibold mt-1" style="font-size: 0.7rem;">Ver histórico &rarr;</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
-          </div>
+          </section>
 
-          <!-- 5. CONCLUÍDAS -->
-          <div class="col">
-            <div class="card card-custom p-3 shadow-xs border-top border-success border-3 hover-card-drawer h-100" 
-                 onclick="abrirDrawerLista('concluidas')" role="button" tabindex="0" title="Clique para abrir o painel lateral com demandas Concluídas">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                  <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
-                    <i class="fa-solid fa-circle-check fs-6"></i>
-                  </div>
-                  <div>
-                    <h6 class="fw-bold mb-0 text-success" style="font-size: 0.9rem;">Concluídas</h6>
-                    <small class="text-muted" style="font-size: 0.72rem;">Histórico de entregas</small>
-                  </div>
-                </div>
-                <div class="text-end">
-                  <span class="badge bg-success text-white fs-6 font-monospace px-2 py-1 rounded-pill" id="badgeQtdConcluidasAba">0</span>
-                  <div class="small text-success fw-semibold mt-1" style="font-size: 0.7rem;">Ver histórico &rarr;</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- QUADRO SEMANAL PERSONALIZADO (SEGUNDA A SEXTA) -->
-        <div class="card card-custom p-3 p-md-4 shadow-xs mt-1 mb-3" id="painelSemanaAgil">
-          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3 mb-3 border-bottom">
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-              <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;">
-                <i class="fa-solid fa-calendar-week"></i>
-              </div>
-              <div>
+          <!-- ZONA 3: QUADRO SEMANAL PERSONALIZADO (SEGUNDA A SEXTA) -->
+          <section class="esteira-secao">
+            <div class="card-semana-agil" id="painelSemanaAgil">
+              <div class="semana-agil-topo d-flex flex-wrap align-items-center justify-content-between gap-2">
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                  <h6 class="fw-bold text-dark mb-0">Semana Ágil (Segunda a Sexta)</h6>
-                  <span class="badge bg-light text-secondary border font-monospace" id="lblIntervaloSemanaAgil" style="font-size: 0.72rem;">-</span>
+                  <div class="semana-topo-icone">
+                    <i class="fa-solid fa-calendar-week"></i>
+                  </div>
+                  <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <h6 class="fw-bold text-white mb-0">Semana Ágil (Segunda a Sexta)</h6>
+                      <span class="badge semana-topo-badge-periodo rounded-pill px-2 py-1 font-monospace" id="lblIntervaloSemanaAgil">-</span>
+                    </div>
+                    <small style="font-size: 0.75rem; color: rgba(226, 232, 240, 0.85);">
+                      Registro automático do decorrer da semana • Demanda Em Foco entra após 5 min ativos
+                    </small>
+                  </div>
                 </div>
-                <small class="text-muted" style="font-size: 0.75rem;">
-                  Registro automático do decorrer da semana • Demanda Em Foco entra após 5 min ativos
-                </small>
+
+                <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+                  <div class="d-none align-items-center gap-2" id="wrapFiltroDevSemana">
+                    <label class="small fw-semibold mb-0 text-nowrap" for="filtroDevSemana" style="color: #cbd5e1;">
+                      <i class="fa-solid fa-user-check me-1 text-info"></i>Exibir:
+                    </label>
+                    <select class="form-select form-select-sm rounded-pill px-3 semana-topo-select" id="filtroDevSemana" onchange="aoMudarDevSemana()"></select>
+                  </div>
+
+                  <span class="badge semana-topo-badge-pessoa rounded-pill px-3 py-2 fw-semibold" id="badgePessoaSemanaAgil">
+                    <i class="fa-solid fa-user me-1"></i>Minha Semana
+                  </span>
+
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Navegação da semana">
+                    <button type="button" class="btn btn-semana-nav rounded-start-pill px-2" onclick="navegarSemanaAgil(-1)" title="Semana anterior">
+                      <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button type="button" class="btn btn-semana-hoje px-3" onclick="navegarSemanaAgil(0)">
+                      Esta Semana
+                    </button>
+                    <button type="button" class="btn btn-semana-nav rounded-end-pill px-2" onclick="navegarSemanaAgil(1)" title="Próxima semana">
+                      <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="semana-agil-corpo">
+                <div class="semana-legenda-barra d-flex flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="d-flex flex-wrap align-items-center gap-2" style="font-size: 0.72rem;">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-crosshairs me-1"></i>Em Foco (&ge;5 min)</span>
+                    <span class="badge rounded-pill px-2 py-1" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe;"><i class="fa-solid fa-calendar-days me-1"></i>Demanda Futura</span>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Atrasada</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>Concluída</span>
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-umbrella-beach me-1"></i>Férias / Dispensa</span>
+                  </div>
+                  <small class="text-muted" id="lblStatusSemanaAgil" style="font-size: 0.72rem;"></small>
+                </div>
+
+                <div class="row row-cols-1 row-cols-md-5 g-2" id="gridSemanaAgil">
+                  <div class="col-12 text-center text-muted small py-4">Carregando semana ágil...</div>
+                </div>
               </div>
             </div>
+          </section>
 
-            <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
-              <div class="d-none align-items-center gap-2" id="wrapFiltroDevSemana">
-                <label class="small fw-semibold text-muted mb-0 text-nowrap" for="filtroDevSemana">
-                  <i class="fa-solid fa-user-check me-1 text-primary"></i>Exibir:
-                </label>
-                <select class="form-select form-select-sm rounded-pill px-3 fw-semibold" id="filtroDevSemana" onchange="aoMudarDevSemana()" style="min-width: 175px;"></select>
-              </div>
-
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 fw-semibold" id="badgePessoaSemanaAgil" style="font-size: 0.76rem;">
-                <i class="fa-solid fa-user me-1"></i>Minha Semana
-              </span>
-
-              <div class="btn-group btn-group-sm" role="group" aria-label="Navegação da semana">
-                <button type="button" class="btn btn-outline-secondary rounded-start-pill px-2" onclick="navegarSemanaAgil(-1)" title="Semana anterior">
-                  <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <button type="button" class="btn btn-outline-primary fw-semibold px-3" onclick="navegarSemanaAgil(0)">
-                  Esta Semana
-                </button>
-                <button type="button" class="btn btn-outline-secondary rounded-end-pill px-2" onclick="navegarSemanaAgil(1)" title="Próxima semana">
-                  <i class="fa-solid fa-chevron-right"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-            <div class="d-flex flex-wrap align-items-center gap-2" style="font-size: 0.72rem;">
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-crosshairs me-1"></i>Em Foco (&ge;5 min)</span>
-              <span class="badge rounded-pill px-2 py-1" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe;"><i class="fa-solid fa-calendar-days me-1"></i>Demanda Futura</span>
-              <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Atrasada</span>
-              <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>Concluída</span>
-              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-umbrella-beach me-1"></i>Férias / Dispensa</span>
-            </div>
-            <small class="text-muted" id="lblStatusSemanaAgil" style="font-size: 0.72rem;"></small>
-          </div>
-
-          <div class="row row-cols-1 row-cols-md-5 g-2" id="gridSemanaAgil">
-            <div class="col-12 text-center text-muted small py-4">Carregando semana ágil...</div>
-          </div>
         </div>
-
       </div>
 
 
@@ -1371,20 +1588,31 @@
         
         <!-- TOOLBAR DE FILTROS EXECUTIVOS -->
         <div class="card card-filter-toolbar mb-3">
-          <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 pb-2 border-bottom">
             <div class="d-flex align-items-center gap-2">
               <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle p-2 rounded-2">
                 <i class="fa-solid fa-sliders"></i>
               </span>
               <div>
                 <h6 class="fw-bold text-dark mb-0">Filtros do Relatório Executivo</h6>
-                <small class="text-muted" style="font-size: 0.74rem;">Combine período, responsável, origem, status ou pesquise por palavra-chave para refinar o relatório</small>
+                <small class="text-muted" style="font-size: 0.74rem;">Selecione período, desenvolvedor, origem ou status para compor a análise ágil</small>
               </div>
             </div>
-            <div class="d-none d-md-flex align-items-center gap-2">
-              <span class="badge bg-light text-secondary border px-2 py-1 font-monospace" style="font-size: 0.72rem;">
+            <div class="d-flex flex-wrap align-items-center gap-2 ms-auto">
+              <span class="badge bg-light text-secondary border px-2 py-1 font-monospace d-none d-lg-inline-flex align-items-center" style="font-size: 0.72rem; height: 32px;">
                 <i class="fa-solid fa-bolt text-warning me-1"></i>0ms Latência
               </span>
+              <div class="relatorio-acoes-wrap">
+                <button type="button" class="btn btn-primary shadow-xs" onclick="atualizarRelatorioMensalComFeedback()">
+                  <i class="fa-solid fa-filter"></i><span>Filtrar</span>
+                </button>
+                <button type="button" class="btn btn-success shadow-xs" onclick="baixarRelatorioPDF()">
+                  <i class="fa-solid fa-file-pdf"></i><span>Baixar PDF</span>
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-reset-filtros shadow-xs" onclick="limparTodosFiltrosRelatorio()" title="Redefinir todos os filtros para o padrão">
+                  <i class="fa-solid fa-rotate-left"></i><span>Limpar</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1513,35 +1741,6 @@
                   </li>
                 </ul>
               </div>
-            </div>
-          </div>
-
-          <div class="relatorio-filtros-barra-inferior">
-            <div class="relatorio-pesquisa-wrap">
-              <label class="form-label" for="filtroRelatorioPesquisa"><i class="fa-solid fa-magnifying-glass text-primary"></i><span>Pesquisar</span></label>
-              <div class="relatorio-search-field">
-                <i class="fa-solid fa-magnifying-glass relatorio-search-icon"></i>
-                <input type="text" class="form-control" id="filtroRelatorioPesquisa"
-                       placeholder="Digite título, descrição, origem/módulo, desenvolvedor, status ou data..."
-                       oninput="filtrarTabelaRelatorioAoDigitar()"
-                       onkeydown="if (event.key === 'Enter') { event.preventDefault(); atualizarRelatorioMensalComFeedback(); } else if (event.key === 'Escape') { limparPesquisaRelatorio(); }"
-                       autocomplete="off">
-                <button type="button" class="relatorio-search-clear d-none" id="btnLimparPesquisaRelatorio"
-                        onclick="limparPesquisaRelatorio()" title="Limpar pesquisa">
-                  <i class="fa-solid fa-xmark"></i>
-                </button>
-              </div>
-            </div>
-            <div class="relatorio-acoes-wrap">
-              <button type="button" class="btn btn-primary shadow-xs" onclick="atualizarRelatorioMensalComFeedback()">
-                <i class="fa-solid fa-filter"></i><span>Filtrar</span>
-              </button>
-              <button type="button" class="btn btn-success shadow-xs" onclick="baixarRelatorioPDF()">
-                <i class="fa-solid fa-file-pdf"></i><span>Baixar PDF</span>
-              </button>
-              <button type="button" class="btn btn-outline-secondary btn-reset-filtros shadow-xs" onclick="limparTodosFiltrosRelatorio()" title="Redefinir todos os filtros para o padrão">
-                <i class="fa-solid fa-rotate-left"></i><span>Limpar</span>
-              </button>
             </div>
           </div>
 
@@ -1687,23 +1886,31 @@
             </div>
           </div>
 
-          <!-- DETALHAMENTO COM NUMERAÇÃO, MÓDULO E REORDENAÇÃO -->
-          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+          <!-- DETALHAMENTO COM NUMERAÇÃO, MÓDULO, REORDENAÇÃO E PESQUISA EM DESTAQUE -->
+          <div class="relatorio-detalhamento-topo mb-3">
             <div>
               <h5 class="fw-bold mb-0 text-dark d-flex align-items-center flex-wrap gap-2">
                 <i class="fa-solid fa-table-list text-primary"></i>Detalhamento das Demandas do Período
                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 ms-1 cursor-pointer" id="kpiCardRel_TODOS" onclick="filtrarRelatorioPorKpi('TODOS')" title="Clique para exibir todas as demandas do período (sem filtro de status)" style="font-size: 0.74rem; font-weight: 600;">
                   <i class="fa-solid fa-layer-group me-1"></i>Total: <strong id="relTotalDemandas">0</strong> demandas (Ver Todas)
                 </span>
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 d-none align-items-center gap-1" id="badgePesquisaAtivaRelatorio" data-html2canvas-ignore="true" style="font-size: 0.74rem; font-weight: 600;">
-                  <i class="fa-solid fa-magnifying-glass"></i>
-                  <span id="lblTextoPesquisaAtivaRelatorio"></span>
-                  <button type="button" class="btn-close ms-1" style="font-size: 0.55rem;" onclick="limparPesquisaRelatorio()" title="Limpar pesquisa"></button>
-                </span>
               </h5>
               <div class="small text-muted" data-html2canvas-ignore="true" style="font-size: 0.74rem;">
                 <i class="fa-solid fa-arrow-down-up-across-line me-1 text-primary"></i> Clique em qualquer coluna para ordenar ou na linha para abrir o dossiê da demanda
               </div>
+            </div>
+
+            <div class="relatorio-pesquisa-destaque-wrap" data-html2canvas-ignore="true">
+              <i class="fa-solid fa-magnifying-glass relatorio-pesquisa-destaque-icon"></i>
+              <input type="text" class="form-control relatorio-pesquisa-destaque-input" id="filtroRelatorioPesquisa"
+                     placeholder="Pesquisar por título, descrição, origem, desenvolvedor, status ou data..."
+                     oninput="filtrarTabelaRelatorioAoDigitar()"
+                     onkeydown="if (event.key === 'Enter') { event.preventDefault(); atualizarRelatorioMensalComFeedback(); } else if (event.key === 'Escape') { limparPesquisaRelatorio(); }"
+                     autocomplete="off">
+              <button type="button" class="relatorio-search-clear d-none" id="btnLimparPesquisaRelatorio"
+                      onclick="limparPesquisaRelatorio()" title="Limpar pesquisa">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
             </div>
           </div>
 
@@ -7868,13 +8075,8 @@
     function limparPesquisaRelatorio() {
       const input = document.getElementById('filtroRelatorioPesquisa');
       const btnLimpar = document.getElementById('btnLimparPesquisaRelatorio');
-      const badgePesqAtiva = document.getElementById('badgePesquisaAtivaRelatorio');
       if (input) input.value = '';
       if (btnLimpar) btnLimpar.classList.add('d-none');
-      if (badgePesqAtiva) {
-        badgePesqAtiva.classList.add('d-none');
-        badgePesqAtiva.classList.remove('d-inline-flex');
-      }
       atualizarRelatorioMensal();
     }
     window.limparPesquisaRelatorio = limparPesquisaRelatorio;
@@ -7901,11 +8103,6 @@
       if (inputBusca) inputBusca.value = '';
       const btnLimpar = document.getElementById('btnLimparPesquisaRelatorio');
       if (btnLimpar) btnLimpar.classList.add('d-none');
-      const badgePesqAtiva = document.getElementById('badgePesquisaAtivaRelatorio');
-      if (badgePesqAtiva) {
-        badgePesqAtiva.classList.add('d-none');
-        badgePesqAtiva.classList.remove('d-inline-flex');
-      }
 
       kpiFiltroAtivoRelatorio = null;
       ['kpiCardRel_TODOS', 'kpiCardRel_Concluida', 'kpiCardRel_EmAndamento', 'kpiCardRel_NaoIniciada', 'kpiCardRel_Atrasada', 'kpiCardRel_DemandaFutura', 'kpiCardRel_Externa', 'kpiCardRel_Siopleex'].forEach(id => {
@@ -8206,19 +8403,6 @@
       const btnLimparPesqRel = document.getElementById('btnLimparPesquisaRelatorio');
       if (btnLimparPesqRel) {
         btnLimparPesqRel.classList.toggle('d-none', !termoBrutoPesquisa);
-      }
-      const badgePesqAtiva = document.getElementById('badgePesquisaAtivaRelatorio');
-      const lblPesqAtiva = document.getElementById('lblTextoPesquisaAtivaRelatorio');
-      if (badgePesqAtiva && lblPesqAtiva) {
-        if (termoBrutoPesquisa) {
-          lblPesqAtiva.innerText = `Pesquisa: "${termoBrutoPesquisa}"`;
-          badgePesqAtiva.classList.remove('d-none');
-          badgePesqAtiva.classList.add('d-inline-flex');
-        } else {
-          lblPesqAtiva.innerText = '';
-          badgePesqAtiva.classList.add('d-none');
-          badgePesqAtiva.classList.remove('d-inline-flex');
-        }
       }
       if (termoNormPesquisa) {
         const termosBusca = termoNormPesquisa.split(/\s+/).filter(Boolean);
