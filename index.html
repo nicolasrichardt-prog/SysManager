@@ -10307,6 +10307,18 @@
       );
     }
 
+    function comTimeoutPush(promise, ms, msgErro) {
+      let timerId = null;
+      const timeoutPromise = new Promise(function (_, reject) {
+        timerId = setTimeout(function () {
+          reject(new Error(msgErro || 'Tempo limite excedido na operação Web Push.'));
+        }, ms);
+      });
+      return Promise.race([promise, timeoutPromise]).finally(function () {
+        if (timerId !== null) clearTimeout(timerId);
+      });
+    }
+
     async function ativarPushNesteNavegador() {
       if (!suportaWebPush()) {
         abrirModalPushNotificacoes();
@@ -10318,11 +10330,16 @@
       }
 
       const btn = document.getElementById('btnAtivarPushModal');
-      const originalHtml = btn ? btn.innerHTML : '';
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Ativando...';
-      }
+      const boxErro = document.getElementById('pushResultadoTeste');
+      const setEtapaBtn = (texto) => {
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> ${escaparHtmlPush(texto)}`;
+        }
+      };
+
+      if (boxErro) boxErro.classList.add('d-none');
+      setEtapaBtn('Ativando (1/3): Service Worker...');
 
       try {
         let perm = Notification.permission;
@@ -10335,7 +10352,11 @@
           return;
         }
 
-        const reg = await registrarServiceWorkerPush();
+        const reg = await comTimeoutPush(
+          registrarServiceWorkerPush(),
+          10000,
+          'O Service Worker demorou para responder (timeout 10s). Recarregue a página com Ctrl+F5 e tente novamente.'
+        );
         if (!reg || !reg.pushManager) {
           throw new Error('Service Worker não pôde ser registrado neste domínio.');
         }
@@ -10346,30 +10367,42 @@
         }
         const appServerKey = urlBase64ToUint8Array(vapidPublicKey);
 
-        let sub = await reg.pushManager.getSubscription();
-        if (!sub) {
-          sub = await reg.pushManager.subscribe({
+        setEtapaBtn('Ativando (2/3): Conectando ao Push...');
+        const msgTimeoutPush =
+          'O navegador não recebeu resposta do servidor de Push em 12s. ' +
+          'No Chrome, isso geralmente ocorre quando o firewall/proxy da rede bloqueia a porta TCP 5228 (mtalk.google.com). ' +
+          'Teste abrir o SysManager no Microsoft Edge (que usa HTTPS porta 443 / Windows WNS) ou verifique chrome://gcm-internals/ no Chrome.';
+
+        const subscreverComTimeout = () => comTimeoutPush(
+          reg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: appServerKey
-          });
+          }),
+          12000,
+          msgTimeoutPush
+        );
+
+        let sub = await comTimeoutPush(
+          reg.pushManager.getSubscription(),
+          5000,
+          'Tempo limite ao consultar inscrição atual do navegador.'
+        );
+        if (!sub) {
+          sub = await subscreverComTimeout();
         } else {
           // Garante compatibilidade caso a chave VAPID tenha sido trocada
           try {
             const subJsonCheck = sub.toJSON();
             if (!subJsonCheck || !subJsonCheck.keys || !subJsonCheck.keys.p256dh || !subJsonCheck.keys.auth) {
               await sub.unsubscribe();
-              sub = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: appServerKey
-              });
+              sub = await subscreverComTimeout();
             }
           } catch (errCheck) {
             if (errCheck && errCheck.name === 'InvalidStateError') {
               await sub.unsubscribe();
-              sub = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: appServerKey
-              });
+              sub = await subscreverComTimeout();
+            } else if (errCheck && String(errCheck.message || '').includes('servidor de Push')) {
+              throw errCheck;
             }
           }
         }
@@ -10380,25 +10413,30 @@
           throw new Error('O navegador gerou uma assinatura incompleta.');
         }
 
-        await new Promise((resolve, reject) => {
-          executarNoServidor(
-            'salvarPushSubscription',
-            {
-              subscription: subJson,
-              usuarioId: appState.currentUser.id || 'USR-1',
-              usuarioEmail: appState.currentUser.email,
-              usuarioNome: appState.currentUser.nome || '',
-              dispositivo: detectarDispositivoNavegador()
-            },
-            function (res) {
-              if (res && res.success) resolve(res);
-              else reject(new Error((res && res.message) || 'Erro ao salvar inscrição na planilha.'));
-            },
-            function (err) {
-              reject(err || new Error('Falha de comunicação com o Apps Script.'));
-            }
-          );
-        });
+        setEtapaBtn('Ativando (3/3): Salvando na planilha...');
+        await comTimeoutPush(
+          new Promise((resolve, reject) => {
+            executarNoServidor(
+              'salvarPushSubscription',
+              {
+                subscription: subJson,
+                usuarioId: appState.currentUser.id || 'USR-1',
+                usuarioEmail: appState.currentUser.email,
+                usuarioNome: appState.currentUser.nome || '',
+                dispositivo: detectarDispositivoNavegador()
+              },
+              function (res) {
+                if (res && res.success) resolve(res);
+                else reject(new Error((res && res.message) || 'Erro ao salvar inscrição na planilha.'));
+              },
+              function (err) {
+                reject(err || new Error('Falha de comunicação com o Apps Script.'));
+              }
+            );
+          }),
+          15000,
+          'O Apps Script demorou mais de 15s para salvar a inscrição na planilha. Tente novamente.'
+        );
 
         try {
           localStorage.setItem('SYSMANAGER_PUSH_BANNER_DISMISSED', '1');
@@ -10407,12 +10445,19 @@
         mostrarToast('Alertas ativados neste navegador!');
         await atualizarEstadoPushUI(true);
       } catch (err) {
-        alert('Não foi possível ativar notificações: ' + (err.message || err));
+        const msg = (err && err.message) || String(err);
+        if (boxErro) {
+          boxErro.className = 'alert alert-danger small py-2 px-3 mb-3';
+          boxErro.innerText = '⚠️ ' + msg;
+        }
+        const modalEl = document.getElementById('modalPushNotificacoes');
+        if (!modalEl || !modalEl.classList.contains('show')) {
+          alert('Não foi possível ativar notificações: ' + msg);
+        }
         await atualizarEstadoPushUI(false);
       } finally {
         if (btn) {
           btn.disabled = false;
-          if (originalHtml) btn.innerHTML = originalHtml;
         }
       }
     }
@@ -10634,6 +10679,19 @@
       );
     }
 
+    function parseIsoFuturoBriefing(isoStr) {
+      const m = (isoStr || '').toString().trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2}))?/);
+      if (!m) return null;
+      return new Date(
+        parseInt(m[1], 10),
+        parseInt(m[2], 10) - 1,
+        parseInt(m[3], 10),
+        parseInt(m[4] || '0', 10),
+        parseInt(m[5] || '0', 10),
+        0
+      );
+    }
+
     function obterBriefingUsuarioLocal() {
       const user = appState.currentUser || {};
       const uId = (user.id || '').toString().trim().toUpperCase();
@@ -10652,7 +10710,7 @@
         || atrasadas[0]
         || minhasTarefas.find(t => t.status === 'Em Andamento')
         || null;
-      const esteira = minhasTarefas.filter(t => (!emFoco || t.id !== emFoco.id));
+      const esteira = minhasTarefas.filter(t => (!emFoco || t.id !== emFoco.id) && t.status !== 'Atrasada');
 
       const agora = new Date();
       const inicioHoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 0, 0, 0, 0);
@@ -10668,18 +10726,13 @@
           || (uNomeNorm && dfNomeNorm && dfNomeNorm === uNomeNorm);
         if (!pertence) return false;
 
-        const iso = (df.dataHoraProgramada || '').toString().trim();
-        const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2}))?/);
-        if (!m) return false;
-        const dt = new Date(
-          parseInt(m[1], 10),
-          parseInt(m[2], 10) - 1,
-          parseInt(m[3], 10),
-          parseInt(m[4] || '0', 10),
-          parseInt(m[5] || '0', 10),
-          0
-        );
+        const dt = parseIsoFuturoBriefing(df.dataHoraProgramada);
+        if (!dt) return false;
         return dt.getTime() >= inicioHoje.getTime() && dt.getTime() <= fimJanela.getTime();
+      }).sort((a, b) => {
+        const dtA = parseIsoFuturoBriefing(a.dataHoraProgramada);
+        const dtB = parseIsoFuturoBriefing(b.dataHoraProgramada);
+        return (dtA ? dtA.getTime() : 0) - (dtB ? dtB.getTime() : 0);
       });
 
       return { atrasadas, emFoco, esteira, futurasProx3Dias };
@@ -10697,12 +10750,12 @@
       }
 
       const user = appState.currentUser || {};
-      const primeiroNome = limparNomeDev(user.nome || '').split(/\s+/)[0] || 'Dev';
+      const nomeUsuario = limparNomeDev(user.nome || '') || (user.email ? user.email.split('@')[0] : 'Usuário');
       const tituloEl = document.getElementById('briefingModalTitulo');
       const dataBadgeEl = document.getElementById('briefingDataBadge');
       const bodyEl = document.getElementById('briefingConteudoLista');
 
-      if (tituloEl) tituloEl.innerText = `Bom dia, ${primeiroNome}! Seu Resumo no SysManager`;
+      if (tituloEl) tituloEl.innerText = `SysManager - ${nomeUsuario}`;
       if (dataBadgeEl) {
         dataBadgeEl.innerText = 'Hoje, ' + new Date().toLocaleDateString('pt-BR', {
           weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'
@@ -10711,27 +10764,10 @@
 
       if (bodyEl) {
         const { atrasadas, emFoco, esteira, futurasProx3Dias } = obterBriefingUsuarioLocal();
+        const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
         const secoes = [];
 
-        if (atrasadas.length > 0) {
-          secoes.push(`
-            <div class="mb-3">
-              <h6 class="fw-bold text-danger mb-2">🔴 Atrasadas (${atrasadas.length})</h6>
-              <div class="list-group shadow-sm rounded-3 overflow-hidden">
-                ${atrasadas.map(t => `
-                  <div class="list-group-item border-danger border-opacity-25 bg-danger bg-opacity-10 d-flex justify-content-between align-items-center gap-2">
-                    <div>
-                      <div class="fw-semibold text-dark">${escaparHtmlPush(t.titulo)}</div>
-                      <small class="text-muted">${escaparHtmlPush(t.modulo || 'SIOPLEEx')} • Prazo: ${escaparHtmlPush(formatarData(t.dataPrazo))}</small>
-                    </div>
-                    <span class="badge bg-danger rounded-pill">Atrasada</span>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `);
-        }
-
+        // 1º: Em Foco Agora
         if (emFoco) {
           secoes.push(`
             <div class="mb-3">
@@ -10749,6 +10785,35 @@
           `);
         }
 
+        // 2º: Demandas Futuras (próximos 3 dias)
+        if (futurasProx3Dias.length > 0) {
+          secoes.push(`
+            <div class="mb-3">
+              <h6 class="fw-bold mb-2" style="color: #4f46e5;">📅 Demandas Futuras (próximos 3 dias — ${futurasProx3Dias.length})</h6>
+              <div class="list-group shadow-sm rounded-3 overflow-hidden">
+                ${futurasProx3Dias.map(df => {
+                  const dt = parseIsoFuturoBriefing(df.dataHoraProgramada);
+                  const diaSem = dt ? diasSemana[dt.getDay()] : '';
+                  const dtParts = (df.dataHoraProgramada || '').split('T');
+                  const dataBr = dtParts[0] ? formatarData(dtParts[0]) : '-';
+                  const horaBr = dtParts[1] ? dtParts[1].substring(0, 5) : '';
+                  const agendaTxt = (diaSem && horaBr) ? `${diaSem}/${horaBr} • ${dataBr}` : `${dataBr}${horaBr ? ' às ' + horaBr : ''}`;
+                  return `
+                    <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                      <div>
+                        <div class="fw-semibold text-dark">${escaparHtmlPush(df.titulo)}</div>
+                        <small class="text-muted">${escaparHtmlPush(df.modulo || 'SIOPLEEx')} • Início: <strong>${escaparHtmlPush(agendaTxt)}</strong></small>
+                      </div>
+                      <span class="badge rounded-pill text-white" style="background-color: #4f46e5;">Agendada</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `);
+        }
+
+        // 3º: Na Esteira
         if (esteira.length > 0) {
           secoes.push(`
             <div class="mb-3">
@@ -10768,25 +10833,21 @@
           `);
         }
 
-        if (futurasProx3Dias.length > 0) {
+        // 4º: Atrasadas
+        if (atrasadas.length > 0) {
           secoes.push(`
-            <div class="mb-2">
-              <h6 class="fw-bold text-indigo mb-2" style="color: #4f46e5;">📅 Demandas Futuras (próximos 3 dias — ${futurasProx3Dias.length})</h6>
+            <div class="mb-3">
+              <h6 class="fw-bold text-danger mb-2">🔴 Atrasadas (${atrasadas.length})</h6>
               <div class="list-group shadow-sm rounded-3 overflow-hidden">
-                ${futurasProx3Dias.map(df => {
-                  const dtParts = (df.dataHoraProgramada || '').split('T');
-                  const dataBr = dtParts[0] ? formatarData(dtParts[0]) : '-';
-                  const horaBr = dtParts[1] ? dtParts[1].substring(0, 5) : '';
-                  return `
-                    <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
-                      <div>
-                        <div class="fw-semibold text-dark">${escaparHtmlPush(df.titulo)}</div>
-                        <small class="text-muted">${escaparHtmlPush(df.modulo || 'SIOPLEEx')} • Entrada prevista: ${escaparHtmlPush(dataBr)} ${horaBr ? 'às ' + escaparHtmlPush(horaBr) : ''}</small>
-                      </div>
-                      <span class="badge rounded-pill text-white" style="background-color: #4f46e5;">Agendada</span>
+                ${atrasadas.map(t => `
+                  <div class="list-group-item border-danger border-opacity-25 bg-danger bg-opacity-10 d-flex justify-content-between align-items-center gap-2">
+                    <div>
+                      <div class="fw-semibold text-dark">${escaparHtmlPush(t.titulo)}</div>
+                      <small class="text-muted">${escaparHtmlPush(t.modulo || 'SIOPLEEx')} • Prazo: ${escaparHtmlPush(formatarData(t.dataPrazo))}</small>
                     </div>
-                  `;
-                }).join('')}
+                    <span class="badge bg-danger rounded-pill">Atrasada</span>
+                  </div>
+                `).join('')}
               </div>
             </div>
           `);
@@ -10801,6 +10862,12 @@
             </div>
           `);
         }
+
+        secoes.push(`
+          <div class="alert alert-light border small text-muted py-2 px-3 mb-0 mt-2">
+            ✏️ Lembre-se de manter sua esteira sempre atualizada!
+          </div>
+        `);
 
         bodyEl.innerHTML = secoes.join('');
       }
