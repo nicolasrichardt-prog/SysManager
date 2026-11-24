@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SM - Sys Manager</title>
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -747,6 +753,15 @@
       border-radius: 8px;
       transition: all 0.15s ease;
     }
+    .push-dot-pulse {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pushDotPulse 2s infinite;
+    }
+    @keyframes pushDotPulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.65); }
+      70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
   </style>
 </head>
 <body>
@@ -778,6 +793,19 @@
           <span class="badge bg-primary rounded-pill small" id="navbarUserCargo">Dev</span>
         </div>
 
+        <button type="button"
+                id="btnPushNotificacoesNavbar"
+                class="btn btn-outline-info btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-2 position-relative"
+                onclick="abrirModalPushNotificacoes()"
+                title="Alertas diários e notificações no navegador">
+          <i class="fa-solid fa-bell"></i>
+          <span class="d-none d-sm-inline fw-semibold">Alertas</span>
+          <span id="pushStatusDotNavbar"
+                class="rounded-circle bg-secondary d-inline-block"
+                style="width: 8px; height: 8px;"
+                title="Status dos alertas no navegador"></span>
+        </button>
+
         <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" onclick="fazerLogout()" title="Sair ou trocar de conta">
           <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Sair
         </button>
@@ -787,6 +815,27 @@
 
   <!-- CONTEÚDO PRINCIPAL -->
   <div class="container-fluid py-4 px-md-4">
+
+    <!-- BANNER SUAVE DE ATIVAÇÃO DE ALERTAS NO NAVEGADOR -->
+    <div id="bannerAtivarPushDesktop" class="alert alert-primary border-primary border-opacity-25 shadow-sm rounded-4 d-none align-items-center justify-content-between gap-3 py-2 px-3 mb-3 flex-wrap" role="alert">
+      <div class="d-flex align-items-center gap-2">
+        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 34px; height: 34px;">
+          <i class="fa-solid fa-bell"></i>
+        </div>
+        <div class="small lh-sm">
+          <strong class="text-dark d-block">Receba seu resumo diário no canto da tela</strong>
+          <span class="text-muted">Receba seu resumo diário no canto da tela assim que abrir o navegador (mesmo com o SysManager fechado).</span>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" onclick="ativarPushNesteNavegador()">
+          <i class="fa-solid fa-check me-1"></i> Ativar agora
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="dispensarBannerPush()">
+          Depois
+        </button>
+      </div>
+    </div>
     
     <!-- LINHA DE NAVEGAÇÃO SUPERIOR: ABAS + BOTÃO NOVA DEMANDA -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 border-bottom" style="border-bottom: 2px solid #e2e8f0 !important;">
@@ -2521,6 +2570,178 @@
     </div>
   </div>
 
+  <!-- MODAL: NOTIFICAÇÕES WEB PUSH NO NAVEGADOR -->
+  <div class="modal fade" id="modalPushNotificacoes" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+        <div class="modal-header border-0 text-white p-3 px-4" style="background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-white bg-opacity-10 d-flex align-items-center justify-content-center text-info" style="width: 42px; height: 42px; font-size: 18px;">
+              <i class="fa-solid fa-bell"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold mb-0">Alertas Diários no Navegador</h5>
+              <small class="text-white-50">Notificações no canto da tela com resumo individual (Chrome / Edge / Mobile)</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4 bg-light bg-opacity-50">
+
+          <!-- Alerta de ambiente incompatível (script.google.com iframe / file://) -->
+          <div id="pushAlertaAmbiente" class="alert alert-warning border-warning d-none mb-3 small">
+            <div class="d-flex align-items-start gap-2">
+              <i class="fa-solid fa-triangle-exclamation fs-5 mt-1"></i>
+              <div class="flex-grow-1">
+                <strong class="d-block mb-1" id="pushAlertaAmbienteTitulo">Acesse pelo domínio oficial para ativar notificações</strong>
+                <div id="pushAlertaAmbienteTexto" class="mb-2">
+                  Por política de segurança dos navegadores, notificações push exigem HTTPS direto (não funcionam dentro de iframe do Google Apps Script ou arquivo local).
+                </div>
+                <a href="https://sysmanager.vercel.app" target="_blank" rel="noopener" class="btn btn-warning btn-sm fw-semibold rounded-pill px-3">
+                  <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Abrir sysmanager.vercel.app
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Painel de Status Atual -->
+          <div id="pushStatusBox" class="card border-0 shadow-sm rounded-4 mb-3">
+            <div class="card-body p-3">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                  <span id="pushStatusIcone" class="badge rounded-circle p-2 bg-secondary-subtle text-secondary">
+                    <i class="fa-solid fa-bell-slash"></i>
+                  </span>
+                  <div>
+                    <div class="fw-bold text-dark" id="pushStatusTitulo">Verificando navegador...</div>
+                    <div class="small text-muted" id="pushStatusDetalhe">Aguarde um instante.</div>
+                  </div>
+                </div>
+                <div class="d-flex flex-wrap gap-1">
+                  <span id="pushDispositivoBadge" class="badge bg-light text-dark border small font-monospace">Navegador</span>
+                  <span id="pushPermissaoBadge" class="badge bg-secondary-subtle text-secondary border small">Permissão: -</span>
+                </div>
+              </div>
+
+              <div id="pushListaMeusDispositivosWrap" class="mt-2 pt-2 border-top d-none">
+                <div class="small fw-semibold text-muted mb-1">
+                  <i class="fa-solid fa-laptop me-1"></i> Navegadores vinculados à sua conta:
+                </div>
+                <div id="pushListaMeusDispositivos" class="d-flex flex-wrap gap-1"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botões Principais de Ativação / Desativação -->
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <button type="button" id="btnAtivarPushModal" class="btn btn-primary fw-semibold rounded-pill px-4" onclick="ativarPushNesteNavegador()">
+              <i class="fa-solid fa-bell me-1"></i> Ativar Notificações neste Navegador
+            </button>
+            <button type="button" id="btnDesativarPushModal" class="btn btn-outline-danger rounded-pill px-3 d-none" onclick="desativarPushNesteNavegador()">
+              <i class="fa-solid fa-bell-slash me-1"></i> Desativar neste Navegador
+            </button>
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-3 ms-auto" onclick="abrirModalResumoDiarioBriefing()">
+              <i class="fa-solid fa-clipboard-list me-1"></i> Ver Meu Resumo de Hoje
+            </button>
+          </div>
+
+          <!-- Seção de Testes -->
+          <div id="pushSecaoTestes" class="card border-0 shadow-sm rounded-4 mb-3">
+            <div class="card-body p-3">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h6 class="fw-bold text-dark mb-0">
+                  <i class="fa-solid fa-vial text-primary me-2"></i>Testar Entrega na Tela
+                </h6>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">Teste real ponta a ponta</span>
+              </div>
+              <p class="small text-muted mb-3">
+                Use o botão de <strong>10 segundos</strong> para comprovar que a notificação chega mesmo com a aba do SysManager fechada.
+              </p>
+
+              <div id="pushResultadoTeste" class="alert d-none small py-2 px-3 mb-3"></div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <button type="button" id="btnTestarPushAgora" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold" onclick="dispararTestePushUsuario(0)">
+                  <i class="fa-solid fa-paper-plane me-1"></i> Enviar Teste Agora
+                </button>
+                <button type="button" id="btnTestarPush10s" class="btn btn-dark btn-sm rounded-pill px-3 fw-semibold" onclick="dispararTestePushUsuario(10)">
+                  <i class="fa-solid fa-hourglass-half me-1"></i> Testar com Aba Fechada (10s)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Regra de Disparo Automático -->
+          <div class="alert alert-info border-info border-opacity-25 small py-2 px-3 mb-0">
+            <i class="fa-solid fa-clock me-1"></i>
+            <strong>Disparo automático (Segunda a Sexta às 08h00):</strong>
+            se o computador estiver desligado às 08h00, o aviso fica aguardando por até 24h e aparece assim que você abrir o Chrome/Edge.
+          </div>
+
+          <!-- Painel Administrativo / Gerência -->
+          <div id="pushSecaoAdmin" class="card border border-primary border-opacity-25 shadow-sm rounded-4 mt-3 d-none">
+            <div class="card-body p-3">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <h6 class="fw-bold text-dark mb-0">
+                  <i class="fa-solid fa-shield-halved text-primary me-2"></i>Painel de Gerência — Equipe &amp; Servidor
+                </h6>
+                <span id="pushTeamStatsBadge" class="badge bg-primary text-white rounded-pill">0 usuários • 0 navegadores</span>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2 mb-3">
+                <span id="pushBadgeSecret" class="badge bg-secondary-subtle text-secondary border small">Secret Apps Script: verificando...</span>
+                <span id="pushBadgeVercel" class="badge bg-secondary-subtle text-secondary border small">Vercel /api/push: verificando...</span>
+                <span id="pushBadgeGatilho" class="badge bg-secondary-subtle text-secondary border small">Gatilho 08h00: verificando...</span>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <button type="button" id="btnAtivarGatilhoDiario" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold" onclick="ativarGatilhoPushDiarioUI()">
+                  <i class="fa-solid fa-calendar-check me-1"></i> Ativar Gatilho Diário (08h00)
+                </button>
+                <button type="button" id="btnDispararEquipeAgora" class="btn btn-primary btn-sm rounded-pill px-3 fw-semibold" onclick="dispararResumoEquipePushManual()">
+                  <i class="fa-solid fa-bullhorn me-1"></i> Disparar Resumo para Toda a Equipe Agora
+                </button>
+              </div>
+              <div id="pushResultadoAdmin" class="alert d-none small py-2 px-3 mt-2 mb-0"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESUMO DIÁRIO DETALHADO (BRIEFING DO DIA) -->
+  <div class="modal fade" id="modalResumoDiarioBriefing" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+        <div class="modal-header border-0 text-white p-3 px-4" style="background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-white bg-opacity-10 d-flex align-items-center justify-content-center text-warning" style="width: 42px; height: 42px; font-size: 18px;">
+              <i class="fa-solid fa-sun"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold mb-0" id="briefingModalTitulo">Meu Resumo Diário — SysManager</h5>
+              <small class="text-white-50" id="briefingDataBadge">Visão consolidada da sua esteira hoje</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4" id="briefingConteudoLista">
+          <div class="text-center text-muted py-4">Carregando resumo...</div>
+        </div>
+        <div class="modal-footer border-top bg-light py-2 px-4 d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="abrirModalPushNotificacoesAPartirBriefing()">
+            <i class="fa-solid fa-bell me-1"></i> Configurar Alertas
+          </button>
+          <button type="button" class="btn btn-primary btn-sm rounded-pill px-4 fw-semibold" onclick="irParaEsteiraAPartirBriefing()">
+            <i class="fa-solid fa-diagram-project me-1"></i> Ir para Minha Esteira
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Bootstrap JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -3088,6 +3309,12 @@
         else if (action === 'excluirAnotacao') runner.excluirAnotacaoDoBanco(data);
         else if (action === 'salvarAbasAnotacoes') runner.salvarAbasAnotacoesNoBanco(data);
         else if (action === 'sincronizarAnotacoesUsuario') runner.sincronizarAnotacoesUsuarioNoBanco(data);
+        else if (action === 'salvarPushSubscription') runner.salvarPushSubscription(data);
+        else if (action === 'removerPushSubscription') runner.removerPushSubscription(data);
+        else if (action === 'obterStatusPush') runner.obterStatusPush(data);
+        else if (action === 'enviarPushTesteUsuario') runner.enviarPushTesteUsuario(data);
+        else if (action === 'dispararResumoDiarioPushManual') runner.dispararResumoDiarioPushEquipe({ ignorarFimDeSemana: true, somenteEmail: (data && data.somenteEmail) || '' });
+        else if (action === 'configurarGatilhoPushDiario') runner.instalarGatilhoPushDiario(data && data.hora);
       } else {
         const urlsToTry = [activeAppsScriptUrl, ...APPS_SCRIPT_URLS_LIST.filter(u => u !== activeAppsScriptUrl)];
         const tentarRequisicao = (idx) => {
@@ -4362,6 +4589,7 @@
       atualizarAbaAnotacoes();
       atualizarTabelaUsuarios();
       inicializarTooltips();
+      inicializarPushAposLogin();
     }
 
     /**
@@ -9701,6 +9929,934 @@
         solicitacoes: [],
         demandasFuturas: []
       };
+    }
+
+    // =========================================================================
+    // WEB PUSH NOTIFICATIONS (Navegador Desktop / Mobile PWA)
+    // =========================================================================
+
+    const SYSMANAGER_VAPID_PUBLIC_KEY = 'BJqDopb3x4JAaKo4evVkZ6Ksq2l37E6uc83GjqXC1g7v-u0WnNhItnKJF331nVOMEis9SC0AZipnlgnne2d4rzk';
+
+    let pushManagerState = {
+      swRegistration: null,
+      subscription: null,
+      statusServidor: null,
+      listenerAnexado: false,
+      briefingQueryTratado: false,
+      inicializadoParaEmail: '',
+      autoSyncTentado: false
+    };
+
+    function escaparHtmlPush(texto) {
+      return String(texto === undefined || texto === null ? '' : texto)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function suportaWebPush() {
+      if (isGoogleScript) return false;
+      const proto = window.location.protocol;
+      const host = window.location.hostname;
+      const origemSegura = (proto === 'https:' || host === 'localhost' || host === '127.0.0.1');
+      if (!origemSegura) return false;
+      return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
+    }
+
+    function detectarDispositivoNavegador() {
+      const ua = navigator.userAgent || '';
+      let nav = 'Navegador';
+      if (ua.indexOf('Edg/') > -1) nav = 'Edge';
+      else if (ua.indexOf('OPR/') > -1 || ua.indexOf('Opera') > -1) nav = 'Opera';
+      else if (ua.indexOf('Chrome/') > -1) nav = 'Chrome';
+      else if (ua.indexOf('Firefox/') > -1) nav = 'Firefox';
+      else if (ua.indexOf('Safari/') > -1) nav = 'Safari';
+
+      let os = 'Desktop';
+      if (/Android/i.test(ua)) os = 'Android';
+      else if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS';
+      else if (/Windows/i.test(ua)) os = 'Windows';
+      else if (/Mac OS X/i.test(ua)) os = 'Mac';
+      else if (/Linux/i.test(ua)) os = 'Linux';
+
+      return `${nav} • ${os}`;
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+      return outputArray;
+    }
+
+    async function obterVapidPublicKeyAtiva() {
+      if (SYSMANAGER_VAPID_PUBLIC_KEY && SYSMANAGER_VAPID_PUBLIC_KEY.length > 40) {
+        return SYSMANAGER_VAPID_PUBLIC_KEY;
+      }
+      try {
+        const resp = await fetch('/api/push?action=publicKey');
+        const json = await resp.json();
+        if (json && json.publicKey) return json.publicKey;
+      } catch (e) {}
+      return '';
+    }
+
+    async function registrarServiceWorkerPush() {
+      if (!suportaWebPush()) return null;
+
+      if (!pushManagerState.listenerAnexado && navigator.serviceWorker) {
+        pushManagerState.listenerAnexado = true;
+        navigator.serviceWorker.addEventListener('message', function (event) {
+          if (event && event.data && event.data.type === 'OPEN_DAILY_BRIEFING') {
+            abrirModalResumoDiarioBriefing();
+          }
+        });
+      }
+
+      if (pushManagerState.swRegistration) {
+        return pushManagerState.swRegistration;
+      }
+
+      try {
+        await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        const readyReg = await navigator.serviceWorker.ready;
+        pushManagerState.swRegistration = readyReg;
+        return readyReg;
+      } catch (err) {
+        console.warn('Falha ao registrar Service Worker Web Push:', err);
+        return null;
+      }
+    }
+
+    async function obterSubscriptionAtualNavegador() {
+      const reg = await registrarServiceWorkerPush();
+      if (!reg || !reg.pushManager) return null;
+      try {
+        const sub = await reg.pushManager.getSubscription();
+        pushManagerState.subscription = sub;
+        return sub;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function atualizarIndicadorNavbarPush(estado) {
+      const dot = document.getElementById('pushStatusDotNavbar');
+      const btn = document.getElementById('btnPushNotificacoesNavbar');
+      if (!dot || !btn) return;
+
+      dot.className = 'rounded-circle d-inline-block';
+      if (estado === 'ativo') {
+        dot.classList.add('bg-success', 'push-dot-pulse');
+        btn.title = 'Alertas ativados neste navegador';
+      } else if (estado === 'bloqueado') {
+        dot.classList.add('bg-danger');
+        btn.title = 'Notificações bloqueadas no navegador — clique para ver como liberar';
+      } else if (estado === 'incompativel') {
+        dot.classList.add('bg-warning');
+        btn.title = 'Abra em https://sysmanager.vercel.app para ativar notificações';
+      } else {
+        dot.classList.add('bg-warning');
+        btn.title = 'Clique para ativar alertas diários no navegador';
+      }
+    }
+
+    function aplicarBadgeStatusPush(el, ok, labelOk, labelPendente, isWarn) {
+      if (!el) return;
+      if (ok) {
+        el.className = 'badge bg-success-subtle text-success border border-success-subtle small';
+        el.innerHTML = `<i class="fa-solid fa-circle-check me-1"></i>${escaparHtmlPush(labelOk)}`;
+      } else if (isWarn) {
+        el.className = 'badge bg-warning-subtle text-dark border border-warning-subtle small';
+        el.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-1"></i>${escaparHtmlPush(labelPendente)}`;
+      } else {
+        el.className = 'badge bg-danger-subtle text-danger border border-danger-subtle small';
+        el.innerHTML = `<i class="fa-solid fa-circle-xmark me-1"></i>${escaparHtmlPush(labelPendente)}`;
+      }
+    }
+
+    async function atualizarEstadoPushUI(forcarConsultaBackend) {
+      const banner = document.getElementById('bannerAtivarPushDesktop');
+      const alertaAmb = document.getElementById('pushAlertaAmbiente');
+      const statusBox = document.getElementById('pushStatusBox');
+      const statusIcone = document.getElementById('pushStatusIcone');
+      const statusTitulo = document.getElementById('pushStatusTitulo');
+      const statusDetalhe = document.getElementById('pushStatusDetalhe');
+      const dispBadge = document.getElementById('pushDispositivoBadge');
+      const permBadge = document.getElementById('pushPermissaoBadge');
+      const btnAtivar = document.getElementById('btnAtivarPushModal');
+      const btnDesativar = document.getElementById('btnDesativarPushModal');
+      const secaoTestes = document.getElementById('pushSecaoTestes');
+      const secaoAdmin = document.getElementById('pushSecaoAdmin');
+
+      if (dispBadge) dispBadge.innerText = detectarDispositivoNavegador();
+
+      if (!suportaWebPush()) {
+        atualizarIndicadorNavbarPush('incompativel');
+        if (banner) {
+          banner.classList.add('d-none');
+          banner.classList.remove('d-flex');
+        }
+        if (alertaAmb) {
+          alertaAmb.classList.remove('d-none');
+          const tituloAmb = document.getElementById('pushAlertaAmbienteTitulo');
+          const textoAmb = document.getElementById('pushAlertaAmbienteTexto');
+          if (window.location.protocol === 'file:' && tituloAmb && textoAmb) {
+            tituloAmb.innerText = 'Arquivo local detectado (file://)';
+            textoAmb.innerText = 'Notificações Push no navegador exigem HTTPS. Para ativar e testar alertas reais, acesse https://sysmanager.vercel.app.';
+          } else if (isGoogleScript && tituloAmb && textoAmb) {
+            tituloAmb.innerText = 'Aberto pelo Google Apps Script (iframe)';
+            textoAmb.innerText = 'O navegador não permite registrar Service Worker dentro de iframes do script.google.com. Abra o domínio oficial sysmanager.vercel.app para ativar.';
+          }
+        }
+        if (statusBox) statusBox.classList.add('opacity-75');
+        if (statusTitulo) statusTitulo.innerText = 'Ambiente não suporta Web Push';
+        if (statusDetalhe) statusDetalhe.innerText = 'Abra o SysManager diretamente em https://sysmanager.vercel.app no Chrome ou Edge.';
+        if (permBadge) permBadge.innerText = 'Permissão: indisponível';
+        if (btnAtivar) btnAtivar.disabled = true;
+        if (btnDesativar) btnDesativar.classList.add('d-none');
+        if (secaoTestes) secaoTestes.classList.add('opacity-50');
+        return;
+      }
+
+      if (alertaAmb) alertaAmb.classList.add('d-none');
+      if (statusBox) statusBox.classList.remove('opacity-75');
+
+      const perm = Notification.permission;
+      const sub = await obterSubscriptionAtualNavegador();
+      const ativoLocal = (perm === 'granted' && Boolean(sub));
+
+      if (permBadge) {
+        if (perm === 'granted') {
+          permBadge.className = 'badge bg-success-subtle text-success border border-success-subtle small';
+          permBadge.innerText = 'Permissão: Permitida';
+        } else if (perm === 'denied') {
+          permBadge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle small';
+          permBadge.innerText = 'Permissão: Bloqueada';
+        } else {
+          permBadge.className = 'badge bg-warning-subtle text-dark border border-warning-subtle small';
+          permBadge.innerText = 'Permissão: Pendente';
+        }
+      }
+
+      const jaDispensado = localStorage.getItem('SYSMANAGER_PUSH_BANNER_DISMISSED') === '1';
+      if (banner) {
+        if (appState.currentUser && perm === 'default' && !sub && !jaDispensado) {
+          banner.classList.remove('d-none');
+          banner.classList.add('d-flex');
+        } else {
+          banner.classList.add('d-none');
+          banner.classList.remove('d-flex');
+        }
+      }
+
+      if (ativoLocal) {
+        atualizarIndicadorNavbarPush('ativo');
+        if (statusIcone) {
+          statusIcone.className = 'badge rounded-circle p-2 bg-success-subtle text-success';
+          statusIcone.innerHTML = '<i class="fa-solid fa-bell"></i>';
+        }
+        if (statusTitulo) statusTitulo.innerText = 'Alertas ativos neste navegador!';
+        if (statusDetalhe) statusDetalhe.innerText = 'Você receberá seu resumo individual no canto da tela mesmo com o SysManager fechado.';
+        if (btnAtivar) {
+          btnAtivar.disabled = false;
+          btnAtivar.className = 'btn btn-outline-primary fw-semibold rounded-pill px-4';
+          btnAtivar.innerHTML = '<i class="fa-solid fa-rotate me-1"></i> Re-sincronizar este Navegador';
+        }
+        if (btnDesativar) btnDesativar.classList.remove('d-none');
+        if (secaoTestes) secaoTestes.classList.remove('opacity-50');
+      } else if (perm === 'denied') {
+        atualizarIndicadorNavbarPush('bloqueado');
+        if (statusIcone) {
+          statusIcone.className = 'badge rounded-circle p-2 bg-danger-subtle text-danger';
+          statusIcone.innerHTML = '<i class="fa-solid fa-ban"></i>';
+        }
+        if (statusTitulo) statusTitulo.innerText = 'Notificações bloqueadas no navegador';
+        if (statusDetalhe) statusDetalhe.innerText = 'Clique no ícone de cadeado/configurações ao lado do endereço do site na barra do Chrome/Edge e mude Notificações para "Permitir".';
+        if (btnAtivar) {
+          btnAtivar.disabled = false;
+          btnAtivar.className = 'btn btn-primary fw-semibold rounded-pill px-4';
+          btnAtivar.innerHTML = '<i class="fa-solid fa-bell me-1"></i> Tentar Ativar Novamente';
+        }
+        if (btnDesativar) btnDesativar.classList.add('d-none');
+        if (secaoTestes) secaoTestes.classList.add('opacity-50');
+      } else {
+        atualizarIndicadorNavbarPush('pendente');
+        if (statusIcone) {
+          statusIcone.className = 'badge rounded-circle p-2 bg-warning-subtle text-warning';
+          statusIcone.innerHTML = '<i class="fa-solid fa-bell-slash"></i>';
+        }
+        if (statusTitulo) statusTitulo.innerText = 'Alertas ainda não ativados neste PC/navegador';
+        if (statusDetalhe) statusDetalhe.innerText = 'Clique no botão abaixo e depois em "Permitir" na caixa do navegador (leva 2 segundos).';
+        if (btnAtivar) {
+          btnAtivar.disabled = false;
+          btnAtivar.className = 'btn btn-primary fw-semibold rounded-pill px-4';
+          btnAtivar.innerHTML = '<i class="fa-solid fa-bell me-1"></i> Ativar Notificações neste Navegador';
+        }
+        if (btnDesativar) btnDesativar.classList.add('d-none');
+        if (secaoTestes) secaoTestes.classList.add('opacity-50');
+      }
+
+      const btnTest1 = document.getElementById('btnTestarPushAgora');
+      const btnTest2 = document.getElementById('btnTestarPush10s');
+      if (btnTest1) btnTest1.disabled = !ativoLocal;
+      if (btnTest2) btnTest2.disabled = !ativoLocal;
+
+      const podeAdmin = usuarioPodeVerPainelGerente(appState.currentUser);
+      if (secaoAdmin) {
+        if (podeAdmin) secaoAdmin.classList.remove('d-none');
+        else secaoAdmin.classList.add('d-none');
+      }
+
+      if (forcarConsultaBackend && appState.currentUser && appState.currentUser.email) {
+        consultarStatusPushBackend(sub);
+      }
+    }
+
+    function consultarStatusPushBackend(subAtual) {
+      if (!appState.currentUser || !appState.currentUser.email) return;
+      executarNoServidor(
+        'obterStatusPush',
+        {
+          email: appState.currentUser.email,
+          endpoint: subAtual ? subAtual.endpoint : ''
+        },
+        function (res) {
+          pushManagerState.statusServidor = res;
+          if (!res || !res.success) {
+            if (res && res.message && String(res.message).includes('Ação não reconhecida')) {
+              const resAdmin = document.getElementById('pushResultadoAdmin');
+              const secaoAdmin = document.getElementById('pushSecaoAdmin');
+              if (secaoAdmin && !secaoAdmin.classList.contains('d-none') && resAdmin) {
+                resAdmin.className = 'alert alert-warning small py-2 px-3 mt-2 mb-0';
+                resAdmin.innerText = 'O Code.gs no Google Apps Script ainda não foi atualizado com a nova implantação de Web Push.';
+              }
+            }
+            return;
+          }
+
+          // Auto-sincroniza silenciosamente se o navegador já tem inscrição ativa mas não consta para o usuário logado
+          if (subAtual && Notification.permission === 'granted' && !res.registradoNesteNavegador && !pushManagerState.autoSyncTentado) {
+            pushManagerState.autoSyncTentado = true;
+            const subJson = typeof subAtual.toJSON === 'function' ? subAtual.toJSON() : null;
+            if (subJson && subJson.endpoint && subJson.keys) {
+              executarNoServidor('salvarPushSubscription', {
+                subscription: subJson,
+                usuarioId: appState.currentUser.id || 'USR-1',
+                usuarioEmail: appState.currentUser.email,
+                usuarioNome: appState.currentUser.nome || '',
+                dispositivo: detectarDispositivoNavegador()
+              }, function () {
+                consultarStatusPushBackend(subAtual);
+              });
+            }
+          }
+
+          const wrapDisp = document.getElementById('pushListaMeusDispositivosWrap');
+          const listaDisp = document.getElementById('pushListaMeusDispositivos');
+          if (wrapDisp && listaDisp) {
+            const lista = Array.isArray(res.meusDispositivos) ? res.meusDispositivos : [];
+            if (lista.length > 0) {
+              wrapDisp.classList.remove('d-none');
+              listaDisp.innerHTML = lista.map(d =>
+                `<span class="badge bg-light text-dark border small"><i class="fa-solid fa-desktop text-primary me-1"></i>${escaparHtmlPush(d.dispositivo || 'Navegador')}</span>`
+              ).join('');
+            } else {
+              wrapDisp.classList.add('d-none');
+              listaDisp.innerHTML = '';
+            }
+          }
+
+          const teamBadge = document.getElementById('pushTeamStatsBadge');
+          if (teamBadge) {
+            teamBadge.innerText = `${res.totalUsuariosComPush || 0} usuário(s) • ${res.totalDispositivosEquipe || 0} navegador(es)`;
+          }
+
+          const badgeSecret = document.getElementById('pushBadgeSecret');
+          const badgeVercel = document.getElementById('pushBadgeVercel');
+          const badgeGatilho = document.getElementById('pushBadgeGatilho');
+          aplicarBadgeStatusPush(
+            badgeSecret,
+            Boolean(res.secretConfigurado),
+            'Secret Apps Script: OK',
+            'Secret Apps Script: Pendente no Code.gs',
+            false
+          );
+          const saude = res.saudeServidor || {};
+          aplicarBadgeStatusPush(
+            badgeVercel,
+            Boolean(saude.configured),
+            'Vercel /api/push: OK',
+            saude.online ? 'Vercel: Faltam Variáveis Env' : 'Vercel /api/push: Offline',
+            Boolean(saude.online && !saude.configured)
+          );
+          aplicarBadgeStatusPush(
+            badgeGatilho,
+            Boolean(res.gatilhoDiarioAtivo),
+            'Gatilho 08h00: Ativo',
+            'Gatilho 08h00: Pendente',
+            true
+          );
+        }
+      );
+    }
+
+    async function ativarPushNesteNavegador() {
+      if (!suportaWebPush()) {
+        abrirModalPushNotificacoes();
+        return;
+      }
+      if (!appState.currentUser || !appState.currentUser.email) {
+        alert('Faça login com seu e-mail antes de ativar os alertas.');
+        return;
+      }
+
+      const btn = document.getElementById('btnAtivarPushModal');
+      const originalHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Ativando...';
+      }
+
+      try {
+        let perm = Notification.permission;
+        if (perm === 'default') {
+          perm = await Notification.requestPermission();
+        }
+        if (perm !== 'granted') {
+          await atualizarEstadoPushUI(false);
+          mostrarToast('Permissão de notificação não concedida.');
+          return;
+        }
+
+        const reg = await registrarServiceWorkerPush();
+        if (!reg || !reg.pushManager) {
+          throw new Error('Service Worker não pôde ser registrado neste domínio.');
+        }
+
+        const vapidPublicKey = await obterVapidPublicKeyAtiva();
+        if (!vapidPublicKey) {
+          throw new Error('Chave pública VAPID não encontrada.');
+        }
+        const appServerKey = urlBase64ToUint8Array(vapidPublicKey);
+
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: appServerKey
+          });
+        } else {
+          // Garante compatibilidade caso a chave VAPID tenha sido trocada
+          try {
+            const subJsonCheck = sub.toJSON();
+            if (!subJsonCheck || !subJsonCheck.keys || !subJsonCheck.keys.p256dh || !subJsonCheck.keys.auth) {
+              await sub.unsubscribe();
+              sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: appServerKey
+              });
+            }
+          } catch (errCheck) {
+            if (errCheck && errCheck.name === 'InvalidStateError') {
+              await sub.unsubscribe();
+              sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: appServerKey
+              });
+            }
+          }
+        }
+
+        pushManagerState.subscription = sub;
+        const subJson = typeof sub.toJSON === 'function' ? sub.toJSON() : null;
+        if (!subJson || !subJson.endpoint || !subJson.keys || !subJson.keys.p256dh || !subJson.keys.auth) {
+          throw new Error('O navegador gerou uma assinatura incompleta.');
+        }
+
+        await new Promise((resolve, reject) => {
+          executarNoServidor(
+            'salvarPushSubscription',
+            {
+              subscription: subJson,
+              usuarioId: appState.currentUser.id || 'USR-1',
+              usuarioEmail: appState.currentUser.email,
+              usuarioNome: appState.currentUser.nome || '',
+              dispositivo: detectarDispositivoNavegador()
+            },
+            function (res) {
+              if (res && res.success) resolve(res);
+              else reject(new Error((res && res.message) || 'Erro ao salvar inscrição na planilha.'));
+            },
+            function (err) {
+              reject(err || new Error('Falha de comunicação com o Apps Script.'));
+            }
+          );
+        });
+
+        try {
+          localStorage.setItem('SYSMANAGER_PUSH_BANNER_DISMISSED', '1');
+        } catch (e) {}
+
+        mostrarToast('Alertas ativados neste navegador!');
+        await atualizarEstadoPushUI(true);
+      } catch (err) {
+        alert('Não foi possível ativar notificações: ' + (err.message || err));
+        await atualizarEstadoPushUI(false);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          if (originalHtml) btn.innerHTML = originalHtml;
+        }
+      }
+    }
+
+    async function desativarPushNesteNavegador() {
+      const btn = document.getElementById('btnDesativarPushModal');
+      if (btn) btn.disabled = true;
+
+      try {
+        const sub = await obterSubscriptionAtualNavegador();
+        const endpoint = sub ? sub.endpoint : '';
+        if (sub) {
+          await sub.unsubscribe();
+        }
+        pushManagerState.subscription = null;
+
+        if (endpoint || (appState.currentUser && appState.currentUser.email)) {
+          await new Promise((resolve) => {
+            executarNoServidor(
+              'removerPushSubscription',
+              {
+                endpoint: endpoint,
+                email: appState.currentUser ? appState.currentUser.email : ''
+              },
+              resolve,
+              resolve
+            );
+          });
+        }
+
+        mostrarToast('Notificações desativadas neste navegador.');
+        await atualizarEstadoPushUI(true);
+      } catch (err) {
+        alert('Erro ao desativar notificações: ' + (err.message || err));
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function dispensarBannerPush() {
+      try {
+        localStorage.setItem('SYSMANAGER_PUSH_BANNER_DISMISSED', '1');
+      } catch (e) {}
+      const banner = document.getElementById('bannerAtivarPushDesktop');
+      if (banner) {
+        banner.classList.add('d-none');
+        banner.classList.remove('d-flex');
+      }
+    }
+
+    function abrirModalPushNotificacoes() {
+      const resTeste = document.getElementById('pushResultadoTeste');
+      const resAdmin = document.getElementById('pushResultadoAdmin');
+      if (resTeste) resTeste.classList.add('d-none');
+      if (resAdmin) resAdmin.classList.add('d-none');
+
+      const modalEl = document.getElementById('modalPushNotificacoes');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+      atualizarEstadoPushUI(true);
+    }
+
+    function dispararTestePushUsuario(delaySegundos) {
+      if (!appState.currentUser || !appState.currentUser.email) {
+        alert('Faça login antes de testar.');
+        return;
+      }
+      const delay = Number(delaySegundos) || 0;
+      const box = document.getElementById('pushResultadoTeste');
+      const btnAgora = document.getElementById('btnTestarPushAgora');
+      const btn10s = document.getElementById('btnTestarPush10s');
+      const subEndpoint = pushManagerState.subscription ? pushManagerState.subscription.endpoint : '';
+
+      const payloadData = {
+        email: appState.currentUser.email,
+        endpoint: subEndpoint,
+        delaySegundos: delay
+      };
+
+      if (delay > 0) {
+        if (box) {
+          box.className = 'alert alert-info small py-2 px-3 mb-3';
+          box.innerHTML = '<i class="fa-solid fa-hourglass-start me-1"></i> <strong>Disparo agendado para daqui a 10 segundos!</strong> Pode <strong>fechar esta aba do SysManager agora</strong> e aguardar a notificação pular no canto da tela.';
+        }
+        mostrarToast('Teste em 10s iniciado! Pode fechar a aba agora.');
+
+        if (!isGoogleScript) {
+          fetch(activeAppsScriptUrl, {
+            method: 'POST',
+            mode: 'cors',
+            keepalive: true,
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'enviarPushTesteUsuario', data: payloadData })
+          })
+          .then(r => r.json())
+          .then(res => {
+            if (!box) return;
+            if (res && res.success && res.sent > 0) {
+              box.className = 'alert alert-success small py-2 px-3 mb-3';
+              box.innerText = '✅ ' + (res.message || 'Notificação entregue com sucesso!');
+            } else {
+              box.className = 'alert alert-danger small py-2 px-3 mb-3';
+              box.innerText = '⚠️ ' + ((res && res.message) || 'Falha ao enviar notificação.');
+            }
+          })
+          .catch(() => {});
+          return;
+        }
+      }
+
+      if (btnAgora) btnAgora.disabled = true;
+      if (btn10s) btn10s.disabled = true;
+      if (box && delay === 0) {
+        box.className = 'alert alert-secondary small py-2 px-3 mb-3';
+        box.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Enviando notificação de teste via Vercel...';
+      }
+
+      executarNoServidor(
+        'enviarPushTesteUsuario',
+        payloadData,
+        function (res) {
+          if (btnAgora) btnAgora.disabled = false;
+          if (btn10s) btn10s.disabled = false;
+          if (!box) return;
+          if (res && res.success && res.sent > 0) {
+            box.className = 'alert alert-success small py-2 px-3 mb-3';
+            box.innerText = '✅ ' + (res.message || 'Notificação enviada!');
+            mostrarToast('Notificação enviada!');
+          } else {
+            box.className = 'alert alert-danger small py-2 px-3 mb-3';
+            box.innerText = '⚠️ ' + ((res && res.message) || 'Não foi possível enviar a notificação.');
+          }
+        },
+        function (err) {
+          if (btnAgora) btnAgora.disabled = false;
+          if (btn10s) btn10s.disabled = false;
+          if (box) {
+            box.className = 'alert alert-danger small py-2 px-3 mb-3';
+            box.innerText = 'Erro de conexão: ' + (err && err.message ? err.message : err);
+          }
+        }
+      );
+    }
+
+    function ativarGatilhoPushDiarioUI() {
+      const btn = document.getElementById('btnAtivarGatilhoDiario');
+      const box = document.getElementById('pushResultadoAdmin');
+      if (btn) btn.disabled = true;
+      if (box) {
+        box.className = 'alert alert-secondary small py-2 px-3 mt-2 mb-0';
+        box.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Configurando gatilho diário às 08h00...';
+      }
+
+      executarNoServidor(
+        'configurarGatilhoPushDiario',
+        { hora: 8 },
+        function (res) {
+          if (btn) btn.disabled = false;
+          if (res && res.success) {
+            if (box) {
+              box.className = 'alert alert-success small py-2 px-3 mt-2 mb-0';
+              box.innerText = '✅ ' + (res.message || 'Gatilho configurado para as 08h00!');
+            }
+            mostrarToast('Gatilho diário das 08h00 ativado!');
+            atualizarEstadoPushUI(true);
+          } else if (box) {
+            box.className = 'alert alert-danger small py-2 px-3 mt-2 mb-0';
+            box.innerText = '⚠️ ' + ((res && res.message) || 'Erro ao configurar gatilho.');
+          }
+        },
+        function (err) {
+          if (btn) btn.disabled = false;
+          if (box) {
+            box.className = 'alert alert-danger small py-2 px-3 mt-2 mb-0';
+            box.innerText = 'Erro: ' + (err && err.message ? err.message : err);
+          }
+        }
+      );
+    }
+
+    function dispararResumoEquipePushManual() {
+      if (!confirm('Deseja enviar agora a notificação com o resumo individual para todos os membros com alertas ativados?')) {
+        return;
+      }
+      const btn = document.getElementById('btnDispararEquipeAgora');
+      const box = document.getElementById('pushResultadoAdmin');
+      if (btn) btn.disabled = true;
+      if (box) {
+        box.className = 'alert alert-secondary small py-2 px-3 mt-2 mb-0';
+        box.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Disparando resumo individual para toda a equipe...';
+      }
+
+      executarNoServidor(
+        'dispararResumoDiarioPushManual',
+        {},
+        function (res) {
+          if (btn) btn.disabled = false;
+          if (res && res.success) {
+            if (box) {
+              box.className = 'alert alert-success small py-2 px-3 mt-2 mb-0';
+              box.innerText = `✅ Disparo concluído! Entregues: ${res.sent || 0} | Usuários notificados: ${res.usuariosNotificados || '-'} | Falhas: ${res.failed || 0}.`;
+            }
+            mostrarToast('Resumo enviado para a equipe!');
+            atualizarEstadoPushUI(true);
+          } else if (box) {
+            box.className = 'alert alert-danger small py-2 px-3 mt-2 mb-0';
+            box.innerText = '⚠️ ' + ((res && res.message) || 'Não foi possível concluir o disparo.');
+          }
+        },
+        function (err) {
+          if (btn) btn.disabled = false;
+          if (box) {
+            box.className = 'alert alert-danger small py-2 px-3 mt-2 mb-0';
+            box.innerText = 'Erro: ' + (err && err.message ? err.message : err);
+          }
+        }
+      );
+    }
+
+    function obterBriefingUsuarioLocal() {
+      const user = appState.currentUser || {};
+      const uId = (user.id || '').toString().trim().toUpperCase();
+      const uEmail = (user.email || '').toString().trim().toLowerCase();
+      const uNomeNorm = limparNomeDev(user.nome || '').toLowerCase();
+
+      const minhasTarefas = (appState.tarefas || []).filter(t => {
+        if (!t || t.status === 'Concluída') return false;
+        const tId = (t.devId || '').toString().trim().toUpperCase();
+        const tNomeNorm = limparNomeDev(t.devNome || '').toLowerCase();
+        return (uId && tId && tId === uId) || (uNomeNorm && tNomeNorm && tNomeNorm === uNomeNorm);
+      });
+
+      const atrasadas = minhasTarefas.filter(t => t.status === 'Atrasada');
+      const emFoco = minhasTarefas.find(t => t.ativo === true)
+        || atrasadas[0]
+        || minhasTarefas.find(t => t.status === 'Em Andamento')
+        || null;
+      const esteira = minhasTarefas.filter(t => (!emFoco || t.id !== emFoco.id));
+
+      const agora = new Date();
+      const inicioHoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 0, 0, 0, 0);
+      const fimJanela = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() + 3, 23, 59, 59, 999);
+
+      const futurasProx3Dias = (appState.demandasFuturas || []).filter(df => {
+        if (!df || df.status !== 'Agendada') return false;
+        const dfId = (df.devId || '').toString().trim().toUpperCase();
+        const dfEmail = (df.devEmail || '').toString().trim().toLowerCase();
+        const dfNomeNorm = limparNomeDev(df.devNome || '').toLowerCase();
+        const pertence = (uId && dfId && dfId === uId)
+          || (uEmail && dfEmail && dfEmail === uEmail)
+          || (uNomeNorm && dfNomeNorm && dfNomeNorm === uNomeNorm);
+        if (!pertence) return false;
+
+        const iso = (df.dataHoraProgramada || '').toString().trim();
+        const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2}))?/);
+        if (!m) return false;
+        const dt = new Date(
+          parseInt(m[1], 10),
+          parseInt(m[2], 10) - 1,
+          parseInt(m[3], 10),
+          parseInt(m[4] || '0', 10),
+          parseInt(m[5] || '0', 10),
+          0
+        );
+        return dt.getTime() >= inicioHoje.getTime() && dt.getTime() <= fimJanela.getTime();
+      });
+
+      return { atrasadas, emFoco, esteira, futurasProx3Dias };
+    }
+
+    function abrirModalResumoDiarioBriefing() {
+      const pushModalEl = document.getElementById('modalPushNotificacoes');
+      if (pushModalEl && pushModalEl.classList.contains('show')) {
+        pushModalEl.addEventListener('hidden.bs.modal', function () {
+          abrirModalResumoDiarioBriefing();
+        }, { once: true });
+        const instPush = bootstrap.Modal.getInstance(pushModalEl);
+        if (instPush) instPush.hide();
+        return;
+      }
+
+      const user = appState.currentUser || {};
+      const primeiroNome = limparNomeDev(user.nome || '').split(/\s+/)[0] || 'Dev';
+      const tituloEl = document.getElementById('briefingModalTitulo');
+      const dataBadgeEl = document.getElementById('briefingDataBadge');
+      const bodyEl = document.getElementById('briefingConteudoLista');
+
+      if (tituloEl) tituloEl.innerText = `Bom dia, ${primeiroNome}! Seu Resumo no SysManager`;
+      if (dataBadgeEl) {
+        dataBadgeEl.innerText = 'Hoje, ' + new Date().toLocaleDateString('pt-BR', {
+          weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'
+        });
+      }
+
+      if (bodyEl) {
+        const { atrasadas, emFoco, esteira, futurasProx3Dias } = obterBriefingUsuarioLocal();
+        const secoes = [];
+
+        if (atrasadas.length > 0) {
+          secoes.push(`
+            <div class="mb-3">
+              <h6 class="fw-bold text-danger mb-2">🔴 Atrasadas (${atrasadas.length})</h6>
+              <div class="list-group shadow-sm rounded-3 overflow-hidden">
+                ${atrasadas.map(t => `
+                  <div class="list-group-item border-danger border-opacity-25 bg-danger bg-opacity-10 d-flex justify-content-between align-items-center gap-2">
+                    <div>
+                      <div class="fw-semibold text-dark">${escaparHtmlPush(t.titulo)}</div>
+                      <small class="text-muted">${escaparHtmlPush(t.modulo || 'SIOPLEEx')} • Prazo: ${escaparHtmlPush(formatarData(t.dataPrazo))}</small>
+                    </div>
+                    <span class="badge bg-danger rounded-pill">Atrasada</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `);
+        }
+
+        if (emFoco) {
+          secoes.push(`
+            <div class="mb-3">
+              <h6 class="fw-bold text-primary mb-2">🎯 Em Foco Agora</h6>
+              <div class="card border-primary border-opacity-25 shadow-sm rounded-3">
+                <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center gap-2">
+                  <div>
+                    <div class="fw-bold text-dark">${escaparHtmlPush(emFoco.titulo)}</div>
+                    <small class="text-muted">${escaparHtmlPush(emFoco.modulo || 'SIOPLEEx')} • Prazo: ${escaparHtmlPush(formatarData(emFoco.dataPrazo))}</small>
+                  </div>
+                  <span class="badge ${emFoco.status === 'Atrasada' ? 'bg-danger' : 'bg-primary'} rounded-pill">${escaparHtmlPush(emFoco.status || 'Em Andamento')}</span>
+                </div>
+              </div>
+            </div>
+          `);
+        }
+
+        if (esteira.length > 0) {
+          secoes.push(`
+            <div class="mb-3">
+              <h6 class="fw-bold text-dark mb-2">📋 Na Esteira (${esteira.length})</h6>
+              <div class="list-group shadow-sm rounded-3 overflow-hidden">
+                ${esteira.map(t => `
+                  <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                    <div>
+                      <div class="fw-semibold text-dark">${escaparHtmlPush(t.titulo)}</div>
+                      <small class="text-muted">${escaparHtmlPush(t.modulo || 'SIOPLEEx')}${t.dataPrazo ? ' • Prazo: ' + escaparHtmlPush(formatarData(t.dataPrazo)) : ''}</small>
+                    </div>
+                    <span class="badge bg-secondary-subtle text-dark border rounded-pill">${escaparHtmlPush(t.status || 'Fila')}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `);
+        }
+
+        if (futurasProx3Dias.length > 0) {
+          secoes.push(`
+            <div class="mb-2">
+              <h6 class="fw-bold text-indigo mb-2" style="color: #4f46e5;">📅 Demandas Futuras (próximos 3 dias — ${futurasProx3Dias.length})</h6>
+              <div class="list-group shadow-sm rounded-3 overflow-hidden">
+                ${futurasProx3Dias.map(df => {
+                  const dtParts = (df.dataHoraProgramada || '').split('T');
+                  const dataBr = dtParts[0] ? formatarData(dtParts[0]) : '-';
+                  const horaBr = dtParts[1] ? dtParts[1].substring(0, 5) : '';
+                  return `
+                    <div class="list-group-item d-flex justify-content-between align-items-center gap-2">
+                      <div>
+                        <div class="fw-semibold text-dark">${escaparHtmlPush(df.titulo)}</div>
+                        <small class="text-muted">${escaparHtmlPush(df.modulo || 'SIOPLEEx')} • Entrada prevista: ${escaparHtmlPush(dataBr)} ${horaBr ? 'às ' + escaparHtmlPush(horaBr) : ''}</small>
+                      </div>
+                      <span class="badge rounded-pill text-white" style="background-color: #4f46e5;">Agendada</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `);
+        }
+
+        if (secoes.length === 0) {
+          secoes.push(`
+            <div class="text-center py-4">
+              <div class="fs-1 text-success mb-2"><i class="fa-solid fa-circle-check"></i></div>
+              <h6 class="fw-bold text-dark">Tudo em dia por aqui!</h6>
+              <p class="small text-muted mb-0">Você não possui demandas atrasadas, em andamento ou futuras para os próximos 3 dias.</p>
+            </div>
+          `);
+        }
+
+        bodyEl.innerHTML = secoes.join('');
+      }
+
+      const modalEl = document.getElementById('modalResumoDiarioBriefing');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+    }
+
+    function abrirModalPushNotificacoesAPartirBriefing() {
+      const bEl = document.getElementById('modalResumoDiarioBriefing');
+      if (bEl && bEl.classList.contains('show')) {
+        bEl.addEventListener('hidden.bs.modal', function () {
+          abrirModalPushNotificacoes();
+        }, { once: true });
+        const inst = bootstrap.Modal.getInstance(bEl);
+        if (inst) inst.hide();
+        return;
+      }
+      abrirModalPushNotificacoes();
+    }
+
+    function irParaEsteiraAPartirBriefing() {
+      const bEl = document.getElementById('modalResumoDiarioBriefing');
+      if (bEl) {
+        const inst = bootstrap.Modal.getInstance(bEl);
+        if (inst) inst.hide();
+      }
+      const tabEsteira = document.getElementById('tab-esteira-btn');
+      if (tabEsteira) tabEsteira.click();
+    }
+
+    function inicializarPushAposLogin() {
+      const emailAtual = (appState.currentUser && appState.currentUser.email || '').toLowerCase();
+      if (!emailAtual) return;
+
+      const primeiraVezUsuario = (pushManagerState.inicializadoParaEmail !== emailAtual);
+      pushManagerState.inicializadoParaEmail = emailAtual;
+
+      atualizarEstadoPushUI(primeiraVezUsuario);
+
+      if (!pushManagerState.briefingQueryTratado) {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('briefing') === '1') {
+          pushManagerState.briefingQueryTratado = true;
+          try {
+            params.delete('briefing');
+            const novaQuery = params.toString();
+            const novaUrl = window.location.pathname + (novaQuery ? '?' + novaQuery : '') + window.location.hash;
+            window.history.replaceState({}, document.title, novaUrl);
+          } catch (eHist) {}
+          setTimeout(() => abrirModalResumoDiarioBriefing(), 350);
+        }
+      }
     }
   </script>
 </body>

@@ -1,0 +1,9 @@
+{
+  "name": "sysmanager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sys Manager - Gestão Ágil de Tarefas com Web Push e PWA",
+  "dependencies": {
+    "web-push": "^3.6.7"
+  }
+}
