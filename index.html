@@ -321,30 +321,165 @@
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 14px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-      padding: 18px 20px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+      padding: 16px 20px;
     }
     .card-filter-toolbar .form-label {
-      font-size: 0.72rem;
+      font-size: 0.70rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.45px;
       color: #475569;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-filter-toolbar .form-label i {
+      font-size: 0.74rem;
+      flex-shrink: 0;
     }
     .card-filter-toolbar .form-select,
-    .card-filter-toolbar .form-control {
-      border-radius: 8px;
+    .card-filter-toolbar .form-control,
+    .card-filter-toolbar .relatorio-status-btn {
+      height: 38px;
+      border-radius: 9px;
       border: 1px solid #cbd5e1;
-      font-size: 0.85rem;
+      font-size: 0.835rem;
+      font-weight: 500;
       color: #0f172a;
       background-color: #f8fafc;
-      transition: all 0.15s ease;
+      transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card-filter-toolbar .form-select:hover,
+    .card-filter-toolbar .form-control:hover,
+    .card-filter-toolbar .relatorio-status-btn:hover {
+      border-color: #94a3b8;
+      background-color: #ffffff;
     }
     .card-filter-toolbar .form-select:focus,
-    .card-filter-toolbar .form-control:focus {
+    .card-filter-toolbar .form-control:focus,
+    .card-filter-toolbar .relatorio-status-btn:focus,
+    .card-filter-toolbar .relatorio-status-btn[aria-expanded="true"] {
       background-color: #ffffff;
       border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+      outline: none;
+    }
+    .relatorio-filtros-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.65fr 1.35fr 1.45fr 1.3fr 1.3fr;
+      gap: 12px;
+      align-items: end;
+    }
+    .relatorio-filtros-grid > div {
+      min-width: 0;
+    }
+    .relatorio-filtros-barra-inferior {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed #e2e8f0;
+      flex-wrap: wrap;
+    }
+    .relatorio-pesquisa-wrap {
+      flex: 1 1 320px;
+      min-width: 0;
+    }
+    .relatorio-search-field {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .relatorio-search-field .relatorio-search-icon {
+      position: absolute;
+      left: 12px;
+      color: #64748b;
+      font-size: 0.82rem;
+      pointer-events: none;
+      transition: color 0.15s ease;
+    }
+    .relatorio-search-field:focus-within .relatorio-search-icon {
+      color: #2563eb;
+    }
+    .relatorio-search-field .form-control {
+      padding-left: 36px;
+      padding-right: 34px;
+    }
+    .relatorio-search-clear {
+      position: absolute;
+      right: 7px;
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #475569;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    .relatorio-search-clear:hover {
+      background: #cbd5e1;
+      color: #0f172a;
+    }
+    .relatorio-acoes-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .relatorio-acoes-wrap .btn {
+      height: 38px;
+      border-radius: 9px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 15px;
+      white-space: nowrap;
+    }
+    .relatorio-acoes-wrap .btn-reset-filtros {
+      padding: 0 12px;
+      border-color: #cbd5e1;
+      color: #475569;
+      background-color: #f8fafc;
+    }
+    .relatorio-acoes-wrap .btn-reset-filtros:hover {
+      background-color: #f1f5f9;
+      border-color: #94a3b8;
+      color: #0f172a;
+    }
+    @media (max-width: 1199.98px) {
+      .relatorio-filtros-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 767.98px) {
+      .relatorio-filtros-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .relatorio-acoes-wrap {
+        width: 100%;
+      }
+      .relatorio-acoes-wrap .btn:not(.btn-reset-filtros) {
+        flex: 1 1 0;
+      }
+    }
+    @media (max-width: 479.98px) {
+      .relatorio-filtros-grid {
+        grid-template-columns: 1fr;
+      }
     }
     .report-kpi-card {
       background: #ffffff;
@@ -1235,15 +1370,15 @@
       <div class="tab-pane fade" id="tab-relatorio" role="tabpanel">
         
         <!-- TOOLBAR DE FILTROS EXECUTIVOS -->
-        <div class="card card-filter-toolbar mb-3 p-3">
-          <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom">
+        <div class="card card-filter-toolbar mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
             <div class="d-flex align-items-center gap-2">
               <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle p-2 rounded-2">
                 <i class="fa-solid fa-sliders"></i>
               </span>
               <div>
                 <h6 class="fw-bold text-dark mb-0">Filtros do Relatório Executivo</h6>
-                <small class="text-muted" style="font-size: 0.74rem;">Selecione o período, módulo ou desenvolvedor para gerar a análise ágil</small>
+                <small class="text-muted" style="font-size: 0.74rem;">Combine período, responsável, origem, status ou pesquise por palavra-chave para refinar o relatório</small>
               </div>
             </div>
             <div class="d-none d-md-flex align-items-center gap-2">
@@ -1253,10 +1388,10 @@
             </div>
           </div>
 
-          <div class="row g-2 align-items-end">
-            <div class="col-xl-2 col-md-4 col-sm-6">
-              <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar me-1 text-primary"></i>Mês de Referência:</label>
-              <select class="form-select form-select-sm" id="filtroRelatorioMes" onchange="aoMudarMesOuAnoRelatorio()">
+          <div class="relatorio-filtros-grid">
+            <div>
+              <label class="form-label" for="filtroRelatorioMes"><i class="fa-regular fa-calendar text-primary"></i><span>Mês de Referência</span></label>
+              <select class="form-select" id="filtroRelatorioMes" onchange="aoMudarMesOuAnoRelatorio()">
                 <option value="TODOS" selected>Todos os Meses</option>
                 <option value="0">Janeiro</option>
                 <option value="1">Fevereiro</option>
@@ -1272,13 +1407,13 @@
                 <option value="11">Dezembro</option>
               </select>
             </div>
-            <div class="col-xl-1 col-md-2 col-sm-6">
-              <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar-days me-1 text-primary"></i>Ano:</label>
-              <input type="number" class="form-control form-control-sm" id="filtroRelatorioAno" value="2026" onchange="aoMudarMesOuAnoRelatorio()">
+            <div>
+              <label class="form-label" for="filtroRelatorioAno"><i class="fa-regular fa-calendar-days text-primary"></i><span>Ano</span></label>
+              <input type="number" class="form-control" id="filtroRelatorioAno" value="2026" onchange="aoMudarMesOuAnoRelatorio()">
             </div>
-            <div class="col-xl-2 col-md-4 col-sm-6">
-              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-calendar-week me-1 text-primary"></i>Intervalo / Semana:</label>
-              <select class="form-select form-select-sm" id="filtroRelatorioIntervalo" onchange="aoMudarIntervaloRelatorio()">
+            <div>
+              <label class="form-label" for="filtroRelatorioIntervalo"><i class="fa-solid fa-calendar-week text-primary"></i><span>Intervalo / Semana</span></label>
+              <select class="form-select" id="filtroRelatorioIntervalo" onchange="aoMudarIntervaloRelatorio()">
                 <option value="TODOS" selected>Mês Completo</option>
                 <option value="SEM_1">1ª Semana (Dias 1 a 7)</option>
                 <option value="SEM_2">2ª Semana (Dias 8 a 14)</option>
@@ -1291,23 +1426,23 @@
                 <option value="CUSTOM">📅 Personalizado (De / Até)...</option>
               </select>
             </div>
-            <div class="col-xl-2 col-md-4 col-sm-6">
-              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-user me-1 text-primary"></i>Desenvolvedor:</label>
-              <select class="form-select form-select-sm" id="filtroRelatorioDev" onchange="atualizarRelatorioMensal()">
+            <div>
+              <label class="form-label" for="filtroRelatorioDev"><i class="fa-solid fa-user text-primary"></i><span>Desenvolvedor</span></label>
+              <select class="form-select" id="filtroRelatorioDev" onchange="atualizarRelatorioMensal()">
                 <option value="TODOS">Todos os Desenvolvedores</option>
               </select>
             </div>
-            <div class="col-xl-1 col-md-4 col-sm-6">
-              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-cube me-1 text-primary"></i>Origem:</label>
-              <select class="form-select form-select-sm" id="filtroRelatorioModulo" onchange="atualizarRelatorioMensal()">
+            <div>
+              <label class="form-label" for="filtroRelatorioModulo"><i class="fa-solid fa-cube text-primary"></i><span>Origem</span></label>
+              <select class="form-select" id="filtroRelatorioModulo" onchange="atualizarRelatorioMensal()">
                 <option value="TODOS" selected>Todas as Origens</option>
               </select>
             </div>
-            <div class="col-xl-2 col-md-4 col-sm-6 position-relative">
-              <label class="form-label small fw-bold mb-1"><i class="fa-solid fa-list-check me-1 text-primary"></i>Status:</label>
+            <div class="position-relative">
+              <label class="form-label" for="btnFiltroRelatorioStatus"><i class="fa-solid fa-list-check text-primary"></i><span>Status</span></label>
               <div class="dropdown" id="dropdownFiltroStatusContainer">
-                <button class="btn btn-sm btn-white border dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center bg-white shadow-sm" type="button" id="btnFiltroRelatorioStatus" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="min-height: 31px; font-size: 0.8125rem;">
-                  <span class="text-truncate me-1" id="lblFiltroRelatorioStatus">Todos os Status</span>
+                <button class="form-select relatorio-status-btn text-start d-flex align-items-center" type="button" id="btnFiltroRelatorioStatus" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                  <span class="text-truncate" id="lblFiltroRelatorioStatus">Todos os Status</span>
                 </button>
                 <ul class="dropdown-menu shadow-lg p-2 border rounded-3" aria-labelledby="btnFiltroRelatorioStatus" style="min-width: 240px; font-size: 0.84rem; z-index: 1060;">
                   <li class="px-2 py-1">
@@ -1379,27 +1514,46 @@
                 </ul>
               </div>
             </div>
-            <div class="col-xl-2 col-md-4 col-sm-12 d-flex gap-2">
-              <button type="button" class="btn btn-primary btn-sm flex-fill fw-semibold py-1 rounded-3 shadow-xs" onclick="atualizarRelatorioMensalComFeedback()" style="font-size: 0.8rem;">
-                <i class="fa-solid fa-filter me-1"></i> Filtrar
+          </div>
+
+          <div class="relatorio-filtros-barra-inferior">
+            <div class="relatorio-pesquisa-wrap">
+              <label class="form-label" for="filtroRelatorioPesquisa"><i class="fa-solid fa-magnifying-glass text-primary"></i><span>Pesquisar</span></label>
+              <div class="relatorio-search-field">
+                <i class="fa-solid fa-magnifying-glass relatorio-search-icon"></i>
+                <input type="text" class="form-control" id="filtroRelatorioPesquisa"
+                       placeholder="Digite título, descrição, origem/módulo, desenvolvedor, status ou data..."
+                       oninput="filtrarTabelaRelatorioAoDigitar()"
+                       onkeydown="if (event.key === 'Enter') { event.preventDefault(); atualizarRelatorioMensalComFeedback(); } else if (event.key === 'Escape') { limparPesquisaRelatorio(); }"
+                       autocomplete="off">
+                <button type="button" class="relatorio-search-clear d-none" id="btnLimparPesquisaRelatorio"
+                        onclick="limparPesquisaRelatorio()" title="Limpar pesquisa">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+            <div class="relatorio-acoes-wrap">
+              <button type="button" class="btn btn-primary shadow-xs" onclick="atualizarRelatorioMensalComFeedback()">
+                <i class="fa-solid fa-filter"></i><span>Filtrar</span>
               </button>
-              <button type="button" class="btn btn-success btn-sm flex-fill fw-semibold py-1 rounded-3 shadow-xs" onclick="baixarRelatorioPDF()" style="font-size: 0.8rem;">
-                <i class="fa-solid fa-file-pdf me-1"></i> Baixar PDF
+              <button type="button" class="btn btn-success shadow-xs" onclick="baixarRelatorioPDF()">
+                <i class="fa-solid fa-file-pdf"></i><span>Baixar PDF</span>
               </button>
-              <button type="button" class="btn btn-outline-secondary btn-sm rounded-3 shadow-xs px-2" onclick="limparTodosFiltrosRelatorio()" title="Redefinir todos os filtros para o padrão">
-                <i class="fa-solid fa-rotate-left"></i>
+              <button type="button" class="btn btn-outline-secondary btn-reset-filtros shadow-xs" onclick="limparTodosFiltrosRelatorio()" title="Redefinir todos os filtros para o padrão">
+                <i class="fa-solid fa-rotate-left"></i><span>Limpar</span>
               </button>
             </div>
           </div>
+
           <!-- Linha extra para Datas Personalizadas caso selecionado CUSTOM -->
           <div class="row g-2 mt-2 pt-2 border-top d-none" id="linhaDatasPersonalizadas">
             <div class="col-md-3 col-sm-6">
               <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar-plus me-1 text-primary"></i>Data Inicial:</label>
-              <input type="date" class="form-control form-control-sm" id="filtroRelatorioDataInicio" onchange="atualizarRelatorioMensal()">
+              <input type="date" class="form-control" id="filtroRelatorioDataInicio" onchange="atualizarRelatorioMensal()">
             </div>
             <div class="col-md-3 col-sm-6">
               <label class="form-label small fw-bold mb-1"><i class="fa-regular fa-calendar-check me-1 text-primary"></i>Data Final:</label>
-              <input type="date" class="form-control form-control-sm" id="filtroRelatorioDataFim" onchange="atualizarRelatorioMensal()">
+              <input type="date" class="form-control" id="filtroRelatorioDataFim" onchange="atualizarRelatorioMensal()">
             </div>
             <div class="col-md-6 col-sm-12 d-flex align-items-end">
               <small class="text-muted mb-1"><i class="fa-solid fa-circle-info text-primary me-1"></i>Filtrando tarefas com atividade ou criação entre as duas datas selecionadas.</small>
@@ -1533,7 +1687,7 @@
             </div>
           </div>
 
-          <!-- DETALHAMENTO COM NUMERAÇÃO, MÓDULO, REORDENAÇÃO E BARRA DE BUSCA RÁPIDA -->
+          <!-- DETALHAMENTO COM NUMERAÇÃO, MÓDULO E REORDENAÇÃO -->
           <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
             <div>
               <h5 class="fw-bold mb-0 text-dark d-flex align-items-center flex-wrap gap-2">
@@ -1541,25 +1695,14 @@
                 <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 ms-1 cursor-pointer" id="kpiCardRel_TODOS" onclick="filtrarRelatorioPorKpi('TODOS')" title="Clique para exibir todas as demandas do período (sem filtro de status)" style="font-size: 0.74rem; font-weight: 600;">
                   <i class="fa-solid fa-layer-group me-1"></i>Total: <strong id="relTotalDemandas">0</strong> demandas (Ver Todas)
                 </span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 d-none align-items-center gap-1" id="badgePesquisaAtivaRelatorio" data-html2canvas-ignore="true" style="font-size: 0.74rem; font-weight: 600;">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <span id="lblTextoPesquisaAtivaRelatorio"></span>
+                  <button type="button" class="btn-close ms-1" style="font-size: 0.55rem;" onclick="limparPesquisaRelatorio()" title="Limpar pesquisa"></button>
+                </span>
               </h5>
               <div class="small text-muted" data-html2canvas-ignore="true" style="font-size: 0.74rem;">
                 <i class="fa-solid fa-arrow-down-up-across-line me-1 text-primary"></i> Clique em qualquer coluna para ordenar ou na linha para abrir o dossiê da demanda
-              </div>
-            </div>
-            
-            <!-- BARRA DE PESQUISA RÁPIDA COM LUPA NA TABELA -->
-            <div class="d-flex align-items-center gap-2" data-html2canvas-ignore="true">
-              <div class="input-group input-group-sm shadow-xs" style="min-width: 250px; max-width: 320px;">
-                <span class="input-group-text bg-white border-end-0 text-secondary">
-                  <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" class="form-control border-start-0 ps-1" id="pesquisaTabelaRelatorio" 
-                       placeholder="Pesquisar nas demandas..." 
-                       oninput="filtrarTabelaRelatorioAoDigitar()" autocomplete="off">
-                <button class="btn btn-outline-secondary border-start-0 d-none" type="button" id="btnLimparPesquisaRelatorio" 
-                        onclick="limparPesquisaRelatorio()" title="Limpar pesquisa">
-                  <i class="fa-solid fa-xmark"></i>
-                </button>
               </div>
             </div>
           </div>
@@ -3068,7 +3211,7 @@
         `).join('');
       }
       if (selectModuloFiltro && selectModuloFiltro.options.length <= 1) {
-        selectModuloFiltro.innerHTML = '<option value="TODOS" selected>Todos os Módulos</option>' +
+        selectModuloFiltro.innerHTML = '<option value="TODOS" selected>Todas as Origens</option>' +
           '<option value="Demanda Externa">Demanda Externa</option>' +
           LISTA_MODULOS.map(m => `<option value="${m}">${m}</option>`).join('');
       }
@@ -7703,8 +7846,16 @@
     }
     window.filtrarRelatorioPorKpi = filtrarRelatorioPorKpi;
 
+    function normalizarTextoBuscaRelatorio(str) {
+      return String(str || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+    }
+
     function filtrarTabelaRelatorioAoDigitar() {
-      const input = document.getElementById('pesquisaTabelaRelatorio');
+      const input = document.getElementById('filtroRelatorioPesquisa');
       const btnLimpar = document.getElementById('btnLimparPesquisaRelatorio');
       if (input && btnLimpar) {
         if (input.value.trim().length > 0) btnLimpar.classList.remove('d-none');
@@ -7715,10 +7866,15 @@
     window.filtrarTabelaRelatorioAoDigitar = filtrarTabelaRelatorioAoDigitar;
 
     function limparPesquisaRelatorio() {
-      const input = document.getElementById('pesquisaTabelaRelatorio');
+      const input = document.getElementById('filtroRelatorioPesquisa');
       const btnLimpar = document.getElementById('btnLimparPesquisaRelatorio');
+      const badgePesqAtiva = document.getElementById('badgePesquisaAtivaRelatorio');
       if (input) input.value = '';
       if (btnLimpar) btnLimpar.classList.add('d-none');
+      if (badgePesqAtiva) {
+        badgePesqAtiva.classList.add('d-none');
+        badgePesqAtiva.classList.remove('d-inline-flex');
+      }
       atualizarRelatorioMensal();
     }
     window.limparPesquisaRelatorio = limparPesquisaRelatorio;
@@ -7741,10 +7897,15 @@
         aoAlternarTodosStatusRelatorio(chkTodos);
       }
 
-      const inputBusca = document.getElementById('pesquisaTabelaRelatorio');
+      const inputBusca = document.getElementById('filtroRelatorioPesquisa');
       if (inputBusca) inputBusca.value = '';
       const btnLimpar = document.getElementById('btnLimparPesquisaRelatorio');
       if (btnLimpar) btnLimpar.classList.add('d-none');
+      const badgePesqAtiva = document.getElementById('badgePesquisaAtivaRelatorio');
+      if (badgePesqAtiva) {
+        badgePesqAtiva.classList.add('d-none');
+        badgePesqAtiva.classList.remove('d-inline-flex');
+      }
 
       kpiFiltroAtivoRelatorio = null;
       ['kpiCardRel_TODOS', 'kpiCardRel_Concluida', 'kpiCardRel_EmAndamento', 'kpiCardRel_NaoIniciada', 'kpiCardRel_Atrasada', 'kpiCardRel_DemandaFutura', 'kpiCardRel_Externa', 'kpiCardRel_Siopleex'].forEach(id => {
@@ -8038,6 +8199,51 @@
         }
       }
 
+      // 4º Filtro por Pesquisa Textual (filtra KPIs, tabela e exportação PDF)
+      const inputPesquisaRel = document.getElementById('filtroRelatorioPesquisa');
+      const termoBrutoPesquisa = (inputPesquisaRel ? inputPesquisaRel.value : '').trim();
+      const termoNormPesquisa = normalizarTextoBuscaRelatorio(termoBrutoPesquisa);
+      const btnLimparPesqRel = document.getElementById('btnLimparPesquisaRelatorio');
+      if (btnLimparPesqRel) {
+        btnLimparPesqRel.classList.toggle('d-none', !termoBrutoPesquisa);
+      }
+      const badgePesqAtiva = document.getElementById('badgePesquisaAtivaRelatorio');
+      const lblPesqAtiva = document.getElementById('lblTextoPesquisaAtivaRelatorio');
+      if (badgePesqAtiva && lblPesqAtiva) {
+        if (termoBrutoPesquisa) {
+          lblPesqAtiva.innerText = `Pesquisa: "${termoBrutoPesquisa}"`;
+          badgePesqAtiva.classList.remove('d-none');
+          badgePesqAtiva.classList.add('d-inline-flex');
+        } else {
+          lblPesqAtiva.innerText = '';
+          badgePesqAtiva.classList.add('d-none');
+          badgePesqAtiva.classList.remove('d-inline-flex');
+        }
+      }
+      if (termoNormPesquisa) {
+        const termosBusca = termoNormPesquisa.split(/\s+/).filter(Boolean);
+        filtradas = filtradas.filter(t => {
+          const isAfastItem = Boolean(t.isAfastamento || t.status === 'Afastamento');
+          const isExtItem = !isAfastItem && (t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa');
+          const modItem = isAfastItem ? 'Afastamento' : (isExtItem ? 'Demanda Externa' : (t.modulo || 'SIOPLEEx'));
+          const textoItem = normalizarTextoBuscaRelatorio([
+            t.titulo || '',
+            t.descricao || '',
+            modItem,
+            t.devNome || '',
+            limparNomeDev(t.devNome || ''),
+            t.status || '',
+            t.urgencia || '',
+            t.tipoAfastamento || '',
+            t.dataInsercao ? formatarData(t.dataInsercao) : '',
+            t.dataInicio ? formatarData(t.dataInicio) : '',
+            t.dataPrazo ? formatarData(t.dataPrazo) : '',
+            t.dataConclusao ? formatarData(t.dataConclusao) : ''
+          ].join(' '));
+          return termosBusca.every(termo => textoItem.includes(termo));
+        });
+      }
+
       // 6º Reordenação Multi-Critério (Multi-Sort) em todas as colunas da lista
       filtradas.sort((a, b) => {
         for (let i = 0; i < relatorioMultiSort.length; i++) {
@@ -8126,7 +8332,7 @@
       const elTotal = document.getElementById('relTotalDemandas');
       if (elTotal) elTotal.innerText = totalDemandas;
 
-      // Aplica Filtro Rápido de KPI clicado e Barra de Pesquisa Textual da Tabela
+      // Aplica Filtro Rápido de KPI clicado para exibição na tabela e PDF
       let exibidasNaTabela = [...filtradas];
       if (kpiFiltroAtivoRelatorio && kpiFiltroAtivoRelatorio !== 'TODOS') {
         if (kpiFiltroAtivoRelatorio === 'ORIGEM_EXTERNA') {
@@ -8136,20 +8342,6 @@
         } else {
           exibidasNaTabela = exibidasNaTabela.filter(t => t.status === kpiFiltroAtivoRelatorio);
         }
-      }
-
-      const inputBuscaTab = document.getElementById('pesquisaTabelaRelatorio');
-      const termoBuscaTabela = (inputBuscaTab ? inputBuscaTab.value : '').trim().toLowerCase();
-      if (termoBuscaTabela) {
-        exibidasNaTabela = exibidasNaTabela.filter(t => {
-          const tit = (t.titulo || '').toLowerCase();
-          const mod = ((t.demandaExterna || t.modulo === 'Demanda Externa') ? 'Demanda Externa' : (t.modulo || 'SIOPLEEx')).toLowerCase();
-          const dev = (t.devNome || '').toLowerCase();
-          const desc = (t.descricao || '').toLowerCase();
-          const st = (t.status || '').toLowerCase();
-          const urg = (t.urgencia || '').toLowerCase();
-          return tit.includes(termoBuscaTabela) || mod.includes(termoBuscaTabela) || dev.includes(termoBuscaTabela) || desc.includes(termoBuscaTabela) || st.includes(termoBuscaTabela) || urg.includes(termoBuscaTabela);
-        });
       }
 
       // Guarda resultado exibido para exportação precisa
@@ -8352,7 +8544,7 @@
       const naoIniciadas = demandas.filter(t => t.status === 'Não Iniciada').length;
       const demandasFuturas = demandas.filter(t => t.status === 'Demanda Futura').length;
       const demandasExternas = demandas.filter(t => t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa').length;
-      const demandasSiopleex = demandas.filter(t => !(t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa')).length;
+      const demandasSiopleex = demandas.filter(t => !t.isAfastamento && !(t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa')).length;
 
       dadosRelatorioPdfAtual = {
         mesTexto, anoTexto, devTexto, modTexto, statusTexto, periodoDesc,
@@ -8367,6 +8559,8 @@
       if (devTexto) tagsFiltros.push(`Dev: ${limparNomeDev(devTexto)}`);
       if (modTexto) tagsFiltros.push(`Módulo: ${modTexto}`);
       if (statusTexto) tagsFiltros.push(`Status: ${statusTexto}`);
+      const termoPesquisaPdf = (document.getElementById('filtroRelatorioPesquisa')?.value || '').trim();
+      if (termoPesquisaPdf) tagsFiltros.push(`Pesquisa: "${escaparHtmlPush(termoPesquisaPdf)}"`);
       if (relatorioMultiSort.length > 1) {
         tagsFiltros.push('Ordem: ' + relatorioMultiSort.map((c, i) => `${i + 1}º ${obterNomeAmigavelColuna(c.coluna)}`).join(' → '));
       }
