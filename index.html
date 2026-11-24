@@ -117,6 +117,11 @@
       background: linear-gradient(135deg, #ffffff 0%, #fff5f5 100%);
       box-shadow: 0 4px 16px -2px rgba(239, 68, 68, 0.08);
     }
+    .hero-task.afastamento {
+      border-left: 6px solid #f59e0b;
+      background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+      box-shadow: 0 4px 16px -2px rgba(245, 158, 11, 0.14);
+    }
 
     /* Pulse Live Dot */
     .pulse-live-dot {
@@ -893,8 +898,8 @@
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
             <div class="d-flex align-items-center flex-wrap gap-2">
               <span class="badge bg-dark text-white px-2 py-1 rounded-pill shadow-xs d-inline-flex align-items-center" style="font-size: 0.7rem;">
-                <span class="pulse-live-dot me-1"></span>
-                <span class="fw-bold" style="letter-spacing: 0.5px;">PRODUÇÃO ATIVA</span>
+                <span class="pulse-live-dot me-1" id="dotHeroModoAtual"></span>
+                <span class="fw-bold" id="lblHeroModoAtual" style="letter-spacing: 0.5px;">PRODUÇÃO ATIVA</span>
               </span>
               <span class="badge bg-secondary-subtle text-secondary border font-monospace px-2 py-1" id="badgeModuloAtual" style="font-size: 0.72rem;">SIOPLEEx</span>
               <span id="badgeStatusAtual" class="badge-status-dia" style="font-size: 0.72rem; padding: 2px 8px;">Em Dia</span>
@@ -964,6 +969,14 @@
                 </button>
                 <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1 fw-semibold rounded-pill" id="btnExcluirDemandaAtual" onclick="excluirDemandaAtualConfirm()" style="font-size: 0.8rem;" title="Excluir Demanda">
                   <i class="fa-solid fa-trash-can me-1"></i> Excluir
+                </button>
+              </div>
+              <div class="d-none align-items-center gap-2" id="botoesAcaoAfastamento">
+                <button type="button" class="btn btn-outline-warning text-dark btn-sm px-3 py-1 fw-semibold rounded-pill" id="btnEditarAfastamentoHero" onclick="editarAfastamentoHeroAtual()" style="font-size: 0.8rem;" title="Editar Afastamento">
+                  <i class="fa-solid fa-pen-to-square me-1"></i> Editar Afastamento
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm px-3 py-1 fw-semibold rounded-pill" id="btnExcluirAfastamentoHero" onclick="encerrarAfastamentoHeroAtual()" style="font-size: 0.8rem;" title="Encerrar ou Remover Afastamento">
+                  <i class="fa-solid fa-trash-can me-1"></i> Encerrar Afastamento
                 </button>
               </div>
             </div>
@@ -1235,6 +1248,14 @@
                       <input class="form-check-input chk-rel-status cursor-pointer" type="checkbox" id="chkRelStatusDemandaFutura" value="Demanda Futura" checked onchange="aoMudarCheckboxStatusRelatorio()">
                       <label class="form-check-label fw-semibold user-select-none cursor-pointer d-flex align-items-center gap-1" for="chkRelStatusDemandaFutura" style="color: #4f46e5;">
                         <span class="badge px-1 py-0" style="font-size: 0.65rem; background-color: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe;">●</span> Demanda Futura
+                      </label>
+                    </div>
+                  </li>
+                  <li class="px-2 py-1">
+                    <div class="form-check">
+                      <input class="form-check-input chk-rel-status cursor-pointer" type="checkbox" id="chkRelStatusAfastamento" value="Afastamento" checked onchange="aoMudarCheckboxStatusRelatorio()">
+                      <label class="form-check-label fw-semibold user-select-none cursor-pointer d-flex align-items-center gap-1" for="chkRelStatusAfastamento" style="color: #b45309;">
+                        <span class="badge px-1 py-0" style="font-size: 0.65rem; background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a;">●</span> Afastamento
                       </label>
                     </div>
                   </li>
@@ -2632,6 +2653,24 @@
             </div>
           </div>
 
+          <!-- Banner de Férias / Dispensa / Afastamento Ativo ou Programado -->
+          <div id="pushBannerAfastamentoAtivo" class="alert alert-warning border-warning d-none rounded-4 py-2 px-3 mb-3 small">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-umbrella-beach fs-5 text-warning-emphasis"></i>
+                <div id="pushBannerAfastamentoTexto" class="lh-sm"></div>
+              </div>
+              <div class="d-flex align-items-center gap-1 ms-auto">
+                <button type="button" class="btn btn-outline-dark btn-xs rounded-pill px-2 py-1 fw-semibold" style="font-size: 0.74rem;" onclick="editarAfastamentoAtualModalPush()">
+                  <i class="fa-solid fa-pen me-1"></i> Editar
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-xs rounded-pill px-2 py-1 fw-semibold" style="font-size: 0.74rem;" onclick="removerAfastamentoAtualModalPush()">
+                  <i class="fa-solid fa-trash me-1"></i> Remover
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Botões Principais de Ativação / Desativação -->
           <div class="d-flex flex-wrap gap-2 mb-3">
             <button type="button" id="btnAtivarPushModal" class="btn btn-primary fw-semibold rounded-pill px-4" onclick="ativarPushNesteNavegador()">
@@ -2639,6 +2678,9 @@
             </button>
             <button type="button" id="btnDesativarPushModal" class="btn btn-outline-danger rounded-pill px-3 d-none" onclick="desativarPushNesteNavegador()">
               <i class="fa-solid fa-bell-slash me-1"></i> Desativar neste Navegador
+            </button>
+            <button type="button" id="btnAfastamentoPushModal" class="btn btn-outline-warning text-dark fw-semibold rounded-pill px-3" onclick="abrirModalAfastamentoPush()">
+              <i class="fa-solid fa-umbrella-beach me-1"></i> Desativar - Férias/Dispensa
             </button>
             <button type="button" class="btn btn-outline-secondary rounded-pill px-3 ms-auto" onclick="abrirModalResumoDiarioBriefing()">
               <i class="fa-solid fa-clipboard-list me-1"></i> Ver Meu Resumo de Hoje
@@ -2711,6 +2753,84 @@
     </div>
   </div>
 
+  <!-- MODAL: DESATIVAR NOTIFICAÇÕES — FÉRIAS / DISPENSA / AFASTAMENTO -->
+  <div class="modal fade" id="modalAfastamentoPush" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+        <div class="modal-header border-0 text-white p-3 px-4" style="background: linear-gradient(135deg, #0f172a 0%, #b45309 100%);">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-white bg-opacity-10 d-flex align-items-center justify-content-center text-warning" style="width: 42px; height: 42px; font-size: 18px;">
+              <i class="fa-solid fa-umbrella-beach"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold mb-0">Desativar Notificações — Férias / Dispensa</h5>
+              <small class="text-white-50">Pausa programada com registro automático no Em Foco e Relatório</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="afastamentoEditId" value="">
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold text-dark" for="afastamentoDataInicio">Início (De):</label>
+              <input type="date" class="form-control" id="afastamentoDataInicio" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold text-dark" for="afastamentoDataFim">Término (Até):</label>
+              <input type="date" class="form-control" id="afastamentoDataFim" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-dark d-block mb-2">Motivo da pausa / afastamento:</label>
+            <div class="btn-group w-100" role="group" aria-label="Tipo de afastamento">
+              <input type="radio" class="btn-check" name="afastamentoTipo" id="afastTipoFerias" value="Férias" checked onchange="aoMudarTipoAfastamento()">
+              <label class="btn btn-outline-warning text-dark fw-semibold" for="afastTipoFerias">
+                <i class="fa-solid fa-umbrella-beach me-1"></i> Férias
+              </label>
+
+              <input type="radio" class="btn-check" name="afastamentoTipo" id="afastTipoDispensa" value="Dispensa" onchange="aoMudarTipoAfastamento()">
+              <label class="btn btn-outline-warning text-dark fw-semibold" for="afastTipoDispensa">
+                <i class="fa-solid fa-calendar-xmark me-1"></i> Dispensa
+              </label>
+
+              <input type="radio" class="btn-check" name="afastamentoTipo" id="afastTipoOutros" value="Outros" onchange="aoMudarTipoAfastamento()">
+              <label class="btn btn-outline-warning text-dark fw-semibold" for="afastTipoOutros">
+                <i class="fa-solid fa-pen-nib me-1"></i> Outros
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-3 d-none" id="wrapAfastamentoOutros">
+            <label class="form-label small fw-bold text-dark" for="afastamentoOutrosTexto">Qual é o motivo?</label>
+            <input type="text" class="form-control" id="afastamentoOutrosTexto" maxlength="80" placeholder="Ex: Licença Médica, Missão, Curso...">
+            <div class="form-text text-muted" style="font-size: 0.74rem;">Este nome aparecerá no seu card Em Foco e no Relatório Mensal.</div>
+          </div>
+
+          <div class="alert alert-warning border-warning border-opacity-50 small py-2 px-3 mb-2">
+            <i class="fa-solid fa-circle-info me-1"></i>
+            Durante esse intervalo, seus alertas diários serão pausados automaticamente, o motivo ficará destacado no <strong>Em Foco</strong> e registrado com início e término no <strong>Relatório Mensal</strong>.
+          </div>
+
+          <div id="afastamentoErroBox" class="alert alert-danger d-none small py-2 px-3 mb-0"></div>
+        </div>
+        <div class="modal-footer border-top bg-light py-2 px-4 d-flex justify-content-between align-items-center">
+          <button type="button" id="btnExcluirAfastamentoModal" class="btn btn-outline-danger btn-sm rounded-pill px-3 d-none" onclick="excluirAfastamentoModalAtual()">
+            <i class="fa-solid fa-trash me-1"></i> Excluir
+          </button>
+          <div class="d-flex align-items-center gap-2 ms-auto">
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" id="btnSalvarAfastamentoModal" class="btn btn-warning text-dark fw-bold btn-sm rounded-pill px-4" onclick="salvarAfastamentoForm()">
+              <i class="fa-solid fa-check me-1"></i> Salvar Afastamento
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: RESUMO DIÁRIO DETALHADO (BRIEFING DO DIA) -->
   <div class="modal fade" id="modalResumoDiarioBriefing" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
@@ -2752,7 +2872,8 @@
       usuarios: [],
       tarefas: [],
       solicitacoes: [],
-      demandasFuturas: []
+      demandasFuturas: [],
+      afastamentos: []
     };
 
     // 22 Módulos Oficiais do Sistema
@@ -3315,6 +3436,8 @@
         else if (action === 'enviarPushTesteUsuario') runner.enviarPushTesteUsuario(data);
         else if (action === 'dispararResumoDiarioPushManual') runner.dispararResumoDiarioPushEquipe({ ignorarFimDeSemana: true, somenteEmail: (data && data.somenteEmail) || '' });
         else if (action === 'configurarGatilhoPushDiario') runner.instalarGatilhoPushDiario(data && data.hora);
+        else if (action === 'salvarAfastamento') runner.salvarAfastamento(data);
+        else if (action === 'excluirAfastamento') runner.excluirAfastamento(data);
       } else {
         const urlsToTry = [activeAppsScriptUrl, ...APPS_SCRIPT_URLS_LIST.filter(u => u !== activeAppsScriptUrl)];
         const tentarRequisicao = (idx) => {
@@ -4462,6 +4585,7 @@
       appState.usuarios = dados.usuarios || [];
       appState.tarefas = Array.isArray(dados.tarefas) ? dados.tarefas.map(t => ({ ...t })) : [];
       appState.solicitacoes = dados.solicitacoes || [];
+      appState.afastamentos = Array.isArray(dados.afastamentos) ? dados.afastamentos.map(a => ({ ...a })) : [];
 
       // Reconcilia Demandas Futuras do servidor com pendências/edições locais
       let servidorFuturas = Array.isArray(dados.demandasFuturas) ? dados.demandasFuturas.map(d => ({ ...d })) : [];
@@ -4934,103 +5058,198 @@
       const badgeDemandasFuturas = document.getElementById('badgeQtdDemandasFuturasAba');
       if (badgeDemandasFuturas) badgeDemandasFuturas.innerText = demandasFuturas.length;
 
-      // HERO CARD: DEMANDA ATUAL EM PRODUÇÃO
+      // HERO CARD: AFASTAMENTO ATIVO OU DEMANDA ATUAL EM PRODUÇÃO
       const demandaAtual = tarefasDev.find(t => t.ativo && t.status !== 'Concluída') || (emAndamento.length > 0 ? emAndamento[0] : (atrasadas.length > 0 ? atrasadas[0] : null));
       window.demandaAtualHeroId = demandaAtual ? demandaAtual.id : null;
+      const devObjHero = (appState.usuarios || []).find(u => u.id === devId)
+        || (appState.currentUser && appState.currentUser.id === devId ? appState.currentUser : null);
+      const afastamentoHoje = obterAfastamentoAtivoDevHoje(devId, devObjHero);
+      window.afastamentoAtualHeroId = afastamentoHoje ? afastamentoHoje.id : null;
+
       const cardAtual = document.getElementById('cardDemandaAtual');
       const alertaAtraso = document.getElementById('alertaAtrasoAtual');
       const botoesAcao = document.getElementById('botoesAcaoAtual');
+      const botoesAfastamento = document.getElementById('botoesAcaoAfastamento');
+      const lblHeroModo = document.getElementById('lblHeroModoAtual');
+      const dotHeroModo = document.getElementById('dotHeroModoAtual');
       const badgeModuloAtual = document.getElementById('badgeModuloAtual');
       const btnExcluirAtual = document.getElementById('btnExcluirDemandaAtual');
 
       if (cardAtual) {
-        if (demandaAtual) {
+        if (afastamentoHoje) {
+          cardAtual.classList.remove('atrasada');
+          cardAtual.classList.add('afastamento');
+          if (lblHeroModo) lblHeroModo.innerText = 'AFASTAMENTO ATIVO';
+          if (dotHeroModo) dotHeroModo.style.backgroundColor = '#f59e0b';
+
+          const totalDiasAf = calcularDiasInclusivosAfastamento(afastamentoHoje.dataInicio, afastamentoHoje.dataFim);
+          const diasDecorridosAf = calcularDiasDecorridosAfastamento(afastamentoHoje.dataInicio, afastamentoHoje.dataFim);
+
           const titEl = document.getElementById('tituloDemandaAtual');
-          if (titEl) titEl.innerText = demandaAtual.titulo;
+          if (titEl) titEl.innerText = afastamentoHoje.motivo || afastamentoHoje.tipo || 'Afastamento';
           const descEl = document.getElementById('descDemandaAtual');
-          if (descEl) descEl.innerText = demandaAtual.descricao || 'Sem descrição informada.';
+          if (descEl) {
+            let txtAf = `Notificações diárias pausadas no período de ${formatarData(afastamentoHoje.dataInicio)} até ${formatarData(afastamentoHoje.dataFim)}.`;
+            if (demandaAtual) {
+              txtAf += `\nDemanda na esteira aguardando retorno: ${demandaAtual.titulo}`;
+            }
+            descEl.innerText = txtAf;
+          }
           const devEl = document.getElementById('devNomeAtual');
-          if (devEl) devEl.innerText = limparNomeDev(demandaAtual.devNome);
+          if (devEl) devEl.innerText = limparNomeDev(afastamentoHoje.usuarioNome || (devObjHero && devObjHero.nome) || (appState.currentUser && appState.currentUser.nome) || 'Desenvolvedor');
           const estEl = document.getElementById('tempoEstimadoAtual');
-          if (estEl) estEl.innerText = (demandaAtual.diasEstimados || 1) + ' dia(s)';
-          
-          const diasProducao = calcularDiasEmProducao(demandaAtual.dataInicio, demandaAtual.dataConclusao, demandaAtual.status, true);
+          if (estEl) estEl.innerText = totalDiasAf === 1 ? '1 dia' : `${totalDiasAf} dias`;
           const demEl = document.getElementById('tempoDemandadoAtual');
-          if (demEl) demEl.innerText = diasProducao === 1 ? '1 dia' : `${diasProducao} dias`;
-          
+          if (demEl) demEl.innerText = diasDecorridosAf === 1 ? '1 dia' : `${diasDecorridosAf} dias`;
           const iniEl = document.getElementById('dataInicioAtual');
-          if (iniEl) iniEl.innerText = formatarData(demandaAtual.dataInicio);
+          if (iniEl) iniEl.innerText = formatarData(afastamentoHoje.dataInicio);
           const przEl = document.getElementById('dataPrazoAtual');
-          if (przEl) przEl.innerText = formatarData(demandaAtual.dataPrazo);
+          if (przEl) przEl.innerText = formatarData(afastamentoHoje.dataFim);
 
           if (badgeModuloAtual) {
-            const modText = demandaAtual.modulo || 'SIOPLEEx';
-            badgeModuloAtual.innerText = modText;
-            badgeModuloAtual.title = 'Módulo: ' + modText;
-            if (modText === 'Demanda Externa') {
-              badgeModuloAtual.className = 'badge bg-primary-subtle text-primary border border-primary-subtle font-monospace me-1';
-            } else {
-              badgeModuloAtual.className = 'badge bg-secondary-subtle text-secondary border font-monospace me-1';
-            }
+            badgeModuloAtual.innerText = 'Afastamento';
+            badgeModuloAtual.title = 'Afastamento / Pausa Programada';
+            badgeModuloAtual.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle font-monospace me-1';
           }
 
           const badgeStatus = document.getElementById('badgeStatusAtual');
           if (badgeStatus) {
-            if (demandaAtual.status === 'Atrasada') {
-              badgeStatus.className = 'badge-status-atrasada';
-              badgeStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> Atrasada';
-              cardAtual.classList.add('atrasada');
-              if (alertaAtraso) {
-                alertaAtraso.classList.remove('d-none');
-                alertaAtraso.classList.add('d-flex');
-              }
-            } else {
-              badgeStatus.className = 'badge-status-dia';
-              badgeStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Em Andamento';
-              cardAtual.classList.remove('atrasada');
-              if (alertaAtraso) {
-                alertaAtraso.classList.add('d-none');
-                alertaAtraso.classList.remove('d-flex');
-              }
-            }
+            badgeStatus.className = 'badge bg-warning text-dark rounded-pill';
+            badgeStatus.innerHTML = '<i class="fa-solid fa-umbrella-beach me-1"></i> Pausa Programada';
           }
 
           const badgeUrg = document.getElementById('badgeUrgenciaAtual');
           if (badgeUrg) {
-            badgeUrg.innerText = demandaAtual.urgencia || 'Média';
-            badgeUrg.className = `badge badge-${(demandaAtual.urgencia || 'Media').toLowerCase()}`;
+            badgeUrg.innerText = afastamentoHoje.tipo || 'Férias';
+            badgeUrg.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle';
           }
 
-          if (botoesAcao) botoesAcao.classList.remove('d-none');
-          const podeEditarAtual = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (demandaAtual.devId === appState.currentUser.id || (demandaAtual.devNome && appState.currentUser.nome && demandaAtual.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
-          const btnEditarAtual = document.getElementById('btnEditarDemandaAtual');
-          if (btnEditarAtual) {
-            if (podeEditarAtual) btnEditarAtual.classList.remove('d-none');
-            else btnEditarAtual.classList.add('d-none');
+          if (alertaAtraso) {
+            alertaAtraso.classList.add('d-none');
+            alertaAtraso.classList.remove('d-flex');
           }
-          if (btnExcluirAtual) {
-            if (podeEditarAtual) btnExcluirAtual.classList.remove('d-none');
-            else btnExcluirAtual.classList.add('d-none');
+          if (botoesAcao) botoesAcao.classList.add('d-none');
+
+          const podeGerirAfastamento = usuarioPodeVerPainelGerente(appState.currentUser) || afastamentoPertenceAoDev(afastamentoHoje, appState.currentUser ? appState.currentUser.id : '', appState.currentUser);
+          if (botoesAfastamento) {
+            if (podeGerirAfastamento) {
+              botoesAfastamento.classList.remove('d-none');
+              botoesAfastamento.classList.add('d-inline-flex');
+            } else {
+              botoesAfastamento.classList.add('d-none');
+              botoesAfastamento.classList.remove('d-inline-flex');
+            }
           }
         } else {
-          const titEl = document.getElementById('tituloDemandaAtual');
-          if (titEl) titEl.innerText = 'Nenhuma demanda em produção ativa';
-          const descEl = document.getElementById('descDemandaAtual');
-          if (descEl) descEl.innerText = 'Inicie uma demanda abaixo para colocá-la na esteira de produção!';
-          const devEl = document.getElementById('devNomeAtual');
-          if (devEl) devEl.innerText = appState.currentUser ? limparNomeDev(appState.currentUser.nome) : 'Desenvolvedor';
-          const estEl = document.getElementById('tempoEstimadoAtual');
-          if (estEl) estEl.innerText = '0 dias';
-          const demEl = document.getElementById('tempoDemandadoAtual');
-          if (demEl) demEl.innerText = '0 dias';
-          const iniEl = document.getElementById('dataInicioAtual');
-          if (iniEl) iniEl.innerText = '-';
-          const przEl = document.getElementById('dataPrazoAtual');
-          if (przEl) przEl.innerText = '-';
-          if (badgeModuloAtual) badgeModuloAtual.innerText = 'SIOPLEEx';
-          cardAtual.classList.remove('atrasada');
-          if (alertaAtraso) alertaAtraso.classList.add('d-none');
-          if (botoesAcao) botoesAcao.classList.add('d-none');
+          cardAtual.classList.remove('afastamento');
+          if (lblHeroModo) lblHeroModo.innerText = 'PRODUÇÃO ATIVA';
+          if (dotHeroModo) dotHeroModo.style.backgroundColor = '';
+          if (botoesAfastamento) {
+            botoesAfastamento.classList.add('d-none');
+            botoesAfastamento.classList.remove('d-inline-flex');
+          }
+
+          if (demandaAtual) {
+            const titEl = document.getElementById('tituloDemandaAtual');
+            if (titEl) titEl.innerText = demandaAtual.titulo;
+            const descEl = document.getElementById('descDemandaAtual');
+            if (descEl) descEl.innerText = demandaAtual.descricao || 'Sem descrição informada.';
+            const devEl = document.getElementById('devNomeAtual');
+            if (devEl) devEl.innerText = limparNomeDev(demandaAtual.devNome);
+            const estEl = document.getElementById('tempoEstimadoAtual');
+            if (estEl) estEl.innerText = (demandaAtual.diasEstimados || 1) + ' dia(s)';
+            
+            const diasProducao = calcularDiasEmProducao(demandaAtual.dataInicio, demandaAtual.dataConclusao, demandaAtual.status, true);
+            const demEl = document.getElementById('tempoDemandadoAtual');
+            if (demEl) demEl.innerText = diasProducao === 1 ? '1 dia' : `${diasProducao} dias`;
+            
+            const iniEl = document.getElementById('dataInicioAtual');
+            if (iniEl) iniEl.innerText = formatarData(demandaAtual.dataInicio);
+            const przEl = document.getElementById('dataPrazoAtual');
+            if (przEl) przEl.innerText = formatarData(demandaAtual.dataPrazo);
+
+            if (badgeModuloAtual) {
+              const modText = demandaAtual.modulo || 'SIOPLEEx';
+              badgeModuloAtual.innerText = modText;
+              badgeModuloAtual.title = 'Módulo: ' + modText;
+              if (modText === 'Demanda Externa') {
+                badgeModuloAtual.className = 'badge bg-primary-subtle text-primary border border-primary-subtle font-monospace me-1';
+              } else {
+                badgeModuloAtual.className = 'badge bg-secondary-subtle text-secondary border font-monospace me-1';
+              }
+            }
+
+            const badgeStatus = document.getElementById('badgeStatusAtual');
+            if (badgeStatus) {
+              if (demandaAtual.status === 'Atrasada') {
+                badgeStatus.className = 'badge-status-atrasada';
+                badgeStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> Atrasada';
+                cardAtual.classList.add('atrasada');
+                if (alertaAtraso) {
+                  alertaAtraso.classList.remove('d-none');
+                  alertaAtraso.classList.add('d-flex');
+                }
+              } else {
+                badgeStatus.className = 'badge-status-dia';
+                badgeStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Em Andamento';
+                cardAtual.classList.remove('atrasada');
+                if (alertaAtraso) {
+                  alertaAtraso.classList.add('d-none');
+                  alertaAtraso.classList.remove('d-flex');
+                }
+              }
+            }
+
+            const badgeUrg = document.getElementById('badgeUrgenciaAtual');
+            if (badgeUrg) {
+              badgeUrg.innerText = demandaAtual.urgencia || 'Média';
+              badgeUrg.className = `badge badge-${(demandaAtual.urgencia || 'Media').toLowerCase()}`;
+            }
+
+            if (botoesAcao) botoesAcao.classList.remove('d-none');
+            const podeEditarAtual = usuarioPodeVerPainelGerente(appState.currentUser) || (appState.currentUser && (demandaAtual.devId === appState.currentUser.id || (demandaAtual.devNome && appState.currentUser.nome && demandaAtual.devNome.trim().toLowerCase() === appState.currentUser.nome.trim().toLowerCase())));
+            const btnEditarAtual = document.getElementById('btnEditarDemandaAtual');
+            if (btnEditarAtual) {
+              if (podeEditarAtual) btnEditarAtual.classList.remove('d-none');
+              else btnEditarAtual.classList.add('d-none');
+            }
+            if (btnExcluirAtual) {
+              if (podeEditarAtual) btnExcluirAtual.classList.remove('d-none');
+              else btnExcluirAtual.classList.add('d-none');
+            }
+          } else {
+            const titEl = document.getElementById('tituloDemandaAtual');
+            if (titEl) titEl.innerText = 'Nenhuma demanda em produção ativa';
+            const descEl = document.getElementById('descDemandaAtual');
+            if (descEl) descEl.innerText = 'Inicie uma demanda abaixo para colocá-la na esteira de produção!';
+            const devEl = document.getElementById('devNomeAtual');
+            if (devEl) devEl.innerText = appState.currentUser ? limparNomeDev(appState.currentUser.nome) : 'Desenvolvedor';
+            const estEl = document.getElementById('tempoEstimadoAtual');
+            if (estEl) estEl.innerText = '0 dias';
+            const demEl = document.getElementById('tempoDemandadoAtual');
+            if (demEl) demEl.innerText = '0 dias';
+            const iniEl = document.getElementById('dataInicioAtual');
+            if (iniEl) iniEl.innerText = '-';
+            const przEl = document.getElementById('dataPrazoAtual');
+            if (przEl) przEl.innerText = '-';
+            if (badgeModuloAtual) {
+              badgeModuloAtual.innerText = 'SIOPLEEx';
+              badgeModuloAtual.className = 'badge bg-secondary-subtle text-secondary border font-monospace me-1';
+            }
+            const badgeStatus = document.getElementById('badgeStatusAtual');
+            if (badgeStatus) {
+              badgeStatus.className = 'badge-status-dia';
+              badgeStatus.innerText = 'Em Dia';
+            }
+            const badgeUrg = document.getElementById('badgeUrgenciaAtual');
+            if (badgeUrg) {
+              badgeUrg.innerText = 'Média';
+              badgeUrg.className = 'badge badge-media';
+            }
+            cardAtual.classList.remove('atrasada');
+            if (alertaAtraso) alertaAtraso.classList.add('d-none');
+            if (botoesAcao) botoesAcao.classList.add('d-none');
+          }
         }
       }
 
@@ -5517,6 +5736,7 @@
     function abrirDrawerDetalheDemanda(tarefaId) {
       let tarefa = appState.tarefas.find(t => t.id === tarefaId);
       let isFuturaDossie = false;
+      let isAfastamentoDossie = false;
       if (!tarefa && Array.isArray(appState.demandasFuturas)) {
         const df = appState.demandasFuturas.find(d => d.id === tarefaId);
         if (df) {
@@ -5541,13 +5761,41 @@
           };
         }
       }
+      if (!tarefa && Array.isArray(appState.afastamentos)) {
+        const af = appState.afastamentos.find(a => a.id === tarefaId);
+        if (af) {
+          isAfastamentoDossie = true;
+          const totalDiasAf = calcularDiasInclusivosAfastamento(af.dataInicio, af.dataFim);
+          const diasDecAf = calcularDiasDecorridosAfastamento(af.dataInicio, af.dataFim);
+          tarefa = {
+            id: af.id,
+            titulo: af.motivo || af.tipo || 'Afastamento',
+            descricao: `Período de afastamento programado (${af.tipo || 'Afastamento'}): ${formatarData(af.dataInicio)} até ${formatarData(af.dataFim)}.\nDurante esse intervalo, as notificações diárias ficam pausadas automaticamente.`,
+            modulo: 'Afastamento',
+            demandaExterna: false,
+            devId: af.usuarioId,
+            devNome: af.usuarioNome || af.usuarioEmail || 'Membro',
+            diasEstimados: totalDiasAf,
+            diasTrabalhados: diasDecAf,
+            dataInsercao: af.dataInicio,
+            dataInicio: af.dataInicio,
+            dataPrazo: af.dataFim,
+            dataConclusao: af.dataFim,
+            urgencia: af.tipo || 'Férias',
+            status: 'Afastamento',
+            ativo: false
+          };
+        }
+      }
       if (!tarefa) return;
 
       const realIdx = isFuturaDossie
         ? Math.max(0, (appState.demandasFuturas || []).findIndex(d => d.id === tarefa.id))
-        : appState.tarefas.findIndex(t => t.id === tarefa.id);
+        : (isAfastamentoDossie
+            ? Math.max(0, (appState.afastamentos || []).findIndex(a => a.id === tarefa.id))
+            : appState.tarefas.findIndex(t => t.id === tarefa.id));
       const isExterna = (tarefa.demandaExterna === true || tarefa.demandaExterna === 'true' || tarefa.modulo === 'Demanda Externa');
-      const mod = isExterna ? 'Demanda Externa' : (tarefa.modulo || 'SIOPLEEx');
+      const mod = isAfastamentoDossie ? 'Afastamento' : (isExterna ? 'Demanda Externa' : (tarefa.modulo || 'SIOPLEEx'));
       const devNomeLimpo = limparNomeDev(tarefa.devNome);
       const iniciais = obterIniciaisDev(devNomeLimpo);
 
@@ -5557,16 +5805,18 @@
 
       // Configura cabeçalho do Drawer
       const elTitulo = document.getElementById('drawerTitulo');
-      if (elTitulo) elTitulo.innerText = 'Dossiê da Demanda';
+      if (elTitulo) elTitulo.innerText = isAfastamentoDossie ? 'Dossiê do Afastamento' : 'Dossiê da Demanda';
 
       const elSubtitulo = document.getElementById('drawerSubtitulo');
       if (elSubtitulo) elSubtitulo.innerText = `ID #${String(realIdx + 1).padStart(2, '0')} • ${mod}`;
 
       const elIcon = document.getElementById('drawerIcon');
-      if (elIcon) elIcon.className = 'fa-solid fa-id-card fs-5 text-primary';
+      if (elIcon) elIcon.className = isAfastamentoDossie ? 'fa-solid fa-umbrella-beach fs-5 text-warning-emphasis' : 'fa-solid fa-id-card fs-5 text-primary';
 
       const elIconCont = document.getElementById('drawerIconContainer');
-      if (elIconCont) elIconCont.className = 'rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle text-primary';
+      if (elIconCont) elIconCont.className = isAfastamentoDossie
+        ? 'rounded-circle d-flex align-items-center justify-content-center bg-warning-subtle text-warning-emphasis'
+        : 'rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle text-primary';
 
       const elBadgeQtd = document.getElementById('drawerBadgeQtd');
       if (elBadgeQtd) {
@@ -5574,6 +5824,7 @@
         if (tarefa.status === 'Concluída') corBadge = 'bg-success text-white';
         else if (tarefa.status === 'Atrasada') corBadge = 'bg-danger text-white';
         else if (tarefa.status === 'Não Iniciada') corBadge = 'bg-secondary text-white';
+        else if (tarefa.status === 'Afastamento') corBadge = 'bg-warning text-dark';
         elBadgeQtd.innerText = tarefa.status;
         elBadgeQtd.className = `badge ${corBadge} font-monospace rounded-pill`;
       }
@@ -5584,6 +5835,8 @@
       let diasProd = 0;
       if (tarefa.status === 'Em Andamento' || tarefa.status === 'Concluída' || tarefa.status === 'Atrasada') {
         diasProd = calcularDiasEmProducao(tarefa.dataInicio, tarefa.dataConclusao, tarefa.status, tarefa.ativo);
+      } else if (isAfastamentoDossie) {
+        diasProd = tarefa.diasTrabalhados || 0;
       }
 
       let diasAtraso = 0;
@@ -5737,10 +5990,10 @@
             </div>
             <div class="d-flex align-items-center gap-2">
               ${podeEditarOuExcluir ? `
-                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" onclick="${isFuturaDossie ? `abrirModalNovaDemandaFutura('${tarefa.id}')` : `abrirModalEditarTarefa('${tarefa.id}')`}">
+                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold px-2 py-1" onclick="${isAfastamentoDossie ? `abrirModalAfastamentoPush('${tarefa.id}')` : (isFuturaDossie ? `abrirModalNovaDemandaFutura('${tarefa.id}')` : `abrirModalEditarTarefa('${tarefa.id}')`)}">
                   <i class="fa-solid fa-pen-to-square me-1"></i> Editar
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" onclick="${isFuturaDossie ? `excluirDemandaFuturaConfirm('${tarefa.id}')` : `excluirDemandaConfirm('${tarefa.id}')`}">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold px-2 py-1" onclick="${isAfastamentoDossie ? `excluirAfastamentoConfirm('${tarefa.id}')` : (isFuturaDossie ? `excluirDemandaFuturaConfirm('${tarefa.id}')` : `excluirDemandaConfirm('${tarefa.id}')`)}">
                   <i class="fa-solid fa-trash-can me-1"></i> Excluir
                 </button>
               ` : ''}
@@ -7236,11 +7489,11 @@
         lbl.innerHTML = '<span class="text-danger fw-semibold">Nenhum status</span>';
       } else if (checkedCbs.length === 1) {
         const v = checkedCbs[0].value;
-        lbl.innerText = (v === 'Não Iniciada') ? 'Não Iniciadas' : (v === 'Atrasada' ? 'Atrasadas' : (v === 'Concluída' ? 'Concluídas' : (v === 'Demanda Futura' ? 'Demanda Futura' : 'Em Andamento')));
+        lbl.innerText = (v === 'Não Iniciada') ? 'Não Iniciadas' : (v === 'Atrasada' ? 'Atrasadas' : (v === 'Concluída' ? 'Concluídas' : (v === 'Demanda Futura' ? 'Demanda Futura' : (v === 'Afastamento' ? 'Afastamento' : 'Em Andamento'))));
       } else {
         const nomes = Array.from(checkedCbs).map(c => {
           const v = c.value;
-          return (v === 'Não Iniciada') ? 'Não Iniciadas' : (v === 'Atrasada' ? 'Atrasadas' : (v === 'Concluída' ? 'Concluídas' : (v === 'Demanda Futura' ? 'Demanda Futura' : 'Em Andamento')));
+          return (v === 'Não Iniciada') ? 'Não Iniciadas' : (v === 'Atrasada' ? 'Atrasadas' : (v === 'Concluída' ? 'Concluídas' : (v === 'Demanda Futura' ? 'Demanda Futura' : (v === 'Afastamento' ? 'Afastamento' : 'Em Andamento'))));
         });
         lbl.innerText = nomes.join(', ');
       }
@@ -7582,6 +7835,54 @@
         filtradas = filtradas.concat(futurasFiltradas);
       }
 
+      // 6. + Afastamentos (Férias, Dispensa, Outros): aparecem se o período [dataInicio, dataFim] cruzar o filtro
+      if (Array.isArray(appState.afastamentos) && appState.afastamentos.length > 0) {
+        const afastFiltrados = appState.afastamentos
+          .filter(af => af && af.dataInicio && af.dataFim)
+          .filter(af => {
+            const dInicioAf = parseDataLocal(af.dataInicio);
+            dInicioAf.setHours(0, 0, 0, 0);
+            const dFimAf = parseDataLocal(af.dataFim);
+            dFimAf.setHours(0, 0, 0, 0);
+
+            if (dataInicioFiltro && dataFimFiltro) {
+              return dInicioAf.getTime() <= dataFimFiltro.getTime() && dFimAf.getTime() >= dataInicioFiltro.getTime();
+            }
+            if (dataInicioFiltro && dFimAf.getTime() < dataInicioFiltro.getTime()) return false;
+            if (dataFimFiltro && dInicioAf.getTime() > dataFimFiltro.getTime()) return false;
+            return true;
+          })
+          .map(af => {
+            const totalDiasAf = calcularDiasInclusivosAfastamento(af.dataInicio, af.dataFim);
+            const diasDecAf = calcularDiasDecorridosAfastamento(af.dataInicio, af.dataFim);
+            const userMatch = (appState.usuarios || []).find(u =>
+              (af.usuarioEmail && u.email && u.email.toLowerCase() === af.usuarioEmail.toLowerCase()) ||
+              (af.usuarioId && u.id === af.usuarioId)
+            );
+            return {
+              id: af.id,
+              titulo: af.motivo || af.tipo || 'Afastamento',
+              descricao: `Afastamento (${af.tipo || 'Outros'}): ${formatarData(af.dataInicio)} até ${formatarData(af.dataFim)}.`,
+              modulo: 'Afastamento',
+              demandaExterna: false,
+              devId: (userMatch && userMatch.id) || af.usuarioId || '',
+              devNome: (userMatch && userMatch.nome) || af.usuarioNome || af.usuarioEmail || 'Membro',
+              diasEstimados: totalDiasAf,
+              diasTrabalhados: diasDecAf,
+              dataInsercao: af.dataInicio,
+              dataInicio: af.dataInicio,
+              dataPrazo: af.dataFim,
+              dataConclusao: af.dataFim,
+              urgencia: af.tipo || 'Férias',
+              status: 'Afastamento',
+              ativo: false,
+              isAfastamento: true,
+              tipoAfastamento: af.tipo || 'Férias'
+            };
+          });
+        filtradas = filtradas.concat(afastFiltrados);
+      }
+
       // Filtro por Desenvolvedor (se selecionado)
       const devRelFiltro = document.getElementById('filtroRelatorioDev');
       if (devRelFiltro && devRelFiltro.value && devRelFiltro.value !== 'TODOS') {
@@ -7633,7 +7934,7 @@
       const totalAtrasadas = filtradas.filter(t => t.status === 'Atrasada').length;
       const totalDemandasFuturas = filtradas.filter(t => t.status === 'Demanda Futura').length;
       const totalDemandasExternas = filtradas.filter(t => t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa').length;
-      const totalDemandasSiopleex = filtradas.filter(t => !(t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa')).length;
+      const totalDemandasSiopleex = filtradas.filter(t => !t.isAfastamento && !(t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa')).length;
 
       // 1. Demandas Concluídas
       const elConcluidas = document.getElementById('relConcluidas');
@@ -7705,7 +8006,7 @@
         if (kpiFiltroAtivoRelatorio === 'ORIGEM_EXTERNA') {
           exibidasNaTabela = exibidasNaTabela.filter(t => t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa');
         } else if (kpiFiltroAtivoRelatorio === 'ORIGEM_SIOPLEEX') {
-          exibidasNaTabela = exibidasNaTabela.filter(t => !(t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa'));
+          exibidasNaTabela = exibidasNaTabela.filter(t => !t.isAfastamento && !(t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa'));
         } else {
           exibidasNaTabela = exibidasNaTabela.filter(t => t.status === kpiFiltroAtivoRelatorio);
         }
@@ -7752,7 +8053,8 @@
           };
 
           const isExterna = (t.demandaExterna === true || t.demandaExterna === 'true' || t.modulo === 'Demanda Externa');
-          const mod = isExterna ? 'Demanda Externa' : (t.modulo || 'SIOPLEEx');
+          const isAfast = Boolean(t.isAfastamento || t.status === 'Afastamento');
+          const mod = isAfast ? 'Afastamento' : (isExterna ? 'Demanda Externa' : (t.modulo || 'SIOPLEEx'));
           const devNomeLimpo = limparNomeDev(t.devNome);
           const iniciais = obterIniciaisDev(devNomeLimpo);
           const podeExcluirEstaDemanda = isGerenteGeral || (appState.currentUser && (
@@ -7769,13 +8071,17 @@
             statusBadge = `<span class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1" style="font-weight: 600; font-size: 0.74rem;"><i class="fa-regular fa-circle-dot me-1 small"></i>Não Iniciada</span>`;
           } else if (t.status === 'Demanda Futura') {
             statusBadge = `<span class="badge rounded-pill px-2 py-1" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; font-weight: 600; font-size: 0.74rem;"><i class="fa-solid fa-calendar-days me-1 small"></i>Demanda Futura</span>`;
+          } else if (isAfast) {
+            statusBadge = `<span class="badge rounded-pill px-2 py-1" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-weight: 600; font-size: 0.74rem;"><i class="fa-solid fa-umbrella-beach me-1 small"></i>Afastamento</span>`;
           } else {
             statusBadge = `<span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-weight: 600; font-size: 0.74rem;"><i class="fa-solid fa-spinner fa-spin me-1 small" style="animation-duration: 3s;"></i>Em Andamento</span>`;
           }
 
           let urgenciaBadge = '';
           const urg = (t.urgencia || 'Media').toLowerCase();
-          if (urg === 'urgente') {
+          if (isAfast) {
+            urgenciaBadge = `<span class="badge rounded-pill px-2 py-1 fw-semibold" style="background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; font-size: 0.72rem;"><i class="fa-solid fa-pause me-1"></i>${escaparHtmlPush(t.tipoAfastamento || t.urgencia || 'Afastamento')}</span>`;
+          } else if (urg === 'urgente') {
             urgenciaBadge = `<span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fw-bold" style="font-size: 0.72rem;"><i class="fa-solid fa-bolt me-1"></i>Urgente</span>`;
           } else if (urg === 'alta') {
             urgenciaBadge = `<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size: 0.72rem;">Alta</span>`;
@@ -7788,7 +8094,9 @@
           }
 
           let prazo = '';
-          if (t.status === 'Demanda Futura') {
+          if (isAfast) {
+            prazo = t.dataPrazo ? formatarData(t.dataPrazo) : 'A definir';
+          } else if (t.status === 'Demanda Futura') {
             prazo = t.dataPrazo ? formatarData(t.dataPrazo) : (t.dataHoraProgramada ? formatarDataHoraFuturoPtBr(t.dataHoraProgramada) : 'A definir');
           } else if (t.status === 'Concluída') {
             prazo = formatarData(t.dataConclusao || t.dataPrazo);
@@ -7802,23 +8110,29 @@
             ? `<span class="text-danger fw-bold font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-clock me-1"></i>${prazo}</span>`
             : (t.status === 'Concluída'
                 ? `<span class="text-success fw-semibold font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar-check me-1"></i>${prazo}</span>`
-                : (t.status === 'Demanda Futura'
-                    ? `<span class="fw-semibold font-monospace" style="color: #4338ca; font-size: 0.8rem;"><i class="fa-regular fa-calendar-days me-1"></i>${prazo}</span>`
-                    : (t.status === 'Não Iniciada'
-                        ? `<span class="text-muted font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-clock me-1"></i>${prazo}</span>`
-                        : `<span class="text-secondary font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar me-1"></i>${prazo}</span>`)));
+                : (isAfast
+                    ? `<span class="fw-semibold font-monospace" style="color: #b45309; font-size: 0.8rem;"><i class="fa-solid fa-umbrella-beach me-1"></i>${prazo}</span>`
+                    : (t.status === 'Demanda Futura'
+                        ? `<span class="fw-semibold font-monospace" style="color: #4338ca; font-size: 0.8rem;"><i class="fa-regular fa-calendar-days me-1"></i>${prazo}</span>`
+                        : (t.status === 'Não Iniciada'
+                            ? `<span class="text-muted font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-clock me-1"></i>${prazo}</span>`
+                            : `<span class="text-secondary font-monospace" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar me-1"></i>${prazo}</span>`))));
 
           const diasEstTexto = ((t.status === 'Não Iniciada' || t.isDemandaFutura) && (!t.diasEstimados || t.diasEstimados === 0)) ? '-' : `${t.diasEstimados}d`;
           const diasTrabTexto = (t.isDemandaFutura || (t.status === 'Não Iniciada' && (!t.diasTrabalhados || t.diasTrabalhados === 0))) ? '-' : `${t.diasTrabalhados}d`;
 
-          const acaoEditarClick = t.isDemandaFutura ? `abrirModalNovaDemandaFutura('${t.id}')` : `abrirModalEditarTarefa('${t.id}')`;
-          const acaoExcluirClick = t.isDemandaFutura ? `excluirDemandaFuturaConfirm('${t.id}')` : `excluirDemandaConfirm('${t.id}')`;
+          const acaoEditarClick = isAfast
+            ? `abrirModalAfastamentoPush('${t.id}')`
+            : (t.isDemandaFutura ? `abrirModalNovaDemandaFutura('${t.id}')` : `abrirModalEditarTarefa('${t.id}')`);
+          const acaoExcluirClick = isAfast
+            ? `excluirAfastamentoConfirm('${t.id}')`
+            : (t.isDemandaFutura ? `excluirDemandaFuturaConfirm('${t.id}')` : `excluirDemandaConfirm('${t.id}')`);
 
           tr.innerHTML = `
             <td class="font-monospace text-muted small fw-semibold" style="padding-left: 2px; padding-right: 2px;">${String(index + 1).padStart(2, '0')}</td>
             <td style="padding-left: 2px; padding-right: 2px;">
-              <span class="badge ${isExterna ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-light text-dark border'} font-monospace text-wrap" style="font-size: 0.72rem; word-break: break-word; line-height: 1.2; display: inline-block; padding: 3px 5px; border-radius: 6px;" title="${mod}">
-                <i class="fa-solid ${isExterna ? 'fa-arrow-up-right-from-square text-warning-emphasis' : 'fa-cube text-primary'} me-1"></i>${mod}
+              <span class="badge ${isAfast ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : (isExterna ? 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' : 'bg-light text-dark border')} font-monospace text-wrap" style="font-size: 0.72rem; word-break: break-word; line-height: 1.2; display: inline-block; padding: 3px 5px; border-radius: 6px;" title="${mod}">
+                <i class="fa-solid ${isAfast ? 'fa-umbrella-beach text-warning-emphasis' : (isExterna ? 'fa-arrow-up-right-from-square text-warning-emphasis' : 'fa-cube text-primary')} me-1"></i>${mod}
               </span>
             </td>
             <td class="text-start text-break fw-semibold text-dark" style="font-size: 0.85rem;">${t.titulo}</td>
@@ -7837,10 +8151,10 @@
             <td data-html2canvas-ignore="true" class="text-center text-nowrap" style="padding-left: 2px; padding-right: 2px;">
               <div class="d-inline-flex gap-1 justify-content-center align-items-center">
                 ${podeExcluirEstaDemanda ? `
-                  <button type="button" class="btn btn-outline-secondary btn-sm p-0 rounded-circle" style="width: 26px; height: 26px; min-width: 26px; display: inline-flex; align-items: center; justify-content: center;" title="${t.isDemandaFutura ? 'Editar Demanda Futura' : 'Editar Demanda'}" onclick="event.stopPropagation(); ${acaoEditarClick}">
+                  <button type="button" class="btn btn-outline-secondary btn-sm p-0 rounded-circle" style="width: 26px; height: 26px; min-width: 26px; display: inline-flex; align-items: center; justify-content: center;" title="${isAfast ? 'Editar Afastamento' : (t.isDemandaFutura ? 'Editar Demanda Futura' : 'Editar Demanda')}" onclick="event.stopPropagation(); ${acaoEditarClick}">
                     <i class="fa-solid fa-pen-to-square" style="font-size: 0.72rem;"></i>
                   </button>
-                  <button type="button" class="btn btn-outline-danger btn-sm p-0 rounded-circle" style="width: 26px; height: 26px; min-width: 26px; display: inline-flex; align-items: center; justify-content: center;" title="${t.isDemandaFutura ? 'Excluir Demanda Futura' : 'Excluir Demanda'}" onclick="event.stopPropagation(); ${acaoExcluirClick}">
+                  <button type="button" class="btn btn-outline-danger btn-sm p-0 rounded-circle" style="width: 26px; height: 26px; min-width: 26px; display: inline-flex; align-items: center; justify-content: center;" title="${isAfast ? 'Excluir Afastamento' : (t.isDemandaFutura ? 'Excluir Demanda Futura' : 'Excluir Demanda')}" onclick="event.stopPropagation(); ${acaoExcluirClick}">
                     <i class="fa-solid fa-trash-can" style="font-size: 0.72rem;"></i>
                   </button>
                 ` : ''}
@@ -7933,6 +8247,7 @@
 
       // Gera uma única linha HTML (<tr>) de demanda para medição dinâmica e renderização final
       function gerarHtmlLinhaPdf(d, idxGlobal) {
+        const isAfastPdf = Boolean(d.isAfastamento || d.status === 'Afastamento');
         let statusBadgeColor = '#1e40af';
         let statusBg = '#eff6ff';
         let statusBorder = '#93c5fd';
@@ -7952,13 +8267,19 @@
           statusBadgeColor = '#4338ca';
           statusBg = '#eef2ff';
           statusBorder = '#c7d2fe';
+        } else if (isAfastPdf) {
+          statusBadgeColor = '#92400e';
+          statusBg = '#fef3c7';
+          statusBorder = '#fde68a';
         }
 
         let urgBadgeColor = '#0369a1';
         let urgBg = '#e0f2fe';
         let urgBorder = '#7dd3fc';
         const urgLower = (d.urgencia || 'Media').toLowerCase();
-        if (urgLower === 'urgente') {
+        if (isAfastPdf) {
+          urgBadgeColor = '#b45309'; urgBg = '#fffbeb'; urgBorder = '#fcd34d';
+        } else if (urgLower === 'urgente') {
           urgBadgeColor = '#dc2626'; urgBg = '#fef2f2'; urgBorder = '#fca5a5';
         } else if (urgLower === 'alta') {
           urgBadgeColor = '#b45309'; urgBg = '#fffbeb'; urgBorder = '#fcd34d';
@@ -7967,10 +8288,12 @@
         } else if (urgLower === 'agendada') {
           urgBadgeColor = '#6d28d9'; urgBg = '#f5f3ff'; urgBorder = '#ddd6fe';
         }
-        const urgTexto = urgLower === 'agendada' ? 'Programada' : (d.urgencia || 'Média');
+        const urgTexto = isAfastPdf ? (d.tipoAfastamento || d.urgencia || 'Afastamento') : (urgLower === 'agendada' ? 'Programada' : (d.urgencia || 'Média'));
 
         let prazo = '';
-        if (d.status === 'Demanda Futura') {
+        if (isAfastPdf) {
+          prazo = d.dataPrazo ? formatarData(d.dataPrazo) : 'A definir';
+        } else if (d.status === 'Demanda Futura') {
           prazo = d.dataHoraProgramada ? formatarDataHoraFuturoPtBr(d.dataHoraProgramada) : (d.dataPrazo ? formatarData(d.dataPrazo) : 'A definir');
         } else if (d.status === 'Concluída') {
           prazo = formatarData(d.dataConclusao || d.dataPrazo);
@@ -7980,16 +8303,16 @@
           prazo = 'A definir';
         }
 
-        const isExternaPdf = (d.demandaExterna === true || d.demandaExterna === 'true' || d.modulo === 'Demanda Externa');
-        const modPdf = isExternaPdf ? 'Demanda Externa' : (d.modulo || 'SIOPLEEx');
+        const isExternaPdf = !isAfastPdf && (d.demandaExterna === true || d.demandaExterna === 'true' || d.modulo === 'Demanda Externa');
+        const modPdf = isAfastPdf ? 'Afastamento' : (isExternaPdf ? 'Demanda Externa' : (d.modulo || 'SIOPLEEx'));
         const dtInsercaoFormatada = formatarData(d.dataInsercao || d.dataInicio);
 
         return `
           <tr style="background-color: ${idxGlobal % 2 === 0 ? '#ffffff' : '#f8fafc'}; page-break-inside: avoid !important; break-inside: avoid !important;">
             <td style="padding: 5px 6px; border: 1px solid #e2e8f0; text-align: center; font-weight: 700; color: #64748b; font-family: monospace; font-size: 9.5px;">${String(idxGlobal + 1).padStart(2, '0')}</td>
             <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: center;">
-              <span style="display: inline-block; white-space: nowrap; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.3px; ${isExternaPdf ? 'background: #fef3c7; color: #92400e; border: 1px solid #fde68a;' : 'background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;'}">
-                ${isExternaPdf ? 'Demanda Externa' : modPdf}
+              <span style="display: inline-block; white-space: nowrap; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; letter-spacing: 0.3px; ${(isAfastPdf || isExternaPdf) ? 'background: #fef3c7; color: #92400e; border: 1px solid #fde68a;' : 'background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;'}">
+                ${isAfastPdf ? 'Afastamento' : (isExternaPdf ? 'Demanda Externa' : modPdf)}
               </span>
             </td>
             <td style="padding: 5px 10px; border: 1px solid #e2e8f0; font-weight: 700; color: #0f172a; font-size: 10px; line-height: 1.3; text-align: left;">${d.titulo}</td>
@@ -8005,7 +8328,7 @@
                 ${d.status}
               </span>
             </td>
-            <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: center; white-space: nowrap; color: ${d.status === 'Atrasada' ? '#dc2626' : (d.status === 'Concluída' ? '#16a34a' : (d.status === 'Demanda Futura' ? '#4338ca' : (d.status === 'Não Iniciada' ? '#64748b' : '#334155')))}; font-weight: 700; font-size: 9.5px; font-family: monospace;">${prazo}</td>
+            <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: center; white-space: nowrap; color: ${d.status === 'Atrasada' ? '#dc2626' : (d.status === 'Concluída' ? '#16a34a' : (isAfastPdf ? '#b45309' : (d.status === 'Demanda Futura' ? '#4338ca' : (d.status === 'Não Iniciada' ? '#64748b' : '#334155'))))}; font-weight: 700; font-size: 9.5px; font-family: monospace;">${prazo}</td>
           </tr>
         `;
       }
@@ -9927,7 +10250,8 @@
           }
         ],
         solicitacoes: [],
-        demandasFuturas: []
+        demandasFuturas: [],
+        afastamentos: []
       };
     }
 
@@ -10214,6 +10538,8 @@
         else secaoAdmin.classList.add('d-none');
       }
 
+      atualizarBannerAfastamentoNoModalPush();
+
       if (forcarConsultaBackend && appState.currentUser && appState.currentUser.email) {
         consultarStatusPushBackend(sub);
       }
@@ -10225,6 +10551,8 @@
         'obterStatusPush',
         {
           email: appState.currentUser.email,
+          usuarioId: appState.currentUser.id || '',
+          usuarioNome: appState.currentUser.nome || '',
           endpoint: subAtual ? subAtual.endpoint : ''
         },
         function (res) {
@@ -10303,6 +10631,8 @@
             'Gatilho 08h00: Pendente',
             true
           );
+
+          atualizarBannerAfastamentoNoModalPush(res.afastamentoAtualOuProximo || res.afastamentoAtivo || null);
         }
       );
     }
@@ -10557,7 +10887,10 @@
           .then(r => r.json())
           .then(res => {
             if (!box) return;
-            if (res && res.success && res.sent > 0) {
+            if (res && res.pausadoPorAfastamento) {
+              box.className = 'alert alert-warning small py-2 px-3 mb-3';
+              box.innerText = '🏖️ ' + (res.message || 'Notificações pausadas por afastamento ativo.');
+            } else if (res && res.success && res.sent > 0) {
               box.className = 'alert alert-success small py-2 px-3 mb-3';
               box.innerText = '✅ ' + (res.message || 'Notificação entregue com sucesso!');
             } else {
@@ -10584,7 +10917,11 @@
           if (btnAgora) btnAgora.disabled = false;
           if (btn10s) btn10s.disabled = false;
           if (!box) return;
-          if (res && res.success && res.sent > 0) {
+          if (res && res.pausadoPorAfastamento) {
+            box.className = 'alert alert-warning small py-2 px-3 mb-3';
+            box.innerText = '🏖️ ' + (res.message || 'Notificações pausadas neste período de afastamento.');
+            mostrarToast('Notificações pausadas durante o afastamento.');
+          } else if (res && res.success && res.sent > 0) {
             box.className = 'alert alert-success small py-2 px-3 mb-3';
             box.innerText = '✅ ' + (res.message || 'Notificação enviada!');
             mostrarToast('Notificação enviada!');
@@ -10764,8 +11101,26 @@
 
       if (bodyEl) {
         const { atrasadas, emFoco, esteira, futurasProx3Dias } = obterBriefingUsuarioLocal();
+        const afastamentoHojeBrief = obterAfastamentoAtivoDevHoje(user.id, user);
         const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
         const secoes = [];
+
+        if (afastamentoHojeBrief) {
+          secoes.push(`
+            <div class="mb-3">
+              <h6 class="fw-bold mb-2" style="color: #b45309;">🏖️ Em Foco Agora — Afastamento Ativo</h6>
+              <div class="card border-warning shadow-sm rounded-3" style="background-color: #fffbeb;">
+                <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center gap-2">
+                  <div>
+                    <div class="fw-bold text-dark">${escaparHtmlPush(afastamentoHojeBrief.motivo || afastamentoHojeBrief.tipo)}</div>
+                    <small class="text-muted">Período: ${escaparHtmlPush(formatarData(afastamentoHojeBrief.dataInicio))} até ${escaparHtmlPush(formatarData(afastamentoHojeBrief.dataFim))} • Notificações pausadas</small>
+                  </div>
+                  <span class="badge bg-warning text-dark rounded-pill">${escaparHtmlPush(afastamentoHojeBrief.tipo || 'Afastamento')}</span>
+                </div>
+              </div>
+            </div>
+          `);
+        }
 
         // 1º: Em Foco Agora
         if (emFoco) {
@@ -10924,6 +11279,358 @@
           setTimeout(() => abrirModalResumoDiarioBriefing(), 350);
         }
       }
+    }
+
+    // =========================================================================
+    // AFASTAMENTOS (Férias / Dispensa / Outros — Pausa Push + Em Foco + Relatório)
+    // =========================================================================
+
+    function calcularDiasInclusivosAfastamento(dataIniIso, dataFimIso) {
+      if (!dataIniIso || !dataFimIso) return 1;
+      const dIni = parseDataLocal(dataIniIso);
+      const dFim = parseDataLocal(dataFimIso);
+      dIni.setHours(0, 0, 0, 0);
+      dFim.setHours(0, 0, 0, 0);
+      const diff = Math.round((dFim.getTime() - dIni.getTime()) / (1000 * 60 * 60 * 24));
+      return Math.max(1, diff + 1);
+    }
+
+    function calcularDiasDecorridosAfastamento(dataIniIso, dataFimIso) {
+      if (!dataIniIso) return 1;
+      const dIni = parseDataLocal(dataIniIso);
+      dIni.setHours(0, 0, 0, 0);
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      let dRef = hoje;
+      if (dataFimIso) {
+        const dFim = parseDataLocal(dataFimIso);
+        dFim.setHours(0, 0, 0, 0);
+        if (dRef.getTime() > dFim.getTime()) dRef = dFim;
+      }
+      if (dRef.getTime() < dIni.getTime()) return 0;
+      const diff = Math.round((dRef.getTime() - dIni.getTime()) / (1000 * 60 * 60 * 24));
+      return Math.max(1, diff + 1);
+    }
+
+    function afastamentoPertenceAoDev(af, devId, devObj) {
+      if (!af) return false;
+      const dEmail = (devObj && devObj.email ? devObj.email : '').toString().trim().toLowerCase();
+      const aEmail = (af.usuarioEmail || '').toString().trim().toLowerCase();
+      if (dEmail && aEmail && dEmail === aEmail) return true;
+
+      const dId = (devId || (devObj && devObj.id) || '').toString().trim().toUpperCase();
+      const aId = (af.usuarioId || '').toString().trim().toUpperCase();
+      if (dId && aId && dId === aId) return true;
+
+      const dNome = limparNomeDev(devObj && devObj.nome ? devObj.nome : '').toLowerCase();
+      const aNome = limparNomeDev(af.usuarioNome || '').toLowerCase();
+      return Boolean(dNome && aNome && dNome === aNome);
+    }
+
+    function obterAfastamentoAtivoDevHoje(devId, devObj) {
+      const lista = Array.isArray(appState.afastamentos) ? appState.afastamentos : [];
+      if (lista.length === 0) return null;
+      const hojeIso = formatarDataIso(new Date());
+      return lista.find(af =>
+        af && af.dataInicio && af.dataFim &&
+        afastamentoPertenceAoDev(af, devId, devObj) &&
+        af.dataInicio <= hojeIso &&
+        hojeIso <= af.dataFim
+      ) || null;
+    }
+
+    function obterAfastamentoAtualOuProximoUsuario(user) {
+      if (!user) return null;
+      const ativo = obterAfastamentoAtivoDevHoje(user.id, user);
+      if (ativo) return ativo;
+      const hojeIso = formatarDataIso(new Date());
+      const lista = (Array.isArray(appState.afastamentos) ? appState.afastamentos : [])
+        .filter(af => af && af.dataFim && af.dataFim >= hojeIso && afastamentoPertenceAoDev(af, user.id, user))
+        .sort((a, b) => (a.dataInicio || '').localeCompare(b.dataInicio || ''));
+      return lista[0] || null;
+    }
+
+    function atualizarBannerAfastamentoNoModalPush(afOpt) {
+      const banner = document.getElementById('pushBannerAfastamentoAtivo');
+      const txtEl = document.getElementById('pushBannerAfastamentoTexto');
+      if (!banner || !txtEl) return;
+
+      const af = afOpt || obterAfastamentoAtualOuProximoUsuario(appState.currentUser);
+      window.afastamentoAtualModalPushId = af ? af.id : null;
+
+      if (!af) {
+        banner.classList.add('d-none');
+        txtEl.innerHTML = '';
+        return;
+      }
+
+      const hojeIso = formatarDataIso(new Date());
+      const emCurso = (af.dataInicio <= hojeIso && hojeIso <= af.dataFim);
+      const rotuloEstado = emCurso
+        ? 'Notificações pausadas agora'
+        : 'Pausa programada';
+
+      txtEl.innerHTML = `<strong class="text-dark">${escaparHtmlPush(rotuloEstado)} (${escaparHtmlPush(af.motivo || af.tipo)}):</strong> ` +
+        `<span class="text-dark">de <strong>${escaparHtmlPush(formatarData(af.dataInicio))}</strong> até <strong>${escaparHtmlPush(formatarData(af.dataFim))}</strong>.</span>`;
+      banner.classList.remove('d-none');
+    }
+
+    function aoMudarTipoAfastamento() {
+      const tipoOutros = document.getElementById('afastTipoOutros');
+      const wrapOutros = document.getElementById('wrapAfastamentoOutros');
+      const inputOutros = document.getElementById('afastamentoOutrosTexto');
+      const isOutros = Boolean(tipoOutros && tipoOutros.checked);
+
+      if (wrapOutros) {
+        if (isOutros) {
+          wrapOutros.classList.remove('d-none');
+          if (inputOutros) setTimeout(() => inputOutros.focus(), 60);
+        } else {
+          wrapOutros.classList.add('d-none');
+        }
+      }
+    }
+
+    function abrirModalAfastamentoPush(afastamentoIdOpt) {
+      const pushModalEl = document.getElementById('modalPushNotificacoes');
+      if (pushModalEl && pushModalEl.classList.contains('show')) {
+        pushModalEl.addEventListener('hidden.bs.modal', function () {
+          abrirModalAfastamentoPush(afastamentoIdOpt);
+        }, { once: true });
+        const instPush = bootstrap.Modal.getInstance(pushModalEl);
+        if (instPush) instPush.hide();
+        return;
+      }
+
+      if (!appState.currentUser || !appState.currentUser.email) {
+        alert('Faça login antes de configurar férias ou dispensa.');
+        return;
+      }
+
+      let alvo = null;
+      if (afastamentoIdOpt) {
+        alvo = (appState.afastamentos || []).find(a => a && a.id === afastamentoIdOpt) || null;
+      } else {
+        alvo = obterAfastamentoAtualOuProximoUsuario(appState.currentUser);
+      }
+
+      const elEditId = document.getElementById('afastamentoEditId');
+      const elIni = document.getElementById('afastamentoDataInicio');
+      const elFim = document.getElementById('afastamentoDataFim');
+      const elFerias = document.getElementById('afastTipoFerias');
+      const elDispensa = document.getElementById('afastTipoDispensa');
+      const elOutros = document.getElementById('afastTipoOutros');
+      const elOutrosTxt = document.getElementById('afastamentoOutrosTexto');
+      const elErro = document.getElementById('afastamentoErroBox');
+      const btnExcluir = document.getElementById('btnExcluirAfastamentoModal');
+
+      if (elErro) elErro.classList.add('d-none');
+
+      const hojeIso = formatarDataIso(new Date());
+      if (alvo) {
+        if (elEditId) elEditId.value = alvo.id || '';
+        if (elIni) elIni.value = alvo.dataInicio || hojeIso;
+        if (elFim) elFim.value = alvo.dataFim || hojeIso;
+        const tipo = alvo.tipo || 'Férias';
+        if (elFerias) elFerias.checked = (tipo === 'Férias');
+        if (elDispensa) elDispensa.checked = (tipo === 'Dispensa');
+        if (elOutros) elOutros.checked = (tipo === 'Outros');
+        if (elOutrosTxt) elOutrosTxt.value = (tipo === 'Outros') ? (alvo.motivo || '') : '';
+        if (btnExcluir) btnExcluir.classList.remove('d-none');
+      } else {
+        if (elEditId) elEditId.value = '';
+        if (elIni) elIni.value = hojeIso;
+        if (elFim) elFim.value = hojeIso;
+        if (elFerias) elFerias.checked = true;
+        if (elDispensa) elDispensa.checked = false;
+        if (elOutros) elOutros.checked = false;
+        if (elOutrosTxt) elOutrosTxt.value = '';
+        if (btnExcluir) btnExcluir.classList.add('d-none');
+      }
+
+      aoMudarTipoAfastamento();
+
+      const modalEl = document.getElementById('modalAfastamentoPush');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+    }
+
+    function editarAfastamentoAtualModalPush() {
+      abrirModalAfastamentoPush(window.afastamentoAtualModalPushId || null);
+    }
+
+    function removerAfastamentoAtualModalPush() {
+      if (window.afastamentoAtualModalPushId) {
+        excluirAfastamentoConfirm(window.afastamentoAtualModalPushId);
+      }
+    }
+
+    function editarAfastamentoHeroAtual() {
+      if (window.afastamentoAtualHeroId) {
+        abrirModalAfastamentoPush(window.afastamentoAtualHeroId);
+      }
+    }
+
+    function encerrarAfastamentoHeroAtual() {
+      if (window.afastamentoAtualHeroId) {
+        excluirAfastamentoConfirm(window.afastamentoAtualHeroId);
+      }
+    }
+
+    function excluirAfastamentoModalAtual() {
+      const editId = (document.getElementById('afastamentoEditId') || {}).value || '';
+      if (!editId) return;
+      excluirAfastamentoConfirm(editId, function () {
+        const modalEl = document.getElementById('modalAfastamentoPush');
+        if (modalEl) {
+          const inst = bootstrap.Modal.getInstance(modalEl);
+          if (inst) inst.hide();
+        }
+      });
+    }
+
+    function salvarAfastamentoForm() {
+      const editId = ((document.getElementById('afastamentoEditId') || {}).value || '').trim();
+      const dataInicio = ((document.getElementById('afastamentoDataInicio') || {}).value || '').trim();
+      const dataFim = ((document.getElementById('afastamentoDataFim') || {}).value || '').trim();
+      const elRadio = document.querySelector('input[name="afastamentoTipo"]:checked');
+      const tipo = elRadio ? elRadio.value : 'Férias';
+      const motivoOutros = ((document.getElementById('afastamentoOutrosTexto') || {}).value || '').trim();
+      const elErro = document.getElementById('afastamentoErroBox');
+      const btnSalvar = document.getElementById('btnSalvarAfastamentoModal');
+
+      const mostrarErroModal = (msg) => {
+        if (elErro) {
+          elErro.classList.remove('d-none');
+          elErro.innerText = msg;
+        }
+      };
+
+      if (elErro) elErro.classList.add('d-none');
+
+      if (!dataInicio || !dataFim) {
+        mostrarErroModal('Informe a data de início e a data de término.');
+        return;
+      }
+      if (dataFim < dataInicio) {
+        mostrarErroModal('A data de término não pode ser anterior à data de início.');
+        return;
+      }
+      if (tipo === 'Outros' && !motivoOutros) {
+        mostrarErroModal('Escreva qual é o motivo no campo abaixo.');
+        const inputOutros = document.getElementById('afastamentoOutrosTexto');
+        if (inputOutros) inputOutros.focus();
+        return;
+      }
+
+      const existente = editId ? (appState.afastamentos || []).find(a => a && a.id === editId) : null;
+      const donoId = (existente && existente.usuarioId) || (appState.currentUser && appState.currentUser.id) || 'USR-1';
+      const donoEmail = (existente && existente.usuarioEmail) || (appState.currentUser && appState.currentUser.email) || '';
+      const donoNome = (existente && existente.usuarioNome) || (appState.currentUser && appState.currentUser.nome) || '';
+
+      const payload = {
+        id: editId,
+        usuarioId: donoId,
+        usuarioEmail: donoEmail,
+        usuarioNome: donoNome,
+        tipo: tipo,
+        motivo: tipo === 'Outros' ? motivoOutros : tipo,
+        dataInicio: dataInicio,
+        dataFim: dataFim
+      };
+
+      const originalBtnHtml = btnSalvar ? btnSalvar.innerHTML : '';
+      if (btnSalvar) {
+        btnSalvar.disabled = true;
+        btnSalvar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Salvando...';
+      }
+
+      executarNoServidor(
+        'salvarAfastamento',
+        payload,
+        function (res) {
+          if (btnSalvar) {
+            btnSalvar.disabled = false;
+            if (originalBtnHtml) btnSalvar.innerHTML = originalBtnHtml;
+          }
+          if (!res || !res.success) {
+            mostrarErroModal((res && res.message) || 'Erro ao salvar afastamento.');
+            return;
+          }
+
+          if (Array.isArray(res.afastamentos)) {
+            appState.afastamentos = res.afastamentos;
+          } else if (res.afastamento) {
+            const lista = Array.isArray(appState.afastamentos) ? [...appState.afastamentos] : [];
+            const idx = lista.findIndex(a => a && a.id === res.afastamento.id);
+            if (idx >= 0) lista[idx] = res.afastamento;
+            else lista.unshift(res.afastamento);
+            appState.afastamentos = lista;
+          }
+
+          try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (eCache) {}
+
+          const modalEl = document.getElementById('modalAfastamentoPush');
+          if (modalEl) {
+            const inst = bootstrap.Modal.getInstance(modalEl);
+            if (inst) inst.hide();
+          }
+
+          atualizarAbaEsteira();
+          atualizarRelatorioMensal();
+          atualizarEstadoPushUI(true);
+          mostrarToast('Afastamento salvo e alertas pausados no período!');
+        },
+        function (err) {
+          if (btnSalvar) {
+            btnSalvar.disabled = false;
+            if (originalBtnHtml) btnSalvar.innerHTML = originalBtnHtml;
+          }
+          mostrarErroModal('Falha de comunicação: ' + ((err && err.message) || err));
+        }
+      );
+    }
+
+    function excluirAfastamentoConfirm(afastamentoId, onDone) {
+      if (!afastamentoId) return;
+      if (!confirm('Deseja realmente encerrar/remover este afastamento e reativar as notificações normais?')) {
+        return;
+      }
+
+      executarNoServidor(
+        'excluirAfastamento',
+        { id: afastamentoId },
+        function (res) {
+          if (!res || !res.success) {
+            alert((res && res.message) || 'Não foi possível remover o afastamento.');
+            return;
+          }
+          if (Array.isArray(res.afastamentos)) {
+            appState.afastamentos = res.afastamentos;
+          } else {
+            appState.afastamentos = (appState.afastamentos || []).filter(a => a && a.id !== afastamentoId);
+          }
+
+          try { localStorage.setItem('SYSMANAGER_CACHE', JSON.stringify(appState)); } catch (eCache) {}
+
+          const elDrawer = document.getElementById('drawerLateralDemandas');
+          if (elDrawer && elDrawer.classList.contains('show')) {
+            const bsDrawer = bootstrap.Offcanvas.getInstance(elDrawer);
+            if (bsDrawer) bsDrawer.hide();
+          }
+
+          atualizarAbaEsteira();
+          atualizarRelatorioMensal();
+          atualizarEstadoPushUI(true);
+          mostrarToast('Afastamento removido!');
+          if (typeof onDone === 'function') onDone();
+        },
+        function (err) {
+          alert('Erro ao remover afastamento: ' + ((err && err.message) || err));
+        }
+      );
     }
   </script>
 </body>
