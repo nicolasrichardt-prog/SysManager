@@ -26,7 +26,7 @@ self.addEventListener('push', function (event) {
     icon: data.icon || '/icon-192.png',
     badge: data.badge || '/badge-96.png',
     tag: data.tag || 'sysmanager-daily',
-    renotify: true,
+    renotify: data.renotify !== false,
     requireInteraction: data.requireInteraction !== false,
     vibrate: [150, 80, 150],
     data: {
@@ -35,7 +35,17 @@ self.addEventListener('push', function (event) {
     }
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  var isBriefing = options.data.tipo === 'briefing' || (options.tag || '').indexOf('sysmanager-daily-') === 0;
+  var tarefas = [self.registration.showNotification(title, options)];
+  if (isBriefing && typeof caches !== 'undefined') {
+    tarefas.push(
+      caches.open('sysmanager-push-state').then(function (cache) {
+        return cache.put('/__last_briefing_tag', new Response(String(options.tag || '')));
+      }).catch(function () {})
+    );
+  }
+
+  event.waitUntil(Promise.all(tarefas));
 });
 
 self.addEventListener('notificationclick', function (event) {
