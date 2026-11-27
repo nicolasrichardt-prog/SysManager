@@ -161,12 +161,16 @@ module.exports = async function handler(req, res) {
       body: 'Você tem atualizações na sua esteira.'
     });
     const ttlSeconds = Number(item.ttl) > 0 ? Number(item.ttl) : 86400;
+    const pushOptions = {
+      TTL: ttlSeconds,
+      urgency: 'high'
+    };
+    if (item.topic && /^[A-Za-z0-9_-]{1,32}$/.test(String(item.topic))) {
+      pushOptions.topic = String(item.topic);
+    }
 
     try {
-      const resp = await webpush.sendNotification(sub, payloadJson, {
-        TTL: ttlSeconds,
-        urgency: 'high'
-      });
+      const resp = await webpush.sendNotification(sub, payloadJson, pushOptions);
       sent++;
       results.push({
         id: item.id || '',
