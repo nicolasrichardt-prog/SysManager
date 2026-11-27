@@ -3174,8 +3174,8 @@
           <!-- Regra de Disparo Automático -->
           <div class="alert alert-info border-info border-opacity-25 small py-2 px-3 mb-0">
             <i class="fa-solid fa-clock me-1"></i>
-            <strong>Disparo automático (Segunda a Sexta às 08h00):</strong>
-            se o computador estiver desligado às 08h00, o aviso fica aguardando por até 24h e aparece assim que você abrir o Chrome/Edge.
+            <strong>Disparo automático pontual (Segunda a Sexta às 08h00):</strong>
+            se o computador estiver desligado às 08h00, o aviso fica retido por até 24h na fila do navegador e aparece assim que você abrir o Chrome/Edge (no perfil do seu Gmail) — com entrega imediata de segurança ao abrir o SysManager.
           </div>
 
           <!-- Painel Administrativo / Gerência -->
@@ -3188,11 +3188,12 @@
                 <span id="pushTeamStatsBadge" class="badge bg-primary text-white rounded-pill">0 usuários • 0 navegadores</span>
               </div>
 
-              <div class="d-flex flex-wrap gap-2 mb-3">
+              <div class="d-flex flex-wrap gap-2 mb-2">
                 <span id="pushBadgeSecret" class="badge bg-secondary-subtle text-secondary border small">Secret Apps Script: verificando...</span>
                 <span id="pushBadgeVercel" class="badge bg-secondary-subtle text-secondary border small">Vercel /api/push: verificando...</span>
                 <span id="pushBadgeGatilho" class="badge bg-secondary-subtle text-secondary border small">Gatilho 08h00: verificando...</span>
               </div>
+              <div id="pushUltimoEnvioInfo" class="small text-muted mb-3 d-none" style="font-size: 0.74rem;"></div>
 
               <div class="d-flex flex-wrap gap-2">
                 <button type="button" id="btnAtivarGatilhoDiario" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold" onclick="ativarGatilhoPushDiarioUI()">
@@ -10773,7 +10774,8 @@
       listenerAnexado: false,
       briefingQueryTratado: false,
       inicializadoParaEmail: '',
-      autoSyncTentado: false
+      autoSyncTentado: false,
+      catchupTimerId: null
     };
 
     function escaparHtmlPush(texto) {
@@ -11129,13 +11131,30 @@
             saude.online ? 'Vercel: Faltam Variáveis Env' : 'Vercel /api/push: Offline',
             Boolean(saude.online && !saude.configured)
           );
+          const labelPendenteGatilho = (res.gatilhoDiarioAtivo && !res.gatilhoPrecisaoAtivo)
+            ? 'Gatilho Antigo (08h–09h) — Clique em Ativar'
+            : 'Gatilho 08h00: Pendente';
           aplicarBadgeStatusPush(
             badgeGatilho,
-            Boolean(res.gatilhoDiarioAtivo),
-            'Gatilho 08h00: Ativo',
-            'Gatilho 08h00: Pendente',
+            Boolean(res.gatilhoPrecisaoAtivo),
+            'Gatilho 08h00 Exato: Ativo',
+            labelPendenteGatilho,
             true
           );
+
+          const infoUltimo = document.getElementById('pushUltimoEnvioInfo');
+          if (infoUltimo) {
+            const uLog = res.ultimoDisparoPush;
+            if (uLog && uLog.dataHoraBr) {
+              const origemTxt = (uLog.origem === 'manual') ? 'manual' : 'automático';
+              const resumoQtd = `${uLog.sent || 0} entregue(s), ${uLog.failed || 0} falha(s)`;
+              infoUltimo.innerText = `Último disparo (${origemTxt}): ${uLog.dataHoraBr} • ${resumoQtd}`;
+              infoUltimo.classList.remove('d-none');
+            } else {
+              infoUltimo.innerText = '';
+              infoUltimo.classList.add('d-none');
+            }
+          }
 
           atualizarBannerAfastamentoNoModalPush(res.afastamentoAtualOuProximo || res.afastamentoAtivo || null);
         }
@@ -11762,6 +11781,104 @@
       if (tabEsteira) tabEsteira.click();
     }
 
+    function truncarTextoPushLocal(texto, maxLen) {
+      const s = (texto || '').toString().trim();
+      const limit = maxLen || 48;
+      if (s.length <= limit) return s;
+      return s.substring(0, Math.max(10, limit - 1)).trim() + '…';
+    }
+
+    async function verificarCatchupBriefingDiario() {
+      try {
+        if (!suportaWebPush() || Notification.permission !== 'granted') return;
+        const user = appState.currentUser;
+        if (!user || !user.email) return;
+
+        const agora = new Date();
+        const dow = agora.getDay();
+        if (dow < 1 || dow > 5) return;
+
+        const minsDia = (agora.getHours() * 60) + agora.getMinutes();
+        if (minsDia < 485 || minsDia > 1080) return;
+
+        if (obterAfastamentoAtivoDevHoje(user.id, user)) return;
+
+        const hojeIso = formatarDataIso(agora);
+        const dailyTag = 'sysmanager-daily-' + hojeIso;
+        const localKey = 'sysmanager_briefing_local_tag';
+
+        try {
+          if (localStorage.getItem(localKey) === dailyTag) return;
+        } catch (eLs) {}
+
+        if (typeof caches !== 'undefined') {
+          try {
+            const cache = await caches.open('sysmanager-push-state');
+            const cachedResp = await cache.match('/__last_briefing_tag');
+            if (cachedResp) {
+              const cachedTag = (await cachedResp.text()).trim();
+              if (cachedTag === dailyTag) {
+                try { localStorage.setItem(localKey, dailyTag); } catch (eLsSync) {}
+                return;
+              }
+            }
+          } catch (eCacheRead) {}
+        }
+
+        const reg = (navigator.serviceWorker && typeof navigator.serviceWorker.getRegistration === 'function')
+          ? await navigator.serviceWorker.getRegistration('/')
+          : null;
+        if (!reg || !reg.pushManager || typeof reg.showNotification !== 'function') return;
+
+        const sub = await reg.pushManager.getSubscription();
+        if (!sub) return;
+
+        const { emFoco, futurasProx3Dias } = obterBriefingUsuarioLocal();
+        const nomeUsuario = limparNomeDev(user.nome || '') || (user.email ? user.email.split('@')[0] : 'Usuário');
+        const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
+        const linhaFoco = '🎯 Em Foco: ' + (emFoco ? truncarTextoPushLocal(emFoco.titulo, 85) : 'Nenhuma demanda ativa');
+        let linhaFuturas = '📅 Futuras: Nenhuma nos próx. 3 dias';
+        if (futurasProx3Dias.length > 0) {
+          const maxTitulo = futurasProx3Dias.length > 1 ? 26 : 42;
+          const itensFormatados = futurasProx3Dias.slice(0, 2).map(df => {
+            const dt = parseIsoFuturoBriefing(df.dataHoraProgramada);
+            const diaSem = dt ? diasSemana[dt.getDay()] : '';
+            const horaIni = dt ? (String(dt.getHours()).padStart(2, '0') + ':' + String(dt.getMinutes()).padStart(2, '0')) : '';
+            const prefixo = (diaSem && horaIni) ? `${diaSem}/${horaIni}` : (horaIni || diaSem || 'Agendada');
+            return `${prefixo} - ${truncarTextoPushLocal(df.titulo, maxTitulo)}`;
+          });
+          const extra = futurasProx3Dias.length > 2 ? ` (+${futurasProx3Dias.length - 2})` : '';
+          linhaFuturas = '📅 Futuras: ' + itensFormatados.join('; ') + extra;
+        }
+        const linhaLembrete = '✏️ Mantenha a esteira atualizada!';
+
+        try { localStorage.setItem(localKey, dailyTag); } catch (eLsSave) {}
+        if (typeof caches !== 'undefined') {
+          try {
+            const cacheW = await caches.open('sysmanager-push-state');
+            await cacheW.put('/__last_briefing_tag', new Response(dailyTag));
+          } catch (eCacheWrite) {}
+        }
+
+        await reg.showNotification(`SysManager - ${nomeUsuario}`, {
+          body: [linhaFoco, linhaFuturas, linhaLembrete].join('\n'),
+          icon: '/icon-192.png',
+          badge: '/badge-96.png',
+          tag: dailyTag,
+          renotify: false,
+          requireInteraction: true,
+          vibrate: [150, 80, 150],
+          data: {
+            url: '/?briefing=1',
+            tipo: 'briefing'
+          }
+        });
+      } catch (eCatchup) {
+        console.warn('Aviso no catch-up diário de notificação:', eCatchup);
+      }
+    }
+
     function inicializarPushAposLogin() {
       const emailAtual = (appState.currentUser && appState.currentUser.email || '').toLowerCase();
       if (!emailAtual) return;
@@ -11770,6 +11887,13 @@
       pushManagerState.inicializadoParaEmail = emailAtual;
 
       atualizarEstadoPushUI(primeiraVezUsuario);
+
+      if (!pushManagerState.catchupTimerId) {
+        pushManagerState.catchupTimerId = setTimeout(function () {
+          pushManagerState.catchupTimerId = null;
+          verificarCatchupBriefingDiario();
+        }, 5000);
+      }
 
       if (!pushManagerState.briefingQueryTratado) {
         const params = new URLSearchParams(window.location.search);
